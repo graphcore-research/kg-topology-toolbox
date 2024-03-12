@@ -12,7 +12,7 @@ from scipy.sparse import coo_array, csc_array, csr_array
 
 class TopologyToolbox:
     """
-    A toolbox to compute various Knowledge Graph topology statistics.
+    Toolbox class to compute various Knowledge Graph topology statistics.
     """
 
     def node_degree_summary(
@@ -27,27 +27,25 @@ class TopologyToolbox:
         The output dataframe is indexed on the IDs of the graph entities.
 
         :param df: A graph represented as a pd.DataFrame.
-        Must contain three columns (h, r, t).
-        :type df: pd.DataFrame
+            Must contain at least three columns `h`, `r`, `t`.
         :param return_relation_list: If True, return the list of unique relations going
-        in/out of an entity. WARNING: expensive for large graphs.
-        :type return_relation_list: bool
+            in/out of an entity. WARNING: expensive for large graphs.
 
-        :return: The results dataframe, indexed over the same entity ID `e` used in df:
-            - 'h_degree' (int): Number of triples with head entity `e`.
-            - 't_degree' (int): Number of triples with tail entity `e`.
-            - 'tot_degree' (int): Number of triples with head entity `e` or
-                                tail entity `e`.
-            - 'h_unique_rel' (int): Number of distinct relation types
-                                    among edges with head entity `e`.
-            - 'h_rel_list' (list): List of unique relation types among edges
-                                    with head entity `e`.
-            - 't_unique_rel' (int): Number of distinct relation types
-                                    among edges with tail entity `e`.
-            - 't_rel_list' (list): List of unique relation types among edges
-                                    with tail entity `e`.
-            - 'n_loops' (int): number of loops around entity `e`.
-        :rtype: pd.DataFrame
+        :return: The results dataframe, indexed over the same entity ID `e` used in df,
+            with columns:
+
+            - **h_degree** (int): Number of triples with head entity `e`.
+            - **t_degree** (int): Number of triples with tail entity `e`.
+            - **tot_degree** (int): Number of triples with head entity `e` or tail entity `e`.
+            - **h_unique_rel** (int): Number of distinct relation types
+              among edges with head entity `e`.
+            - **h_rel_list** (list): List of unique relation types among edges
+              with head entity `e`.
+            - **t_unique_rel** (int): Number of distinct relation types
+              among edges with tail entity `e`.
+            - **t_rel_list** (list): List of unique relation types among edges
+              with tail entity `e`.
+            - **n_loops** (int): number of loops around entity `e`.
         """
         n_entity = df[["h", "t"]].max().max() + 1
         h_rel_list = {"h_rel_list": "unique"} if return_relation_list else {}
@@ -101,30 +99,28 @@ class TopologyToolbox:
         as the input one.
 
         :param df: A graph represented as a pd.DataFrame.
-        Must contain three columns (h, r, t).
-        :type df: pd.DataFrame
+            Must contain at least three columns `h`, `r`, `t`.
 
         :return: The results dataframe. Contains the following columns
-        (in addition to h, r, t in df):
-            - 'h_unique_rel' (int): Number of distinct relation types
-                                    among edges with head entity h.
-            - 'h_degree' (int): Number of triples with head entity h.
-            - 'h_degree_same_rel' (int): Number of triples with head entity h
-                                        and relation type r.
-            - 't_unique_rel' (int): Number of distinct relation types
-                                    among edges with tail entity t.
-            - 't_degree' (int): Number of triples with tail entity t.
-            - 't_degree_same_rel' (int): Number of triples with tail entity t
-                                        and relation type r.
-            - 'tot_degree' (int): Number of triples with head entity h or
-                                tail entity t.
-            - 'tot_degree_same_rel' (int): Number of triples with head entity h or
-                                tail entity t, and relation type r.
-            - 'triple_cardinality' (int): cardinality type of the edge.
-            - 'triple_cardinality_same_rel' (int): cardinality type of the edge in
-                                                the subgraph of edges with
-                                                relation type r.
-        :rtype: pd.DataFrame
+            (in addition to `h`, `r`, `t` in ``df``):
+
+            - **h_unique_rel** (int): Number of distinct relation types
+              among edges with head entity h.
+            - **h_degree** (int): Number of triples with head entity h.
+            - **h_degree_same_rel** (int): Number of triples with head entity h
+              and relation type r.
+            - **t_unique_rel** (int): Number of distinct relation types
+              among edges with tail entity t.
+            - **t_degree** (int): Number of triples with tail entity t.
+            - **t_degree_same_rel** (int): Number of triples with tail entity t
+              and relation type r.
+            - **tot_degree** (int): Number of triples with head entity h or
+              tail entity t.
+            - **tot_degree_same_rel** (int): Number of triples with head entity h or
+              tail entity t, and relation type r.
+            - **triple_cardinality** (int): cardinality type of the edge.
+            - **triple_cardinality_same_rel** (int): cardinality type of the edge in
+              the subgraph of edges with relation type r.
         """
         gr_by_h_count = df.groupby("h", as_index=False).agg(
             h_unique_rel=("r", "nunique"), h_degree=("t", "count")
@@ -195,44 +191,38 @@ class TopologyToolbox:
         as the input one.
 
         :param df: A graph represented as a pd.DataFrame.
-        Must contain three columns (h, r, t).
-        :type df: pd.DataFrame
+            Must contain at least three columns `h`, `r`, `t`.
         :param return_metapath_list: If True, return the list of unique metapaths for all
-        triangles supported over one edge. WARNING: very expensive for large graphs.
-        :type return_metapath_list: bool
+            triangles supported over one edge. WARNING: very expensive for large graphs.
         :param composition_chunk_size: Size of column chunks of sparse adjacency matrix
-        to compute the triangle count.
-        :type composition_chunk_size: int
+            to compute the triangle count.
         :param composition_workers: Number of workers to compute the triangle count.
-        :type composition_workers: int
 
         :return: The results dataframe. Contains the following columns
-        (in addition to h, r, t in df):
-            - 'is_loop' (bool): True if the triple is a loop (h == t)
-            - 'is_symmetric' (bool): True if the triple (t, r, h) is also contained
-                                    in the graph (assuming t and h are different)
-            - 'has_inverse' (bool): True if the graph contains one or more triples
-                                    (t, r', h) with r' =/= r
-            - 'n_inverse_relations' (int): The number of inverse relations r'
-            - 'inverse_edge_types' (list): all relations r2 (including r if the edge
-                                        is symmetric) such that (t, r2, h) is in the
-                                        graph.
-            - 'has_inference' (bool): True if the graph contains one or more triples
-                                    (h, r', t) with r' =/= r
-            - 'n_inference_relations' (int): The number of inference relations r'
-            - 'inference_edge_types' (list): all relations r2 (including r) such that
-                                    (h, r2, t) is in the graph.
-            - 'has_composition' (bool): True if the graph contains one or more triangles
-                                        supported on the edge: (h, r1, x) + (x, r2, t)
-            - 'n_triangles' (int): The number of triangles
-            - 'has_undirected_composition' (bool): True if the graph contains one or more
-                                                   undicreted triangles supported on the
-                                                   edge: (h, r1, x) + (x, r2, t)
-            - 'n_undirected_triangles' (int): The number of undirected triangles
-                                            (considering all edges as bidirectional)
-            - 'metapath_list' (list): the list of unique metapaths "r1-r2"
-                                    for the directed triangles
-        :rtype: pd.DataFrame
+            (in addition to `h`, `r`, `t` in ``df``):
+
+            - **is_loop** (bool): True if the triple is a loop (``h == t``).
+            - **is_symmetric** (bool): True if the triple (t, r, h) is also contained
+              in the graph (assuming t and h are different).
+            - **has_inverse** (bool): True if the graph contains one or more triples
+              (t, r', h) with ``r' != r``.
+            - **n_inverse_relations** (int): The number of inverse relations r'.
+            - **inverse_edge_types** (list): All relations r' (including r if the edge
+              is symmetric) such that (t, r', h) is in the graph.
+            - **has_inference** (bool): True if the graph contains one or more triples
+              (h, r', t) with ``r' != r``.
+            - **n_inference_relations** (int): The number of inference relations r'.
+            - **inference_edge_types** (list): All relations r' (including r) such that
+              (h, r', t) is in the graph.
+            - **has_composition** (bool): True if the graph contains one or more triangles
+              supported on the edge: (h, r1, x) + (x, r2, t).
+            - **n_triangles** (int): The number of triangles.
+            - **has_undirected_composition** (bool): True if the graph contains one or more
+              undirected triangles supported on the edge.
+            - **n_undirected_triangles** (int): The number of undirected triangles
+              (considering all edges as bidirectional).
+            - **metapath_list** (list): The list of unique metapaths "r1-r2"
+              for the directed triangles.
         """
         # symmetry-asymmetry
         # edges with h/t switched
@@ -248,7 +238,6 @@ class TopologyToolbox:
 
         # inverse
         df_inv = df_inv.drop("is_symmetric", axis=1)
-        # TODO: aggregation with list is rather slow
         unique_inv_r_by_ht = df_inv.groupby(["h", "t"], as_index=False).agg(
             inverse_edge_types=("r", list),
         )
@@ -311,7 +300,7 @@ class TopologyToolbox:
             )
             df_res["n_triangles"] = df_res["n_triangles"].fillna(0).astype(int)
         else:
-            counts = composition_count(
+            counts = _composition_count(
                 df_wo_loops,
                 chunk_size=composition_chunk_size,
                 workers=composition_workers,
@@ -326,7 +315,7 @@ class TopologyToolbox:
 
         df_res["has_composition"] = df_res["n_triangles"] > 0
 
-        counts = composition_count(
+        counts = _composition_count(
             df_wo_loops,
             chunk_size=composition_chunk_size,
             workers=composition_workers,
@@ -372,31 +361,31 @@ class TopologyToolbox:
 
         The returned dataframe is indexed over relation type IDs, with columns
         giving the aggregated statistics of triples of the correspondig relation.
-        The name of the columns is of the form: column_name_in_input_df + suffix.
+        The name of the columns is of the form ``column_name_in_input_df + suffix``.
         The aggregation is perfomed by returning:
-            - for numerical metrics: mean, standard deviation and quartiles
-                (suffix = "_mean", "_std", "_quartile1", "_quartile2", "_quartile3");
-            - for boolean metrics: the fraction of triples of the relation type
-                with metric = True (suffix = "_frac");
-            - for string metrics: for each possible label, the fraction of triples
-                of the relation type with that metric value (suffix = "_{label}_frac")
-            - for list metrics: the unique metric values across triples of the relation
-                type (suffix = "_unique").
+
+        - for numerical metrics: mean, standard deviation and quartiles
+          (``suffix`` = "_mean", "_std", "_quartile1", "_quartile2", "_quartile3");
+        - for boolean metrics: the fraction of triples of the relation type
+          with metric = True (``suffix`` = "_frac");
+        - for string metrics: for each possible label, the fraction of triples
+          of the relation type with that metric value (``suffix`` = "_{label}_frac")
+        - for list metrics: the unique metric values across triples of the relation
+          type (``suffix`` = "_unique").
 
         :param edge_topology_df: pd.DataFrame of edge topology metrics.
-        Must contain three columns (h, r, t).
-        :type edge_topology_df: pd.DataFrame
+            Must contain at least three columns `h`, `r`, `t`.
 
         :return: The results dataframe. In addition to the columns with the aggregated
-        metrics by relation type, it also contains columns:
-            - 'num_triples' (int): number of triples for each relation type;
-            - 'frac_triples' (float): fraction of overall triples represented by each
-                relation type;
-            - 'unique_h' (int): number of unique head entities used by triples of each
-                relation type;
-            - 'unique_t' (int): number of unique tail entities used by triples of each
-                relation type;
-        :rtype: pd.DataFrame
+            metrics by relation type, it also contains columns:
+
+            - **num_triples** (int): Number of triples for each relation type.
+            - **frac_triples** (float): Fraction of overall triples represented by each
+              relation type.
+            - **unique_h** (int): Number of unique head entities used by triples of each
+              relation type.
+            - **unique_t** (int): Number of unique tail entities used by triples of each
+              relation type.
         """
         df_by_r = edge_topology_df.groupby("r")
         df_res = df_by_r.agg(num_triples=("r", "count"))
@@ -445,34 +434,34 @@ class TopologyToolbox:
     def jaccard_similarity_relation_sets(self, df: pd.DataFrame) -> pd.DataFrame:
         """
         Compute the similarity between relations defined as the Jaccard Similarity
-        between sets of entities (h and t) for all pairs of relations in the graph.
+        between sets of entities (heads and tails) for all pairs
+        of relations in the graph.
 
         :param df: A graph represented as a pd.DataFrame.
-        Must contain three columns (h, r, t).
-        :type df: pd.DataFrame
+            Must contain at least three columns `h`, `r`, `t`.
 
         :return: The results dataframe. Contains the following columns:
-            - 'r1' (int): Index of the first relation.
-            - 'r2' (int): Index of the second relation.
-            - 'num_triples_both' (int): Number of triples with relation r1/r2.
-            - 'frac_triples_both' (float): Fraction of triples with relation r1/r2.
-            - 'num_entities_both' (int): Number of unique entities (h or t) for triples
-                with relation r1/r2.
-            - 'num_h_r1' (int): Number of unique head entities for relation r1.
-            - 'num_h_r2' (int): Number of unique head entities for relation r2.
-            - 'num_t_r1' (int): Number of unique tail entities for relation r1.
-            - 'num_t_r2' (int): Number of unique tail entities for relation r2.
-            - 'jaccard_head_head (float): Jaccard similarity between the head set of r1
-                and the head set of r2.
-            - 'jaccard_tail_tail (float): Jaccard similarity between the tail set of r1
-                and the tail set of r2.
-            - 'jaccard_head_tail (float): Jaccard similarity between the head set of r1
-                and the tail set of r2.
-            - 'jaccard_tail_head (float): Jaccard similarity between the tail set of r1
-                and the head set of r2.
-            - 'jaccard_both (float): Jaccard similarity between the full entity set
-                of r1 and r2.
-        :rtype: pd.DataFrame
+
+            - **r1** (int): Index of the first relation.
+            - **r2** (int): Index of the second relation.
+            - **num_triples_both** (int): Number of triples with relation r1/r2.
+            - **frac_triples_both** (float): Fraction of triples with relation r1/r2.
+            - **num_entities_both** (int): Number of unique entities (h or t) for triples
+              with relation r1/r2.
+            - **num_h_r1** (int): Number of unique head entities for relation r1.
+            - **num_h_r2** (int): Number of unique head entities for relation r2.
+            - **num_t_r1** (int): Number of unique tail entities for relation r1.
+            - **num_t_r2** (int): Number of unique tail entities for relation r2.
+            - **jaccard_head_head** (float): Jaccard similarity between the head set of r1
+              and the head set of r2.
+            - **jaccard_tail_tail** (float): Jaccard similarity between the tail set of r1
+              and the tail set of r2.
+            - **jaccard_head_tail** (float): Jaccard similarity between the head set of r1
+              and the tail set of r2.
+            - **jaccard_tail_head** (float): Jaccard similarity between the tail set of r1
+              and the head set of r2.
+            - **jaccard_both** (float): Jaccard similarity between the full entity set
+              of r1 and r2.
         """
         ent_unique = df.groupby("r", as_index=False).agg(
             num_triples=("r", "count"), head=("h", "unique"), tail=("t", "unique")
@@ -545,18 +534,19 @@ class TopologyToolbox:
         InGram: Inductive Knowledge Graph Embedding via Relation Graphs,
         https://arxiv.org/abs/2305.19987.
 
+        Only the pairs of relations witn ``affinity > 0`` are shown in the
+        returned dataframe.
+
         :param df: A graph represented as a pd.DataFrame.
-        Must contain three columns (h, r, t).
-        :type df: pd.DataFrame
-        :param min_max_norm: min-max normalization of edge weights, defaults to False
-        :type min_max_norm: bool, optional
+            Must contain at least three columns `h`, `r`, `t`.
+        :param min_max_norm: min-max normalization of edge weights. Defaults to False.
 
         :return: The results dataframe. Contains the following columns:
-            - 'h_relation' (int): Index of the head relation.
-            - 't_relation' (int): Index of the tail relation.
-            - 'edge_weight' (float): Weight for the affinity between
-                the head and the tail relation.
-        :rtype: pd.DataFrame
+
+            - **h_relation** (int): Index of the head relation.
+            - **t_relation** (int): Index of the tail relation.
+            - **edge_weight** (float): Weight for the affinity between
+              the head and the tail relation.
         """
         n_entities = df[["h", "t"]].max().max() + 1
         n_rels = df.r.max() + 1
@@ -597,59 +587,52 @@ def _jaccard_similarity(
     entities_1: NDArray[np.int32], entities_2: NDArray[np.int32]
 ) -> float:
     """
-    Define Jaccard Similarity function for two sets of entities.
+    Jaccard Similarity function for two sets of entities.
 
     :param entities_1: the array of IDs for the first set of entities.
-    :type entities_1: np.array
     :param entities_2: the array of IDs for the second set of entities.
-    :type entities_1: np.array
 
     :return: Jaccard Similarity score for two sets of entities.
-    :rtype: float
     """
     intersection = len(np.intersect1d(entities_1, entities_2))
     union = len(entities_1) + len(entities_2) - intersection
     return float(intersection / union)
 
 
-def _composition_count_worker(
-    adj_csr: csr_array, adj_csc: csc_array, tail_shift: int = 0
-) -> pd.DataFrame:
-    adj_2hop = adj_csr @ adj_csc
-    adj_composition = (adj_2hop.tocsc() * (adj_csc > 0)).tocoo()
-    df_composition = pd.DataFrame(
-        dict(
-            h=adj_composition.row,
-            t=adj_composition.col + tail_shift,
-            n_triangles=adj_composition.data,
-        )
-    )
-    return df_composition
-
-
-def composition_count(
+def _composition_count(
     df: pd.DataFrame, chunk_size: int, workers: int, directed: bool = True
 ) -> pd.DataFrame:
     """A helper function to compute the composition count of a graph.
 
     :param df: A graph represented as a pd.DataFrame. Must contain the columns
-    `h` and `t`. No self-loops should be present in the graph.
-    :type df: pd.DataFrame
+        `h` and `t`. No self-loops should be present in the graph.
     :param chunk_size: Size of chunks of columns of the adjacency matrix to be
-    processed together
-    :type chunk_size: int
+        processed together.
     :param workers: Number of workers processing chunks concurrently
-    :type workers: int
     :param directed: Boolean flag. If false, bidirectional edges are considered for
-    triangles by adding the adjacency matrix and its transposed. Defaults to True
-    :type directed: bool
+        triangles by adding the adjacency matrix and its transposed. Defaults to True.
 
     :return: The results dataframe. Contains the following columns:
-        - 'h' (int): Index of the head entity.
-        - 't' (int): Index of the tail entity.
-        - 'n_triangles' (int): Number of compositions for the (h, t) edge.
-    :rtype: pd.DataFrame
+
+        - **h** (int): Index of the head entity.
+        - **t** (int): Index of the tail entity.
+        - **n_triangles** (int): Number of compositions for the (h, t) edge.
     """
+
+    def _composition_count_worker(
+        adj_csr: csr_array, adj_csc: csc_array, tail_shift: int = 0
+    ) -> pd.DataFrame:
+        adj_2hop = adj_csr @ adj_csc
+        adj_composition = (adj_2hop.tocsc() * (adj_csc > 0)).tocoo()
+        df_composition = pd.DataFrame(
+            dict(
+                h=adj_composition.row,
+                t=adj_composition.col + tail_shift,
+                n_triangles=adj_composition.data,
+            )
+        )
+        return df_composition
+
     adj = coo_array(
         (np.ones(len(df)), (df.h, df.t)),
         shape=[max(df.max()) + 1, max(df.max()) + 1],
