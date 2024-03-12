@@ -9,6 +9,10 @@ import pandas as pd
 from numpy.typing import NDArray
 from scipy.sparse import coo_array, csc_array, csr_array
 
+"""
+Topology toolbox main functionalities.
+"""
+
 
 class TopologyToolbox:
     """
