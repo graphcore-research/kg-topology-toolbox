@@ -30,8 +30,6 @@ jobs:
       - name: Run CI
         run: ./dev ci
         shell: bash
-      - name: Run pytest
-        run: pytest --cov topology_toolbox tests
       # - name: Publish docs
       #   if: ${{github.ref == 'refs/heads/main'}}
       #   uses: Cecilapp/GitHub-Pages-deploy@3.2.1
