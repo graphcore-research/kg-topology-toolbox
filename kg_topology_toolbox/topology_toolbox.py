@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 # Copyright (c) 2023 Graphcore Ltd. All rights reserved.
 
+"""
+Topology toolbox main functionalities.
+"""
+
 from collections.abc import Iterable
 from multiprocessing import Pool
 
@@ -8,10 +12,6 @@ import numpy as np
 import pandas as pd
 from numpy.typing import NDArray
 from scipy.sparse import coo_array, csc_array, csr_array
-
-"""
-Topology toolbox main functionalities.
-"""
 
 
 class TopologyToolbox:
