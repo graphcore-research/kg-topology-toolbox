@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>kg_topology_toolbox.topology_toolbox &mdash; KG Topology Toolbox  documentation</title>
+  <title>kg_topology_toolbox.utils &mdash; KG Topology Toolbox  documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=eafc0fe6" />
@@ -22,8 +22,8 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="kg_topology_toolbox.topology_toolbox.TopologyToolbox" href="kg_topology_toolbox.topology_toolbox.TopologyToolbox.html" />
-    <link rel="prev" title="API Reference" href="../API_reference.html" /> 
+    <link rel="next" title="kg_topology_toolbox.utils.composition_count" href="kg_topology_toolbox.utils.composition_count.html" />
+    <link rel="prev" title="kg_topology_toolbox.topology_toolbox.TopologyToolbox" href="kg_topology_toolbox.topology_toolbox.TopologyToolbox.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -49,11 +49,12 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../user_guide.html">User guide</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../API_reference.html">API reference</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">kg_topology_toolbox.topology_toolbox</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="kg_topology_toolbox.topology_toolbox.TopologyToolbox.html">kg_topology_toolbox.topology_toolbox.TopologyToolbox</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kg_topology_toolbox.topology_toolbox.html">kg_topology_toolbox.topology_toolbox</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">kg_topology_toolbox.utils</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="kg_topology_toolbox.utils.composition_count.html">kg_topology_toolbox.utils.composition_count</a></li>
+<li class="toctree-l3"><a class="reference internal" href="kg_topology_toolbox.utils.jaccard_similarity.html">kg_topology_toolbox.utils.jaccard_similarity</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="kg_topology_toolbox.utils.html">kg_topology_toolbox.utils</a></li>
 </ul>
 </li>
 </ul>
@@ -73,9 +74,9 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../API_reference.html">API Reference</a></li>
-      <li class="breadcrumb-item active">kg_topology_toolbox.topology_toolbox</li>
+      <li class="breadcrumb-item active">kg_topology_toolbox.utils</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../_sources/generated/kg_topology_toolbox.topology_toolbox.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/generated/kg_topology_toolbox.utils.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -83,14 +84,17 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="module-kg_topology_toolbox.topology_toolbox">
-<span id="kg-topology-toolbox-topology-toolbox"></span><h1>kg_topology_toolbox.topology_toolbox<a class="headerlink" href="#module-kg_topology_toolbox.topology_toolbox" title="Permalink to this heading"></a></h1>
-<p>Topology toolbox main functionalities</p>
-<p class="rubric">Classes</p>
+  <section id="module-kg_topology_toolbox.utils">
+<span id="kg-topology-toolbox-utils"></span><h1>kg_topology_toolbox.utils<a class="headerlink" href="#module-kg_topology_toolbox.utils" title="Permalink to this heading"></a></h1>
+<p>Utility functions</p>
+<p class="rubric">Functions</p>
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="kg_topology_toolbox.topology_toolbox.TopologyToolbox.html#kg_topology_toolbox.topology_toolbox.TopologyToolbox" title="kg_topology_toolbox.topology_toolbox.TopologyToolbox"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TopologyToolbox</span></code></a>()</p></td>
-<td><p>Toolbox class to compute various Knowledge Graph topology statistics.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="kg_topology_toolbox.utils.composition_count.html#kg_topology_toolbox.utils.composition_count" title="kg_topology_toolbox.utils.composition_count"><code class="xref py py-obj docutils literal notranslate"><span class="pre">composition_count</span></code></a>(df, chunk_size, workers[, ...])</p></td>
+<td><p>A helper function to compute the composition count of a graph.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="kg_topology_toolbox.utils.jaccard_similarity.html#kg_topology_toolbox.utils.jaccard_similarity" title="kg_topology_toolbox.utils.jaccard_similarity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">jaccard_similarity</span></code></a>(entities_1, entities_2)</p></td>
+<td><p>Jaccard Similarity function for two sets of entities.</p></td>
 </tr>
 </tbody>
 </table>
@@ -100,8 +104,8 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../API_reference.html" class="btn btn-neutral float-left" title="API Reference" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="kg_topology_toolbox.topology_toolbox.TopologyToolbox.html" class="btn btn-neutral float-right" title="kg_topology_toolbox.topology_toolbox.TopologyToolbox" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="kg_topology_toolbox.topology_toolbox.TopologyToolbox.html" class="btn btn-neutral float-left" title="kg_topology_toolbox.topology_toolbox.TopologyToolbox" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="kg_topology_toolbox.utils.composition_count.html" class="btn btn-neutral float-right" title="kg_topology_toolbox.utils.composition_count" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

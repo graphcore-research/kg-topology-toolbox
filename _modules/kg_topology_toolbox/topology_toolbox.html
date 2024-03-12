@@ -77,16 +77,16 @@
 <span class="c1"># Copyright (c) 2023 Graphcore Ltd. All rights reserved.</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Topology toolbox main functionalities.</span>
+<span class="sd">Topology toolbox main functionalities</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Iterable</span>
-<span class="kn">from</span> <span class="nn">multiprocessing</span> <span class="kn">import</span> <span class="n">Pool</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">from</span> <span class="nn">numpy.typing</span> <span class="kn">import</span> <span class="n">NDArray</span>
-<span class="kn">from</span> <span class="nn">scipy.sparse</span> <span class="kn">import</span> <span class="n">coo_array</span><span class="p">,</span> <span class="n">csc_array</span><span class="p">,</span> <span class="n">csr_array</span>
+<span class="kn">from</span> <span class="nn">scipy.sparse</span> <span class="kn">import</span> <span class="n">coo_array</span>
+
+<span class="kn">from</span> <span class="nn">kg_topology_toolbox.utils</span> <span class="kn">import</span> <span class="n">composition_count</span><span class="p">,</span> <span class="n">jaccard_similarity</span>
 
 
 <div class="viewcode-block" id="TopologyToolbox"><a class="viewcode-back" href="../../generated/kg_topology_toolbox.topology_toolbox.TopologyToolbox.html#kg_topology_toolbox.topology_toolbox.TopologyToolbox">[docs]</a><span class="k">class</span> <span class="nc">TopologyToolbox</span><span class="p">:</span>
@@ -379,7 +379,7 @@
             <span class="p">)</span>
             <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;n_triangles&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;n_triangles&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">counts</span> <span class="o">=</span> <span class="n">_composition_count</span><span class="p">(</span>
+            <span class="n">counts</span> <span class="o">=</span> <span class="n">composition_count</span><span class="p">(</span>
                 <span class="n">df_wo_loops</span><span class="p">,</span>
                 <span class="n">chunk_size</span><span class="o">=</span><span class="n">composition_chunk_size</span><span class="p">,</span>
                 <span class="n">workers</span><span class="o">=</span><span class="n">composition_workers</span><span class="p">,</span>
@@ -394,7 +394,7 @@
 
         <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;has_composition&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;n_triangles&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span>
 
-        <span class="n">counts</span> <span class="o">=</span> <span class="n">_composition_count</span><span class="p">(</span>
+        <span class="n">counts</span> <span class="o">=</span> <span class="n">composition_count</span><span class="p">(</span>
             <span class="n">df_wo_loops</span><span class="p">,</span>
             <span class="n">chunk_size</span><span class="o">=</span><span class="n">composition_chunk_size</span><span class="p">,</span>
             <span class="n">workers</span><span class="o">=</span><span class="n">composition_workers</span><span class="p">,</span>
@@ -591,14 +591,14 @@
         <span class="k">for</span> <span class="n">r1_ent</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;head&quot;</span><span class="p">,</span> <span class="s2">&quot;tail&quot;</span><span class="p">]:</span>
             <span class="k">for</span> <span class="n">r2_ent</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;head&quot;</span><span class="p">,</span> <span class="s2">&quot;tail&quot;</span><span class="p">]:</span>
                 <span class="n">df_res</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;jaccard_</span><span class="si">{</span><span class="n">r1_ent</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">r2_ent</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
-                    <span class="n">_jaccard_similarity</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+                    <span class="n">jaccard_similarity</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
                     <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
                         <span class="n">ent_unique</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df_res</span><span class="o">.</span><span class="n">r1</span><span class="p">,</span> <span class="n">r1_ent</span><span class="p">],</span>
                         <span class="n">ent_unique</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df_res</span><span class="o">.</span><span class="n">r2</span><span class="p">,</span> <span class="n">r2_ent</span><span class="p">],</span>
                     <span class="p">)</span>
                 <span class="p">]</span>
         <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;jaccard_both&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="n">_jaccard_similarity</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+            <span class="n">jaccard_similarity</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
                 <span class="n">ent_unique</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df_res</span><span class="o">.</span><span class="n">r1</span><span class="p">,</span> <span class="s2">&quot;both&quot;</span><span class="p">],</span> <span class="n">ent_unique</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df_res</span><span class="o">.</span><span class="n">r2</span><span class="p">,</span> <span class="s2">&quot;both&quot;</span><span class="p">]</span>
             <span class="p">)</span>
@@ -660,105 +660,6 @@
                 <span class="s2">&quot;edge_weight&quot;</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">h_rels</span><span class="p">,</span> <span class="n">t_rels</span><span class="p">],</span>
             <span class="p">}</span>
         <span class="p">)</span></div></div>
-
-
-<span class="k">def</span> <span class="nf">_jaccard_similarity</span><span class="p">(</span>
-    <span class="n">entities_1</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">],</span> <span class="n">entities_2</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">]</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Jaccard Similarity function for two sets of entities.</span>
-
-<span class="sd">    :param entities_1: the array of IDs for the first set of entities.</span>
-<span class="sd">    :param entities_2: the array of IDs for the second set of entities.</span>
-
-<span class="sd">    :return: Jaccard Similarity score for two sets of entities.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">intersection</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">intersect1d</span><span class="p">(</span><span class="n">entities_1</span><span class="p">,</span> <span class="n">entities_2</span><span class="p">))</span>
-    <span class="n">union</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">entities_1</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">entities_2</span><span class="p">)</span> <span class="o">-</span> <span class="n">intersection</span>
-    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">intersection</span> <span class="o">/</span> <span class="n">union</span><span class="p">)</span>
-
-
-<span class="k">def</span> <span class="nf">_composition_count</span><span class="p">(</span>
-    <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">chunk_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">workers</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">directed</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A helper function to compute the composition count of a graph.</span>
-
-<span class="sd">    :param df: A graph represented as a pd.DataFrame. Must contain the columns</span>
-<span class="sd">        `h` and `t`. No self-loops should be present in the graph.</span>
-<span class="sd">    :param chunk_size: Size of chunks of columns of the adjacency matrix to be</span>
-<span class="sd">        processed together.</span>
-<span class="sd">    :param workers: Number of workers processing chunks concurrently</span>
-<span class="sd">    :param directed: Boolean flag. If false, bidirectional edges are considered for</span>
-<span class="sd">        triangles by adding the adjacency matrix and its transposed. Defaults to True.</span>
-
-<span class="sd">    :return: The results dataframe. Contains the following columns:</span>
-
-<span class="sd">        - **h** (int): Index of the head entity.</span>
-<span class="sd">        - **t** (int): Index of the tail entity.</span>
-<span class="sd">        - **n_triangles** (int): Number of compositions for the (h, t) edge.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="nf">_composition_count_worker</span><span class="p">(</span>
-        <span class="n">adj_csr</span><span class="p">:</span> <span class="n">csr_array</span><span class="p">,</span> <span class="n">adj_csc</span><span class="p">:</span> <span class="n">csc_array</span><span class="p">,</span> <span class="n">tail_shift</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-        <span class="n">adj_2hop</span> <span class="o">=</span> <span class="n">adj_csr</span> <span class="o">@</span> <span class="n">adj_csc</span>
-        <span class="n">adj_composition</span> <span class="o">=</span> <span class="p">(</span><span class="n">adj_2hop</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span> <span class="o">*</span> <span class="p">(</span><span class="n">adj_csc</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">tocoo</span><span class="p">()</span>
-        <span class="n">df_composition</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
-            <span class="nb">dict</span><span class="p">(</span>
-                <span class="n">h</span><span class="o">=</span><span class="n">adj_composition</span><span class="o">.</span><span class="n">row</span><span class="p">,</span>
-                <span class="n">t</span><span class="o">=</span><span class="n">adj_composition</span><span class="o">.</span><span class="n">col</span> <span class="o">+</span> <span class="n">tail_shift</span><span class="p">,</span>
-                <span class="n">n_triangles</span><span class="o">=</span><span class="n">adj_composition</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
-            <span class="p">)</span>
-        <span class="p">)</span>
-        <span class="k">return</span> <span class="n">df_composition</span>
-
-    <span class="n">adj</span> <span class="o">=</span> <span class="n">coo_array</span><span class="p">(</span>
-        <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)),</span> <span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">h</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">t</span><span class="p">)),</span>
-        <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="nb">max</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">max</span><span class="p">())</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">max</span><span class="p">())</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span>
-    <span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint16</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">directed</span><span class="p">:</span>
-        <span class="n">adj</span> <span class="o">=</span> <span class="n">adj</span> <span class="o">+</span> <span class="n">adj</span><span class="o">.</span><span class="n">T</span>
-    <span class="n">n_cols</span> <span class="o">=</span> <span class="n">adj</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-    <span class="n">adj_csr</span> <span class="o">=</span> <span class="n">adj</span><span class="o">.</span><span class="n">tocsr</span><span class="p">()</span>
-    <span class="n">adj_csc</span> <span class="o">=</span> <span class="n">adj</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span>
-    <span class="n">adj_csc_slices</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="n">i</span><span class="p">:</span> <span class="n">adj_csc</span><span class="p">[:,</span> <span class="n">i</span> <span class="o">*</span> <span class="n">chunk_size</span> <span class="p">:</span> <span class="nb">min</span><span class="p">((</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">chunk_size</span><span class="p">,</span> <span class="n">n_cols</span><span class="p">)]</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">n_cols</span> <span class="o">/</span> <span class="n">chunk_size</span><span class="p">)))</span>
-    <span class="p">}</span>
-
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">adj_csc_slices</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">workers</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="k">with</span> <span class="n">Pool</span><span class="p">(</span><span class="n">workers</span><span class="p">)</span> <span class="k">as</span> <span class="n">pool</span><span class="p">:</span>
-            <span class="n">df_composition_list</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">starmap</span><span class="p">(</span>
-                <span class="n">_composition_count_worker</span><span class="p">,</span>
-                <span class="p">(</span>
-                    <span class="p">(</span><span class="n">adj_csr</span><span class="p">,</span> <span class="n">adj_csc_slice</span><span class="p">,</span> <span class="n">i</span> <span class="o">*</span> <span class="n">chunk_size</span><span class="p">)</span>
-                    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">adj_csc_slice</span> <span class="ow">in</span> <span class="n">adj_csc_slices</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-                <span class="p">),</span>
-            <span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">df_composition_list</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="n">_composition_count_worker</span><span class="p">(</span><span class="n">adj_csr</span><span class="p">,</span> <span class="n">adj_csc_slice</span><span class="p">,</span> <span class="n">i</span> <span class="o">*</span> <span class="n">chunk_size</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">adj_csc_slice</span> <span class="ow">in</span> <span class="n">adj_csc_slices</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-        <span class="p">]</span>
-
-    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">df_composition_list</span><span class="p">)</span>
-
-
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
-    <span class="n">top_toolbox</span> <span class="o">=</span> <span class="n">TopologyToolbox</span><span class="p">()</span>
-
-    <span class="c1"># generate a random dataframe with three columns (h, r, t) that</span>
-    <span class="c1"># use integers as values</span>
-    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">3</span><span class="p">)),</span>
-        <span class="n">columns</span><span class="o">=</span><span class="p">[</span>
-            <span class="s2">&quot;h&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;r&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;t&quot;</span><span class="p">,</span>
-        <span class="p">],</span>
-    <span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">top_toolbox</span><span class="o">.</span><span class="n">edge_degree_cardinality_summary</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="p">))</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">top_toolbox</span><span class="o">.</span><span class="n">edge_pattern_summary</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="p">))</span>
 </pre></div>
 
            </div>

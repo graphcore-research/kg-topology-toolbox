@@ -1,0 +1,6 @@
+kg\_topology\_toolbox.utils.composition\_count
+==============================================
+
+.. currentmodule:: kg_topology_toolbox.utils
+
+.. autofunction:: composition_count
