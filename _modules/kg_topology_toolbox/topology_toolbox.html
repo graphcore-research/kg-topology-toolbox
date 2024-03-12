@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>kg_topology_toolbox.topology_toolbox &mdash; KG Topology Toolbox  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js?v=b3ba4146"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            KG Topology Toolbox
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../user_guide.html">User guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../API_reference.html">API reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">KG Topology Toolbox</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">kg_topology_toolbox.topology_toolbox</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for kg_topology_toolbox.topology_toolbox</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1"># Copyright (c) 2023 Graphcore Ltd. All rights reserved.</span>
+
+<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Iterable</span>
+<span class="kn">from</span> <span class="nn">multiprocessing</span> <span class="kn">import</span> <span class="n">Pool</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">numpy.typing</span> <span class="kn">import</span> <span class="n">NDArray</span>
+<span class="kn">from</span> <span class="nn">scipy.sparse</span> <span class="kn">import</span> <span class="n">coo_array</span><span class="p">,</span> <span class="n">csc_array</span><span class="p">,</span> <span class="n">csr_array</span>
+
+
+<div class="viewcode-block" id="TopologyToolbox"><a class="viewcode-back" href="../../generated/kg_topology_toolbox.topology_toolbox.TopologyToolbox.html#kg_topology_toolbox.topology_toolbox.TopologyToolbox">[docs]</a><span class="k">class</span> <span class="nc">TopologyToolbox</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Toolbox class to compute various Knowledge Graph topology statistics.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TopologyToolbox.node_degree_summary"><a class="viewcode-back" href="../../generated/kg_topology_toolbox.topology_toolbox.TopologyToolbox.html#kg_topology_toolbox.topology_toolbox.TopologyToolbox.node_degree_summary">[docs]</a>    <span class="k">def</span> <span class="nf">node_degree_summary</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">return_relation_list</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        For each entity, this function computes the number of edges having it as a head</span>
+<span class="sd">        (head-degree, or out-degree), as a tail (tail-degree, or in-degree)</span>
+<span class="sd">        or one of the two (total-degree) in the Knowledge Graph.</span>
+<span class="sd">        The in-going and out-going relation types are also identified.</span>
+
+<span class="sd">        The output dataframe is indexed on the IDs of the graph entities.</span>
+
+<span class="sd">        :param df: A graph represented as a pd.DataFrame.</span>
+<span class="sd">            Must contain at least three columns `h`, `r`, `t`.</span>
+<span class="sd">        :param return_relation_list: If True, return the list of unique relations going</span>
+<span class="sd">            in/out of an entity. WARNING: expensive for large graphs.</span>
+
+<span class="sd">        :return: The results dataframe, indexed over the same entity ID `e` used in df,</span>
+<span class="sd">            with columns:</span>
+
+<span class="sd">            - **h_degree** (int): Number of triples with head entity `e`.</span>
+<span class="sd">            - **t_degree** (int): Number of triples with tail entity `e`.</span>
+<span class="sd">            - **tot_degree** (int): Number of triples with head entity `e` or tail entity `e`.</span>
+<span class="sd">            - **h_unique_rel** (int): Number of distinct relation types</span>
+<span class="sd">              among edges with head entity `e`.</span>
+<span class="sd">            - **h_rel_list** (list): List of unique relation types among edges</span>
+<span class="sd">              with head entity `e`.</span>
+<span class="sd">            - **t_unique_rel** (int): Number of distinct relation types</span>
+<span class="sd">              among edges with tail entity `e`.</span>
+<span class="sd">            - **t_rel_list** (list): List of unique relation types among edges</span>
+<span class="sd">              with tail entity `e`.</span>
+<span class="sd">            - **n_loops** (int): number of loops around entity `e`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">n_entity</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">h_rel_list</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;h_rel_list&quot;</span><span class="p">:</span> <span class="s2">&quot;unique&quot;</span><span class="p">}</span> <span class="k">if</span> <span class="n">return_relation_list</span> <span class="k">else</span> <span class="p">{}</span>
+        <span class="n">t_rel_list</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;t_rel_list&quot;</span><span class="p">:</span> <span class="s2">&quot;unique&quot;</span><span class="p">}</span> <span class="k">if</span> <span class="n">return_relation_list</span> <span class="k">else</span> <span class="p">{}</span>
+        <span class="n">nodes</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+            <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;h&quot;</span><span class="p">)[</span><span class="s2">&quot;r&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span>
+                <span class="n">h_degree</span><span class="o">=</span><span class="s2">&quot;count&quot;</span><span class="p">,</span> <span class="n">h_unique_rel</span><span class="o">=</span><span class="s2">&quot;nunique&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">h_rel_list</span>
+            <span class="p">),</span>
+            <span class="n">index</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_entity</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="n">nodes</span> <span class="o">=</span> <span class="n">nodes</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
+            <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;t&quot;</span><span class="p">)[</span><span class="s2">&quot;r&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span>
+                <span class="n">t_degree</span><span class="o">=</span><span class="s2">&quot;count&quot;</span><span class="p">,</span> <span class="n">t_unique_rel</span><span class="o">=</span><span class="s2">&quot;nunique&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">t_rel_list</span>
+            <span class="p">),</span>
+            <span class="n">left_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">right_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">nodes</span> <span class="o">=</span> <span class="n">nodes</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
+            <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">h</span> <span class="o">==</span> <span class="n">df</span><span class="o">.</span><span class="n">t</span><span class="p">]</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;h&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">n_loops</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">)),</span>
+            <span class="n">left_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">right_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">nodes</span><span class="p">[[</span><span class="s2">&quot;h_degree&quot;</span><span class="p">,</span> <span class="s2">&quot;h_unique_rel&quot;</span><span class="p">,</span> <span class="s2">&quot;t_degree&quot;</span><span class="p">,</span> <span class="s2">&quot;t_unique_rel&quot;</span><span class="p">,</span> <span class="s2">&quot;n_loops&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">nodes</span><span class="p">[[</span><span class="s2">&quot;h_degree&quot;</span><span class="p">,</span> <span class="s2">&quot;h_unique_rel&quot;</span><span class="p">,</span> <span class="s2">&quot;t_degree&quot;</span><span class="p">,</span> <span class="s2">&quot;t_unique_rel&quot;</span><span class="p">,</span> <span class="s2">&quot;n_loops&quot;</span><span class="p">]]</span>
+            <span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">nodes</span><span class="p">[</span><span class="s2">&quot;tot_degree&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">nodes</span><span class="p">[</span><span class="s2">&quot;h_degree&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">nodes</span><span class="p">[</span><span class="s2">&quot;t_degree&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">nodes</span><span class="p">[</span><span class="s2">&quot;n_loops&quot;</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">nodes</span><span class="p">[</span>
+            <span class="p">[</span><span class="s2">&quot;h_degree&quot;</span><span class="p">,</span> <span class="s2">&quot;t_degree&quot;</span><span class="p">,</span> <span class="s2">&quot;tot_degree&quot;</span><span class="p">,</span> <span class="s2">&quot;h_unique_rel&quot;</span><span class="p">]</span>
+            <span class="o">+</span> <span class="p">([</span><span class="s2">&quot;h_rel_list&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="n">return_relation_list</span> <span class="k">else</span> <span class="p">[])</span>
+            <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;t_unique_rel&quot;</span><span class="p">]</span>
+            <span class="o">+</span> <span class="p">([</span><span class="s2">&quot;t_rel_list&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="n">return_relation_list</span> <span class="k">else</span> <span class="p">[])</span>
+            <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;n_loops&quot;</span><span class="p">]</span>
+        <span class="p">]</span></div>
+
+<div class="viewcode-block" id="TopologyToolbox.edge_degree_cardinality_summary"><a class="viewcode-back" href="../../generated/kg_topology_toolbox.topology_toolbox.TopologyToolbox.html#kg_topology_toolbox.topology_toolbox.TopologyToolbox.edge_degree_cardinality_summary">[docs]</a>    <span class="k">def</span> <span class="nf">edge_degree_cardinality_summary</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        For each triple, this function computes the number of edges with the same head</span>
+<span class="sd">        (head-degree, or out-degree), the same tail (tail-degree, or in-degree)</span>
+<span class="sd">        or one of the two (total-degree) in the Knowledge Graph.</span>
+<span class="sd">        Based on entity degrees, each triple is classified as either one-to-one</span>
+<span class="sd">        (out-degree=in-degree=1), one-to-many (out-degree&gt;1, in-degree=1),</span>
+<span class="sd">        many-to-one(out-degree=1, in-degree&gt;1) or many-to-many</span>
+<span class="sd">        (in-degree&gt;1, out-degree&gt;1).</span>
+
+<span class="sd">        The output dataframe maintains the same indexing and ordering of triples</span>
+<span class="sd">        as the input one.</span>
+
+<span class="sd">        :param df: A graph represented as a pd.DataFrame.</span>
+<span class="sd">            Must contain at least three columns `h`, `r`, `t`.</span>
+
+<span class="sd">        :return: The results dataframe. Contains the following columns</span>
+<span class="sd">            (in addition to `h`, `r`, `t` in ``df``):</span>
+
+<span class="sd">            - **h_unique_rel** (int): Number of distinct relation types</span>
+<span class="sd">              among edges with head entity h.</span>
+<span class="sd">            - **h_degree** (int): Number of triples with head entity h.</span>
+<span class="sd">            - **h_degree_same_rel** (int): Number of triples with head entity h</span>
+<span class="sd">              and relation type r.</span>
+<span class="sd">            - **t_unique_rel** (int): Number of distinct relation types</span>
+<span class="sd">              among edges with tail entity t.</span>
+<span class="sd">            - **t_degree** (int): Number of triples with tail entity t.</span>
+<span class="sd">            - **t_degree_same_rel** (int): Number of triples with tail entity t</span>
+<span class="sd">              and relation type r.</span>
+<span class="sd">            - **tot_degree** (int): Number of triples with head entity h or</span>
+<span class="sd">              tail entity t.</span>
+<span class="sd">            - **tot_degree_same_rel** (int): Number of triples with head entity h or</span>
+<span class="sd">              tail entity t, and relation type r.</span>
+<span class="sd">            - **triple_cardinality** (int): cardinality type of the edge.</span>
+<span class="sd">            - **triple_cardinality_same_rel** (int): cardinality type of the edge in</span>
+<span class="sd">              the subgraph of edges with relation type r.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">gr_by_h_count</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="n">as_index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span>
+            <span class="n">h_unique_rel</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="s2">&quot;nunique&quot;</span><span class="p">),</span> <span class="n">h_degree</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">gr_by_hr_count</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">],</span> <span class="n">as_index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span>
+            <span class="n">h_degree_same_rel</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">gr_by_t_count</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="n">as_index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span>
+            <span class="n">t_unique_rel</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="s2">&quot;nunique&quot;</span><span class="p">),</span> <span class="n">t_degree</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">gr_by_rt_count</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">],</span> <span class="n">as_index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span>
+            <span class="n">t_degree_same_rel</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="n">df_res</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">gr_by_h_count</span><span class="p">,</span> <span class="n">left_on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;h&quot;</span><span class="p">],</span> <span class="n">right_on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;h&quot;</span><span class="p">],</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">)</span>
+        <span class="n">df_res</span> <span class="o">=</span> <span class="n">df_res</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
+            <span class="n">gr_by_hr_count</span><span class="p">,</span> <span class="n">left_on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">],</span> <span class="n">right_on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">],</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span>
+        <span class="p">)</span>
+        <span class="n">df_res</span> <span class="o">=</span> <span class="n">df_res</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">gr_by_t_count</span><span class="p">,</span> <span class="n">left_on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;t&quot;</span><span class="p">],</span> <span class="n">right_on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;t&quot;</span><span class="p">],</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">)</span>
+        <span class="n">df_res</span> <span class="o">=</span> <span class="n">df_res</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
+            <span class="n">gr_by_rt_count</span><span class="p">,</span> <span class="n">left_on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">],</span> <span class="n">right_on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">],</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span>
+        <span class="p">)</span>
+        <span class="c1"># compute number of parallel edges to avoid double-counting them</span>
+        <span class="c1"># in total degree</span>
+        <span class="n">num_parallel</span> <span class="o">=</span> <span class="n">df_res</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
+            <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">],</span> <span class="n">as_index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">n_parallel</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">)),</span>
+            <span class="n">left_on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">],</span>
+            <span class="n">right_on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">],</span>
+            <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;tot_degree&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">df_res</span><span class="o">.</span><span class="n">h_degree</span> <span class="o">+</span> <span class="n">df_res</span><span class="o">.</span><span class="n">t_degree</span> <span class="o">-</span> <span class="n">num_parallel</span><span class="o">.</span><span class="n">n_parallel</span>
+        <span class="p">)</span>
+        <span class="c1"># when restricting to the relation type, there is only one edge</span>
+        <span class="c1"># (the edge itself) that is double-counted</span>
+        <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;tot_degree_same_rel&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">df_res</span><span class="o">.</span><span class="n">h_degree_same_rel</span> <span class="o">+</span> <span class="n">df_res</span><span class="o">.</span><span class="n">t_degree_same_rel</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="p">)</span>
+
+        <span class="c1"># check if the values in the pair (h_degree, t_degree) are =1 or &gt;1</span>
+        <span class="c1"># to determine the edge cardinality</span>
+        <span class="n">legend</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="mi">0</span><span class="p">:</span> <span class="s2">&quot;M:M&quot;</span><span class="p">,</span>
+            <span class="mi">1</span><span class="p">:</span> <span class="s2">&quot;1:M&quot;</span><span class="p">,</span>
+            <span class="mi">2</span><span class="p">:</span> <span class="s2">&quot;M:1&quot;</span><span class="p">,</span>
+            <span class="mi">3</span><span class="p">:</span> <span class="s2">&quot;1:1&quot;</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">for</span> <span class="n">suffix</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;_same_rel&quot;</span><span class="p">]:</span>
+            <span class="n">edge_type</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;h_degree&quot;</span> <span class="o">+</span> <span class="n">suffix</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span>
+                <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;t_degree&quot;</span> <span class="o">+</span> <span class="n">suffix</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span>
+            <span class="p">)</span>
+            <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;triple_cardinality&quot;</span> <span class="o">+</span> <span class="n">suffix</span><span class="p">]</span> <span class="o">=</span> <span class="n">edge_type</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">legend</span><span class="p">[</span><span class="n">x</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">df_res</span></div>
+
+<div class="viewcode-block" id="TopologyToolbox.edge_pattern_summary"><a class="viewcode-back" href="../../generated/kg_topology_toolbox.topology_toolbox.TopologyToolbox.html#kg_topology_toolbox.topology_toolbox.TopologyToolbox.edge_pattern_summary">[docs]</a>    <span class="k">def</span> <span class="nf">edge_pattern_summary</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+        <span class="n">return_metapath_list</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">composition_chunk_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="o">**</span><span class="mi">8</span><span class="p">,</span>
+        <span class="n">composition_workers</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">32</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This function analyses the structural properties of each edge in the graph:</span>
+<span class="sd">        symmetry, presence of inverse/inference(=parallel) edges and</span>
+<span class="sd">        triangles supported on the edge.</span>
+
+<span class="sd">        The output dataframe maintains the same indexing and ordering of triples</span>
+<span class="sd">        as the input one.</span>
+
+<span class="sd">        :param df: A graph represented as a pd.DataFrame.</span>
+<span class="sd">            Must contain at least three columns `h`, `r`, `t`.</span>
+<span class="sd">        :param return_metapath_list: If True, return the list of unique metapaths for all</span>
+<span class="sd">            triangles supported over one edge. WARNING: very expensive for large graphs.</span>
+<span class="sd">        :param composition_chunk_size: Size of column chunks of sparse adjacency matrix</span>
+<span class="sd">            to compute the triangle count.</span>
+<span class="sd">        :param composition_workers: Number of workers to compute the triangle count.</span>
+
+<span class="sd">        :return: The results dataframe. Contains the following columns</span>
+<span class="sd">            (in addition to `h`, `r`, `t` in ``df``):</span>
+
+<span class="sd">            - **is_loop** (bool): True if the triple is a loop (``h == t``).</span>
+<span class="sd">            - **is_symmetric** (bool): True if the triple (t, r, h) is also contained</span>
+<span class="sd">              in the graph (assuming t and h are different).</span>
+<span class="sd">            - **has_inverse** (bool): True if the graph contains one or more triples</span>
+<span class="sd">              (t, r&#39;, h) with ``r&#39; != r``.</span>
+<span class="sd">            - **n_inverse_relations** (int): The number of inverse relations r&#39;.</span>
+<span class="sd">            - **inverse_edge_types** (list): All relations r&#39; (including r if the edge</span>
+<span class="sd">              is symmetric) such that (t, r&#39;, h) is in the graph.</span>
+<span class="sd">            - **has_inference** (bool): True if the graph contains one or more triples</span>
+<span class="sd">              (h, r&#39;, t) with ``r&#39; != r``.</span>
+<span class="sd">            - **n_inference_relations** (int): The number of inference relations r&#39;.</span>
+<span class="sd">            - **inference_edge_types** (list): All relations r&#39; (including r) such that</span>
+<span class="sd">              (h, r&#39;, t) is in the graph.</span>
+<span class="sd">            - **has_composition** (bool): True if the graph contains one or more triangles</span>
+<span class="sd">              supported on the edge: (h, r1, x) + (x, r2, t).</span>
+<span class="sd">            - **n_triangles** (int): The number of triangles.</span>
+<span class="sd">            - **has_undirected_composition** (bool): True if the graph contains one or more</span>
+<span class="sd">              undirected triangles supported on the edge.</span>
+<span class="sd">            - **n_undirected_triangles** (int): The number of undirected triangles</span>
+<span class="sd">              (considering all edges as bidirectional).</span>
+<span class="sd">            - **metapath_list** (list): The list of unique metapaths &quot;r1-r2&quot;</span>
+<span class="sd">              for the directed triangles.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># symmetry-asymmetry</span>
+        <span class="c1"># edges with h/t switched</span>
+        <span class="n">df_inv</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="s2">&quot;h&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
+            <span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;t&quot;</span><span class="p">:</span> <span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">:</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="s2">&quot;h&quot;</span><span class="p">:</span> <span class="s2">&quot;t&quot;</span><span class="p">}</span>
+        <span class="p">)</span>
+        <span class="n">df_inv</span><span class="p">[</span><span class="s2">&quot;is_symmetric&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">df_res</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">df_inv</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">],</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">)</span>
+        <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;is_symmetric&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="c1"># loops are treated separately</span>
+        <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;is_loop&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_res</span><span class="o">.</span><span class="n">h</span> <span class="o">==</span> <span class="n">df_res</span><span class="o">.</span><span class="n">t</span>
+        <span class="n">df_res</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df_res</span><span class="o">.</span><span class="n">h</span> <span class="o">==</span> <span class="n">df_res</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="s2">&quot;is_symmetric&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="c1"># inverse</span>
+        <span class="n">df_inv</span> <span class="o">=</span> <span class="n">df_inv</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s2">&quot;is_symmetric&quot;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">unique_inv_r_by_ht</span> <span class="o">=</span> <span class="n">df_inv</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">],</span> <span class="n">as_index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span>
+            <span class="n">inverse_edge_types</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="nb">list</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="n">df_res</span> <span class="o">=</span> <span class="n">df_res</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
+            <span class="n">unique_inv_r_by_ht</span><span class="p">,</span> <span class="n">left_on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">],</span> <span class="n">right_on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">],</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span>
+        <span class="p">)</span>
+        <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;inverse_edge_types&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;inverse_edge_types&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+            <span class="k">lambda</span> <span class="n">agg</span><span class="p">:</span> <span class="n">agg</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">agg</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="p">[]</span>
+        <span class="p">)</span>
+        <span class="c1"># if the edge (h,r,t) is symmetric or loop, we do not consider the relation</span>
+        <span class="c1"># r as a proper inverse</span>
+        <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;n_inverse_relations&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">df_res</span><span class="o">.</span><span class="n">inverse_edge_types</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">len</span><span class="p">()</span> <span class="o">-</span> <span class="n">df_res</span><span class="o">.</span><span class="n">is_symmetric</span> <span class="o">-</span> <span class="n">df_res</span><span class="o">.</span><span class="n">is_loop</span>
+        <span class="p">)</span>
+        <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;n_inverse_relations&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;n_inverse_relations&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;has_inverse&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;n_inverse_relations&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span>
+
+        <span class="c1"># inference</span>
+        <span class="n">edges_between_ht</span> <span class="o">=</span> <span class="n">unique_inv_r_by_ht</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span>
+            <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;inverse_edge_types&quot;</span><span class="p">]</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
+            <span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;t&quot;</span><span class="p">:</span> <span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;h&quot;</span><span class="p">:</span> <span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="s2">&quot;inverse_edge_types&quot;</span><span class="p">:</span> <span class="s2">&quot;inference_edge_types&quot;</span><span class="p">}</span>
+        <span class="p">)</span>
+        <span class="n">df_res</span> <span class="o">=</span> <span class="n">df_res</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
+            <span class="n">edges_between_ht</span><span class="p">,</span> <span class="n">left_on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">],</span> <span class="n">right_on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">],</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span>
+        <span class="p">)</span>
+        <span class="c1"># inference_edge_types always contains the edge itself, which we need to drop</span>
+        <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;n_inference_relations&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_res</span><span class="o">.</span><span class="n">inference_edge_types</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">len</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;has_inference&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;n_inference_relations&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span>
+
+        <span class="c1"># composition &amp; metapaths</span>
+        <span class="c1"># discard loops as edges of a triangle</span>
+        <span class="n">df_wo_loops</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">h</span> <span class="o">!=</span> <span class="n">df</span><span class="o">.</span><span class="n">t</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">return_metapath_list</span><span class="p">:</span>
+            <span class="c1"># 2-hop paths</span>
+            <span class="n">df_bridges</span> <span class="o">=</span> <span class="n">df_wo_loops</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
+                <span class="n">df_wo_loops</span><span class="p">,</span> <span class="n">left_on</span><span class="o">=</span><span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="n">right_on</span><span class="o">=</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;inner&quot;</span>
+            <span class="p">)</span>
+            <span class="n">df_triangles</span> <span class="o">=</span> <span class="n">df_wo_loops</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
+                <span class="n">df_bridges</span><span class="p">,</span> <span class="n">left_on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">],</span> <span class="n">right_on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;h_x&quot;</span><span class="p">,</span> <span class="s2">&quot;t_y&quot;</span><span class="p">],</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;inner&quot;</span>
+            <span class="p">)</span>
+            <span class="n">df_triangles</span><span class="p">[</span><span class="s2">&quot;metapath&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">df_triangles</span><span class="p">[</span><span class="s2">&quot;r_x&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;-&quot;</span> <span class="o">+</span> <span class="n">df_triangles</span><span class="p">[</span><span class="s2">&quot;r_y&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">grouped_triangles</span> <span class="o">=</span> <span class="n">df_triangles</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span>
+                <span class="p">[</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">],</span> <span class="n">as_index</span><span class="o">=</span><span class="kc">False</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span>
+                <span class="n">n_triangles</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;metapath&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">),</span> <span class="n">metapath_list</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;metapath&quot;</span><span class="p">,</span> <span class="s2">&quot;unique&quot;</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">df_res</span> <span class="o">=</span> <span class="n">df_res</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
+                <span class="n">grouped_triangles</span><span class="p">,</span>
+                <span class="n">left_on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">],</span>
+                <span class="n">right_on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">],</span>
+                <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;metapath_list&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;metapath_list&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+                <span class="k">lambda</span> <span class="n">agg</span><span class="p">:</span> <span class="n">agg</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">agg</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="k">else</span> <span class="p">[]</span>
+            <span class="p">)</span>
+            <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;n_triangles&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;n_triangles&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">counts</span> <span class="o">=</span> <span class="n">_composition_count</span><span class="p">(</span>
+                <span class="n">df_wo_loops</span><span class="p">,</span>
+                <span class="n">chunk_size</span><span class="o">=</span><span class="n">composition_chunk_size</span><span class="p">,</span>
+                <span class="n">workers</span><span class="o">=</span><span class="n">composition_workers</span><span class="p">,</span>
+                <span class="n">directed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">df_res</span> <span class="o">=</span> <span class="n">df_res</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
+                <span class="n">counts</span><span class="p">,</span>
+                <span class="n">on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">],</span>
+                <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;n_triangles&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;n_triangles&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+
+        <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;has_composition&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;n_triangles&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span>
+
+        <span class="n">counts</span> <span class="o">=</span> <span class="n">_composition_count</span><span class="p">(</span>
+            <span class="n">df_wo_loops</span><span class="p">,</span>
+            <span class="n">chunk_size</span><span class="o">=</span><span class="n">composition_chunk_size</span><span class="p">,</span>
+            <span class="n">workers</span><span class="o">=</span><span class="n">composition_workers</span><span class="p">,</span>
+            <span class="n">directed</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">df_res</span> <span class="o">=</span> <span class="n">df_res</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
+            <span class="n">counts</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;n_triangles&quot;</span><span class="p">:</span> <span class="s2">&quot;n_undirected_triangles&quot;</span><span class="p">}),</span>
+            <span class="n">on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">],</span>
+            <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;n_undirected_triangles&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;n_undirected_triangles&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;has_undirected_composition&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;n_undirected_triangles&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span>
+
+        <span class="k">return</span> <span class="n">df_res</span><span class="p">[</span>
+            <span class="p">[</span>
+                <span class="s2">&quot;h&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;r&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;t&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;is_loop&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;is_symmetric&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;has_inverse&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;n_inverse_relations&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;inverse_edge_types&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;has_inference&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;n_inference_relations&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;inference_edge_types&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;has_composition&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;has_undirected_composition&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;n_triangles&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;n_undirected_triangles&quot;</span><span class="p">,</span>
+            <span class="p">]</span>
+            <span class="o">+</span> <span class="p">([</span><span class="s2">&quot;metapath_list&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="n">return_metapath_list</span> <span class="k">else</span> <span class="p">[])</span>
+        <span class="p">]</span></div>
+
+<div class="viewcode-block" id="TopologyToolbox.aggregate_by_relation"><a class="viewcode-back" href="../../generated/kg_topology_toolbox.topology_toolbox.TopologyToolbox.html#kg_topology_toolbox.topology_toolbox.TopologyToolbox.aggregate_by_relation">[docs]</a>    <span class="k">def</span> <span class="nf">aggregate_by_relation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">edge_topology_df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Aggregate topology metrics of all triples of the same relation type.</span>
+<span class="sd">        To be applied to the output dataframe of either</span>
+<span class="sd">        :meth:`TopologyToolbox.edge_degree_cardinality_summary` or</span>
+<span class="sd">        :meth:`TopologyToolbox.edge_pattern_summary`.</span>
+
+<span class="sd">        The returned dataframe is indexed over relation type IDs, with columns</span>
+<span class="sd">        giving the aggregated statistics of triples of the correspondig relation.</span>
+<span class="sd">        The name of the columns is of the form ``column_name_in_input_df + suffix``.</span>
+<span class="sd">        The aggregation is perfomed by returning:</span>
+
+<span class="sd">        - for numerical metrics: mean, standard deviation and quartiles</span>
+<span class="sd">          (``suffix`` = &quot;_mean&quot;, &quot;_std&quot;, &quot;_quartile1&quot;, &quot;_quartile2&quot;, &quot;_quartile3&quot;);</span>
+<span class="sd">        - for boolean metrics: the fraction of triples of the relation type</span>
+<span class="sd">          with metric = True (``suffix`` = &quot;_frac&quot;);</span>
+<span class="sd">        - for string metrics: for each possible label, the fraction of triples</span>
+<span class="sd">          of the relation type with that metric value (``suffix`` = &quot;_{label}_frac&quot;)</span>
+<span class="sd">        - for list metrics: the unique metric values across triples of the relation</span>
+<span class="sd">          type (``suffix`` = &quot;_unique&quot;).</span>
+
+<span class="sd">        :param edge_topology_df: pd.DataFrame of edge topology metrics.</span>
+<span class="sd">            Must contain at least three columns `h`, `r`, `t`.</span>
+
+<span class="sd">        :return: The results dataframe. In addition to the columns with the aggregated</span>
+<span class="sd">            metrics by relation type, it also contains columns:</span>
+
+<span class="sd">            - **num_triples** (int): Number of triples for each relation type.</span>
+<span class="sd">            - **frac_triples** (float): Fraction of overall triples represented by each</span>
+<span class="sd">              relation type.</span>
+<span class="sd">            - **unique_h** (int): Number of unique head entities used by triples of each</span>
+<span class="sd">              relation type.</span>
+<span class="sd">            - **unique_t** (int): Number of unique tail entities used by triples of each</span>
+<span class="sd">              relation type.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">df_by_r</span> <span class="o">=</span> <span class="n">edge_topology_df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;r&quot;</span><span class="p">)</span>
+        <span class="n">df_res</span> <span class="o">=</span> <span class="n">df_by_r</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">num_triples</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">))</span>
+        <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;frac_triples&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;num_triples&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="n">edge_topology_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">col</span><span class="p">:</span> <span class="nb">str</span>
+        <span class="k">for</span> <span class="n">col</span><span class="p">,</span> <span class="n">col_dtype</span> <span class="ow">in</span> <span class="n">edge_topology_df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;r&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">dtypes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>  <span class="c1"># type: ignore</span>
+            <span class="k">if</span> <span class="n">col</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">]:</span>
+                <span class="n">df_res</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;unique_</span><span class="si">{</span><span class="n">col</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_by_r</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">nunique</span><span class="p">()</span>
+            <span class="k">elif</span> <span class="n">col_dtype</span> <span class="o">==</span> <span class="nb">object</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">edge_topology_df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">str</span><span class="p">):</span>
+                    <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">edge_topology_df</span><span class="p">[</span><span class="n">col</span><span class="p">]):</span>
+                        <span class="n">df_res</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">col</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">_frac&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                            <span class="n">edge_topology_df</span><span class="p">[</span><span class="n">edge_topology_df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">==</span> <span class="n">label</span><span class="p">]</span>
+                            <span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;r&quot;</span><span class="p">)[</span><span class="n">col</span><span class="p">]</span>
+                            <span class="o">.</span><span class="n">count</span><span class="p">()</span>
+                            <span class="o">/</span> <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;num_triples&quot;</span><span class="p">]</span>
+                        <span class="p">)</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">edge_topology_df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Iterable</span><span class="p">):</span>
+                    <span class="n">df_res</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">col</span><span class="si">}</span><span class="s2">_unique&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="n">df_by_r</span><span class="p">[</span><span class="n">col</span><span class="p">]</span>
+                        <span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">)</span>
+                        <span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+                            <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span>
+                                <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span>
+                                    <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+                                        <span class="p">[</span><span class="n">lst</span> <span class="k">for</span> <span class="n">lst</span> <span class="ow">in</span> <span class="n">x</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="p">[[]]</span>
+                                    <span class="p">)</span>
+                                <span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+                            <span class="p">)</span>
+                        <span class="p">)</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Skipping column </span><span class="si">{</span><span class="n">col</span><span class="si">}</span><span class="s2">: no known aggregation mode&quot;</span><span class="p">)</span>
+                    <span class="k">continue</span>
+            <span class="k">elif</span> <span class="n">col_dtype</span> <span class="o">==</span> <span class="nb">int</span> <span class="ow">or</span> <span class="n">col_dtype</span> <span class="o">==</span> <span class="nb">float</span><span class="p">:</span>
+                <span class="n">df_res</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">col</span><span class="si">}</span><span class="s2">_mean&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_by_r</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+                <span class="n">df_res</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">col</span><span class="si">}</span><span class="s2">_std&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_by_r</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">):</span>
+                    <span class="n">df_res</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">col</span><span class="si">}</span><span class="s2">_quartile</span><span class="si">{</span><span class="n">q</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_by_r</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span>
+                        <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mf">0.25</span> <span class="o">*</span> <span class="n">q</span><span class="p">)</span>
+                    <span class="p">)</span>
+            <span class="k">elif</span> <span class="n">col_dtype</span> <span class="o">==</span> <span class="nb">bool</span><span class="p">:</span>
+                <span class="n">df_res</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">col</span><span class="si">}</span><span class="s2">_frac&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_by_r</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">df_res</span></div>
+
+<div class="viewcode-block" id="TopologyToolbox.jaccard_similarity_relation_sets"><a class="viewcode-back" href="../../generated/kg_topology_toolbox.topology_toolbox.TopologyToolbox.html#kg_topology_toolbox.topology_toolbox.TopologyToolbox.jaccard_similarity_relation_sets">[docs]</a>    <span class="k">def</span> <span class="nf">jaccard_similarity_relation_sets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the similarity between relations defined as the Jaccard Similarity</span>
+<span class="sd">        between sets of entities (heads and tails) for all pairs</span>
+<span class="sd">        of relations in the graph.</span>
+
+<span class="sd">        :param df: A graph represented as a pd.DataFrame.</span>
+<span class="sd">            Must contain at least three columns `h`, `r`, `t`.</span>
+
+<span class="sd">        :return: The results dataframe. Contains the following columns:</span>
+
+<span class="sd">            - **r1** (int): Index of the first relation.</span>
+<span class="sd">            - **r2** (int): Index of the second relation.</span>
+<span class="sd">            - **num_triples_both** (int): Number of triples with relation r1/r2.</span>
+<span class="sd">            - **frac_triples_both** (float): Fraction of triples with relation r1/r2.</span>
+<span class="sd">            - **num_entities_both** (int): Number of unique entities (h or t) for triples</span>
+<span class="sd">              with relation r1/r2.</span>
+<span class="sd">            - **num_h_r1** (int): Number of unique head entities for relation r1.</span>
+<span class="sd">            - **num_h_r2** (int): Number of unique head entities for relation r2.</span>
+<span class="sd">            - **num_t_r1** (int): Number of unique tail entities for relation r1.</span>
+<span class="sd">            - **num_t_r2** (int): Number of unique tail entities for relation r2.</span>
+<span class="sd">            - **jaccard_head_head** (float): Jaccard similarity between the head set of r1</span>
+<span class="sd">              and the head set of r2.</span>
+<span class="sd">            - **jaccard_tail_tail** (float): Jaccard similarity between the tail set of r1</span>
+<span class="sd">              and the tail set of r2.</span>
+<span class="sd">            - **jaccard_head_tail** (float): Jaccard similarity between the head set of r1</span>
+<span class="sd">              and the tail set of r2.</span>
+<span class="sd">            - **jaccard_tail_head** (float): Jaccard similarity between the tail set of r1</span>
+<span class="sd">              and the head set of r2.</span>
+<span class="sd">            - **jaccard_both** (float): Jaccard similarity between the full entity set</span>
+<span class="sd">              of r1 and r2.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ent_unique</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">as_index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span>
+            <span class="n">num_triples</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">),</span> <span class="n">head</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;unique&quot;</span><span class="p">),</span> <span class="n">tail</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="s2">&quot;unique&quot;</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">ent_unique</span><span class="p">[</span><span class="s2">&quot;both&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ent_unique</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+            <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">x</span><span class="p">[</span><span class="s2">&quot;head&quot;</span><span class="p">],</span> <span class="n">x</span><span class="p">[</span><span class="s2">&quot;tail&quot;</span><span class="p">]])),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span>
+        <span class="p">)</span>
+        <span class="n">ent_unique</span><span class="p">[</span><span class="s2">&quot;num_h&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ent_unique</span><span class="p">[</span><span class="s2">&quot;head&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">len</span><span class="p">()</span>
+        <span class="n">ent_unique</span><span class="p">[</span><span class="s2">&quot;num_t&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ent_unique</span><span class="p">[</span><span class="s2">&quot;tail&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">len</span><span class="p">()</span>
+        <span class="n">r_num</span> <span class="o">=</span> <span class="n">ent_unique</span><span class="p">[[</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="s2">&quot;num_h&quot;</span><span class="p">,</span> <span class="s2">&quot;num_t&quot;</span><span class="p">,</span> <span class="s2">&quot;num_triples&quot;</span><span class="p">]]</span>
+        <span class="c1"># combinations of relations</span>
+        <span class="n">df_res</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
+            <span class="n">r_num</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;r&quot;</span><span class="p">:</span> <span class="s2">&quot;r1&quot;</span><span class="p">}),</span>
+            <span class="n">r_num</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;r&quot;</span><span class="p">:</span> <span class="s2">&quot;r2&quot;</span><span class="p">}),</span>
+            <span class="n">suffixes</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;_r1&quot;</span><span class="p">,</span> <span class="s2">&quot;_r2&quot;</span><span class="p">],</span>
+            <span class="n">how</span><span class="o">=</span><span class="s2">&quot;cross&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">df_res</span> <span class="o">=</span> <span class="n">df_res</span><span class="p">[</span><span class="n">df_res</span><span class="o">.</span><span class="n">r1</span> <span class="o">&lt;</span> <span class="n">df_res</span><span class="o">.</span><span class="n">r2</span><span class="p">]</span>
+
+        <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;num_triples_both&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;num_triples_r1&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;num_triples_r2&quot;</span><span class="p">]</span>
+        <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;frac_triples_both&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;num_triples_both&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;num_entities_both&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_res</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+            <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+                        <span class="p">[</span>
+                            <span class="n">ent_unique</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="s2">&quot;r1&quot;</span><span class="p">],</span> <span class="s2">&quot;both&quot;</span><span class="p">],</span>
+                            <span class="n">ent_unique</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="s2">&quot;r2&quot;</span><span class="p">],</span> <span class="s2">&quot;both&quot;</span><span class="p">],</span>
+                        <span class="p">]</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+            <span class="p">),</span>
+            <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">df_res</span> <span class="o">=</span> <span class="n">df_res</span><span class="p">[</span>
+            <span class="p">[</span>
+                <span class="s2">&quot;r1&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;r2&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;num_triples_both&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;frac_triples_both&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;num_entities_both&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;num_h_r1&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;num_h_r2&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;num_t_r1&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;num_t_r2&quot;</span><span class="p">,</span>
+            <span class="p">]</span>
+        <span class="p">]</span>
+        <span class="k">for</span> <span class="n">r1_ent</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;head&quot;</span><span class="p">,</span> <span class="s2">&quot;tail&quot;</span><span class="p">]:</span>
+            <span class="k">for</span> <span class="n">r2_ent</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;head&quot;</span><span class="p">,</span> <span class="s2">&quot;tail&quot;</span><span class="p">]:</span>
+                <span class="n">df_res</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;jaccard_</span><span class="si">{</span><span class="n">r1_ent</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">r2_ent</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="n">_jaccard_similarity</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+                        <span class="n">ent_unique</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df_res</span><span class="o">.</span><span class="n">r1</span><span class="p">,</span> <span class="n">r1_ent</span><span class="p">],</span>
+                        <span class="n">ent_unique</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df_res</span><span class="o">.</span><span class="n">r2</span><span class="p">,</span> <span class="n">r2_ent</span><span class="p">],</span>
+                    <span class="p">)</span>
+                <span class="p">]</span>
+        <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;jaccard_both&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">_jaccard_similarity</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+                <span class="n">ent_unique</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df_res</span><span class="o">.</span><span class="n">r1</span><span class="p">,</span> <span class="s2">&quot;both&quot;</span><span class="p">],</span> <span class="n">ent_unique</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df_res</span><span class="o">.</span><span class="n">r2</span><span class="p">,</span> <span class="s2">&quot;both&quot;</span><span class="p">]</span>
+            <span class="p">)</span>
+        <span class="p">]</span>
+        <span class="k">return</span> <span class="n">df_res</span></div>
+
+<div class="viewcode-block" id="TopologyToolbox.relational_affinity_ingram"><a class="viewcode-back" href="../../generated/kg_topology_toolbox.topology_toolbox.TopologyToolbox.html#kg_topology_toolbox.topology_toolbox.TopologyToolbox.relational_affinity_ingram">[docs]</a>    <span class="k">def</span> <span class="nf">relational_affinity_ingram</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">min_max_norm</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the similarity between relations based on the approach proposed in</span>
+<span class="sd">        InGram: Inductive Knowledge Graph Embedding via Relation Graphs,</span>
+<span class="sd">        https://arxiv.org/abs/2305.19987.</span>
+
+<span class="sd">        Only the pairs of relations witn ``affinity &gt; 0`` are shown in the</span>
+<span class="sd">        returned dataframe.</span>
+
+<span class="sd">        :param df: A graph represented as a pd.DataFrame.</span>
+<span class="sd">            Must contain at least three columns `h`, `r`, `t`.</span>
+<span class="sd">        :param min_max_norm: min-max normalization of edge weights. Defaults to False.</span>
+
+<span class="sd">        :return: The results dataframe. Contains the following columns:</span>
+
+<span class="sd">            - **h_relation** (int): Index of the head relation.</span>
+<span class="sd">            - **t_relation** (int): Index of the tail relation.</span>
+<span class="sd">            - **edge_weight** (float): Weight for the affinity between</span>
+<span class="sd">              the head and the tail relation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">n_entities</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">n_rels</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">r</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span>
+
+        <span class="n">hr_freqs</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">],</span> <span class="n">as_index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+        <span class="c1"># normalize by global h frequency</span>
+        <span class="n">hr_freqs</span><span class="p">[</span><span class="s2">&quot;t&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">hr_freqs</span><span class="p">[</span><span class="s2">&quot;t&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="n">hr_freqs</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;h&quot;</span><span class="p">)[</span><span class="s2">&quot;t&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="s2">&quot;sum&quot;</span><span class="p">)</span>
+        <span class="n">rt_freqs</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">],</span> <span class="n">as_index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+        <span class="c1"># normalize by global t frequency</span>
+        <span class="n">rt_freqs</span><span class="p">[</span><span class="s2">&quot;h&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rt_freqs</span><span class="p">[</span><span class="s2">&quot;h&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="n">rt_freqs</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;t&quot;</span><span class="p">)[</span><span class="s2">&quot;h&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="s2">&quot;sum&quot;</span><span class="p">)</span>
+
+        <span class="n">E_h</span> <span class="o">=</span> <span class="n">coo_array</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">hr_freqs</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="p">(</span><span class="n">hr_freqs</span><span class="o">.</span><span class="n">h</span><span class="p">,</span> <span class="n">hr_freqs</span><span class="o">.</span><span class="n">r</span><span class="p">)),</span>
+            <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">n_entities</span><span class="p">,</span> <span class="n">n_rels</span><span class="p">],</span>
+        <span class="p">)</span>
+        <span class="n">E_t</span> <span class="o">=</span> <span class="n">coo_array</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">rt_freqs</span><span class="o">.</span><span class="n">h</span><span class="p">,</span> <span class="p">(</span><span class="n">rt_freqs</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">rt_freqs</span><span class="o">.</span><span class="n">r</span><span class="p">)),</span>
+            <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">n_entities</span><span class="p">,</span> <span class="n">n_rels</span><span class="p">],</span>
+        <span class="p">)</span>
+
+        <span class="n">A</span> <span class="o">=</span> <span class="p">(</span><span class="n">E_h</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">E_h</span><span class="p">)</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span> <span class="o">+</span> <span class="p">(</span><span class="n">E_t</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">E_t</span><span class="p">)</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">diag_indices_from</span><span class="p">(</span><span class="n">A</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">if</span> <span class="n">min_max_norm</span><span class="p">:</span>
+            <span class="n">A</span> <span class="o">=</span> <span class="p">(</span><span class="n">A</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">A</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">A</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">A</span><span class="p">))</span>
+
+        <span class="n">h_rels</span><span class="p">,</span> <span class="n">t_rels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;h_relation&quot;</span><span class="p">:</span> <span class="n">h_rels</span><span class="p">,</span>
+                <span class="s2">&quot;t_relation&quot;</span><span class="p">:</span> <span class="n">t_rels</span><span class="p">,</span>
+                <span class="s2">&quot;edge_weight&quot;</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">h_rels</span><span class="p">,</span> <span class="n">t_rels</span><span class="p">],</span>
+            <span class="p">}</span>
+        <span class="p">)</span></div></div>
+
+
+<span class="k">def</span> <span class="nf">_jaccard_similarity</span><span class="p">(</span>
+    <span class="n">entities_1</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">],</span> <span class="n">entities_2</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Jaccard Similarity function for two sets of entities.</span>
+
+<span class="sd">    :param entities_1: the array of IDs for the first set of entities.</span>
+<span class="sd">    :param entities_2: the array of IDs for the second set of entities.</span>
+
+<span class="sd">    :return: Jaccard Similarity score for two sets of entities.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">intersection</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">intersect1d</span><span class="p">(</span><span class="n">entities_1</span><span class="p">,</span> <span class="n">entities_2</span><span class="p">))</span>
+    <span class="n">union</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">entities_1</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">entities_2</span><span class="p">)</span> <span class="o">-</span> <span class="n">intersection</span>
+    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">intersection</span> <span class="o">/</span> <span class="n">union</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_composition_count</span><span class="p">(</span>
+    <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">chunk_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">workers</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">directed</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A helper function to compute the composition count of a graph.</span>
+
+<span class="sd">    :param df: A graph represented as a pd.DataFrame. Must contain the columns</span>
+<span class="sd">        `h` and `t`. No self-loops should be present in the graph.</span>
+<span class="sd">    :param chunk_size: Size of chunks of columns of the adjacency matrix to be</span>
+<span class="sd">        processed together.</span>
+<span class="sd">    :param workers: Number of workers processing chunks concurrently</span>
+<span class="sd">    :param directed: Boolean flag. If false, bidirectional edges are considered for</span>
+<span class="sd">        triangles by adding the adjacency matrix and its transposed. Defaults to True.</span>
+
+<span class="sd">    :return: The results dataframe. Contains the following columns:</span>
+
+<span class="sd">        - **h** (int): Index of the head entity.</span>
+<span class="sd">        - **t** (int): Index of the tail entity.</span>
+<span class="sd">        - **n_triangles** (int): Number of compositions for the (h, t) edge.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_composition_count_worker</span><span class="p">(</span>
+        <span class="n">adj_csr</span><span class="p">:</span> <span class="n">csr_array</span><span class="p">,</span> <span class="n">adj_csc</span><span class="p">:</span> <span class="n">csc_array</span><span class="p">,</span> <span class="n">tail_shift</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+        <span class="n">adj_2hop</span> <span class="o">=</span> <span class="n">adj_csr</span> <span class="o">@</span> <span class="n">adj_csc</span>
+        <span class="n">adj_composition</span> <span class="o">=</span> <span class="p">(</span><span class="n">adj_2hop</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span> <span class="o">*</span> <span class="p">(</span><span class="n">adj_csc</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">tocoo</span><span class="p">()</span>
+        <span class="n">df_composition</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+            <span class="nb">dict</span><span class="p">(</span>
+                <span class="n">h</span><span class="o">=</span><span class="n">adj_composition</span><span class="o">.</span><span class="n">row</span><span class="p">,</span>
+                <span class="n">t</span><span class="o">=</span><span class="n">adj_composition</span><span class="o">.</span><span class="n">col</span> <span class="o">+</span> <span class="n">tail_shift</span><span class="p">,</span>
+                <span class="n">n_triangles</span><span class="o">=</span><span class="n">adj_composition</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">df_composition</span>
+
+    <span class="n">adj</span> <span class="o">=</span> <span class="n">coo_array</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)),</span> <span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">h</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">t</span><span class="p">)),</span>
+        <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="nb">max</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">max</span><span class="p">())</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">max</span><span class="p">())</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint16</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">directed</span><span class="p">:</span>
+        <span class="n">adj</span> <span class="o">=</span> <span class="n">adj</span> <span class="o">+</span> <span class="n">adj</span><span class="o">.</span><span class="n">T</span>
+    <span class="n">n_cols</span> <span class="o">=</span> <span class="n">adj</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">adj_csr</span> <span class="o">=</span> <span class="n">adj</span><span class="o">.</span><span class="n">tocsr</span><span class="p">()</span>
+    <span class="n">adj_csc</span> <span class="o">=</span> <span class="n">adj</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span>
+    <span class="n">adj_csc_slices</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">i</span><span class="p">:</span> <span class="n">adj_csc</span><span class="p">[:,</span> <span class="n">i</span> <span class="o">*</span> <span class="n">chunk_size</span> <span class="p">:</span> <span class="nb">min</span><span class="p">((</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">chunk_size</span><span class="p">,</span> <span class="n">n_cols</span><span class="p">)]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">n_cols</span> <span class="o">/</span> <span class="n">chunk_size</span><span class="p">)))</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">adj_csc_slices</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">workers</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">Pool</span><span class="p">(</span><span class="n">workers</span><span class="p">)</span> <span class="k">as</span> <span class="n">pool</span><span class="p">:</span>
+            <span class="n">df_composition_list</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">starmap</span><span class="p">(</span>
+                <span class="n">_composition_count_worker</span><span class="p">,</span>
+                <span class="p">(</span>
+                    <span class="p">(</span><span class="n">adj_csr</span><span class="p">,</span> <span class="n">adj_csc_slice</span><span class="p">,</span> <span class="n">i</span> <span class="o">*</span> <span class="n">chunk_size</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">adj_csc_slice</span> <span class="ow">in</span> <span class="n">adj_csc_slices</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                <span class="p">),</span>
+            <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">df_composition_list</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">_composition_count_worker</span><span class="p">(</span><span class="n">adj_csr</span><span class="p">,</span> <span class="n">adj_csc_slice</span><span class="p">,</span> <span class="n">i</span> <span class="o">*</span> <span class="n">chunk_size</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">adj_csc_slice</span> <span class="ow">in</span> <span class="n">adj_csc_slices</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">df_composition_list</span><span class="p">)</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+    <span class="n">top_toolbox</span> <span class="o">=</span> <span class="n">TopologyToolbox</span><span class="p">()</span>
+
+    <span class="c1"># generate a random dataframe with three columns (h, r, t) that</span>
+    <span class="c1"># use integers as values</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">3</span><span class="p">)),</span>
+        <span class="n">columns</span><span class="o">=</span><span class="p">[</span>
+            <span class="s2">&quot;h&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;r&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;t&quot;</span><span class="p">,</span>
+        <span class="p">],</span>
+    <span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">top_toolbox</span><span class="o">.</span><span class="n">edge_degree_cardinality_summary</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">top_toolbox</span><span class="o">.</span><span class="n">edge_pattern_summary</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="n">df</span><span class="p">))</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright (c) 2023 Graphcore Ltd. All rights reserved.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
