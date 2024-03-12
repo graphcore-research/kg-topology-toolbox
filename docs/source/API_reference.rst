@@ -7,4 +7,5 @@ API Reference
    :recursive:
 
    kg_topology_toolbox.topology_toolbox
+   kg_topology_toolbox.utils
    
