@@ -1,4 +1,5 @@
 # KG Topology Toolbox
+![Continuous integration](https://github.com/graphcore-research/kg-topology-toolbox/actions/workflows/ci.yaml/badge.svg)
 
 A Python toolbox to compute topological metrics and statistics for Knowledge Graphs.
 

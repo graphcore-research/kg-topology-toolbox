@@ -126,7 +126,6 @@ def doc() -> None:
     subprocess.call(["rm", "-r", "docs/build"])
     subprocess.call(["rm", "-r", "docs/source/api"])
     subprocess.call(["rm", "-r", "docs/source/generated"])
-    # run(["sphinx-apidoc", "-o", "docs/source", "besskge/"])
     run(["make", "clean", "-C", "docs/"])
     run(["make", "html", "-C", "docs/"])
 
