@@ -142,8 +142,8 @@ def ci(skip: List[str] = []) -> None:
         copyright()
     if "tests" not in skip:
         tests(filter=None, gdb=False)
-    # if "doc" not in skip:
-    #     doc()
+    if "doc" not in skip:
+        doc()
 
 
 # Script

@@ -30,9 +30,9 @@ jobs:
       - name: Run CI
         run: ./dev ci
         shell: bash
-      # - name: Publish docs
-      #   if: ${{github.ref == 'refs/heads/main'}}
-      #   uses: Cecilapp/GitHub-Pages-deploy@3.2.1
-      #   env: { GITHUB_TOKEN: "${{ github.token }}" }
-      #   with:
-      #     build_dir: docs/build/html/
+      - name: Publish docs
+        if: ${{github.ref == 'refs/heads/main'}}
+        uses: Cecilapp/GitHub-Pages-deploy@3.2.1
+        env: { GITHUB_TOKEN: "${{ github.token }}" }
+        with:
+          build_dir: docs/build/html/
