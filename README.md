@@ -7,7 +7,7 @@ Documentation can be found at https://curly-barnacle-lnejye6.pages.github.io/
 
 ## Usage
 
-Tested on Ubuntu 20.04, Python 3.8
+Tested on Ubuntu 20.04, Python >=3.8
 
 To install the `kg-topology-toolbox` library, run
 
