@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en">
+<html class="writer-html5" lang="en" data-content_root="../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -15,9 +15,9 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js?v=b3ba4146"></script>
+        <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
         <script src="../../_static/doctools.js?v=888ff710"></script>
-        <script src="../../_static/sphinx_highlight.js?v=4825356b"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
@@ -87,7 +87,9 @@
 <span class="kn">from</span> <span class="nn">scipy.sparse</span> <span class="kn">import</span> <span class="n">coo_array</span><span class="p">,</span> <span class="n">csc_array</span><span class="p">,</span> <span class="n">csr_array</span>
 
 
-<div class="viewcode-block" id="jaccard_similarity"><a class="viewcode-back" href="../../generated/kg_topology_toolbox.utils.jaccard_similarity.html#kg_topology_toolbox.utils.jaccard_similarity">[docs]</a><span class="k">def</span> <span class="nf">jaccard_similarity</span><span class="p">(</span>
+<div class="viewcode-block" id="jaccard_similarity">
+<a class="viewcode-back" href="../../generated/kg_topology_toolbox.utils.jaccard_similarity.html#kg_topology_toolbox.utils.jaccard_similarity">[docs]</a>
+<span class="k">def</span> <span class="nf">jaccard_similarity</span><span class="p">(</span>
     <span class="n">entities_1</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">],</span> <span class="n">entities_2</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -103,7 +105,10 @@
     <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">intersection</span> <span class="o">/</span> <span class="n">union</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="composition_count"><a class="viewcode-back" href="../../generated/kg_topology_toolbox.utils.composition_count.html#kg_topology_toolbox.utils.composition_count">[docs]</a><span class="k">def</span> <span class="nf">composition_count</span><span class="p">(</span>
+
+<div class="viewcode-block" id="composition_count">
+<a class="viewcode-back" href="../../generated/kg_topology_toolbox.utils.composition_count.html#kg_topology_toolbox.utils.composition_count">[docs]</a>
+<span class="k">def</span> <span class="nf">composition_count</span><span class="p">(</span>
     <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">chunk_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">workers</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">directed</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A helper function to compute the composition count of a graph.</span>
@@ -167,6 +172,7 @@
         <span class="p">]</span>
 
     <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">df_composition_list</span><span class="p">)</span></div>
+
 </pre></div>
 
            </div>

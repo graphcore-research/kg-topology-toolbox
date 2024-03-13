@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en">
+<html class="writer-html5" lang="en" data-content_root="../">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
@@ -16,9 +16,9 @@
   
         <script src="../_static/jquery.js?v=5d32c60e"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
+        <script src="../_static/documentation_options.js?v=5929fcd5"></script>
         <script src="../_static/doctools.js?v=888ff710"></script>
-        <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -88,14 +88,14 @@
            <div itemprop="articleBody">
              
   <section id="kg-topology-toolbox-topology-toolbox-topologytoolbox">
-<h1>kg_topology_toolbox.topology_toolbox.TopologyToolbox<a class="headerlink" href="#kg-topology-toolbox-topology-toolbox-topologytoolbox" title="Permalink to this heading"></a></h1>
+<h1>kg_topology_toolbox.topology_toolbox.TopologyToolbox<a class="headerlink" href="#kg-topology-toolbox-topology-toolbox-topologytoolbox" title="Link to this heading"></a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="kg_topology_toolbox.topology_toolbox.TopologyToolbox">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">kg_topology_toolbox.topology_toolbox.</span></span><span class="sig-name descname"><span class="pre">TopologyToolbox</span></span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#TopologyToolbox"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.TopologyToolbox" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">kg_topology_toolbox.topology_toolbox.</span></span><span class="sig-name descname"><span class="pre">TopologyToolbox</span></span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#TopologyToolbox"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.TopologyToolbox" title="Link to this definition"></a></dt>
 <dd><p>Toolbox class to compute various Knowledge Graph topology statistics.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="kg_topology_toolbox.topology_toolbox.TopologyToolbox.aggregate_by_relation">
-<span class="sig-name descname"><span class="pre">aggregate_by_relation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">edge_topology_df</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#TopologyToolbox.aggregate_by_relation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.TopologyToolbox.aggregate_by_relation" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">aggregate_by_relation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">edge_topology_df</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#TopologyToolbox.aggregate_by_relation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.TopologyToolbox.aggregate_by_relation" title="Link to this definition"></a></dt>
 <dd><p>Aggregate topology metrics of all triples of the same relation type.
 To be applied to the output dataframe of either
 <a class="reference internal" href="#kg_topology_toolbox.topology_toolbox.TopologyToolbox.edge_degree_cardinality_summary" title="kg_topology_toolbox.topology_toolbox.TopologyToolbox.edge_degree_cardinality_summary"><code class="xref py py-meth docutils literal notranslate"><span class="pre">TopologyToolbox.edge_degree_cardinality_summary()</span></code></a> or
@@ -116,11 +116,11 @@ type (<code class="docutils literal notranslate"><span class="pre">suffix</span>
 </ul>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>edge_topology_df</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="http://pandas.pydata.org/pandas-docs/dev/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.0.0.dev0+514.gd6c258691d)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a></span>) – pd.DataFrame of edge topology metrics.
+<dd class="field-odd"><p><strong>edge_topology_df</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="http://pandas.pydata.org/pandas-docs/dev/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.0.0.dev0+523.gf5d754d4fc)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a></span>) – pd.DataFrame of edge topology metrics.
 Must contain at least three columns <cite>h</cite>, <cite>r</cite>, <cite>t</cite>.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="http://pandas.pydata.org/pandas-docs/dev/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.0.0.dev0+514.gd6c258691d)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a></span></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="http://pandas.pydata.org/pandas-docs/dev/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.0.0.dev0+523.gf5d754d4fc)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a></span></p>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p><p>The results dataframe. In addition to the columns with the aggregated
@@ -141,7 +141,7 @@ relation type.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="kg_topology_toolbox.topology_toolbox.TopologyToolbox.edge_degree_cardinality_summary">
-<span class="sig-name descname"><span class="pre">edge_degree_cardinality_summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#TopologyToolbox.edge_degree_cardinality_summary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.TopologyToolbox.edge_degree_cardinality_summary" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">edge_degree_cardinality_summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#TopologyToolbox.edge_degree_cardinality_summary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.TopologyToolbox.edge_degree_cardinality_summary" title="Link to this definition"></a></dt>
 <dd><p>For each triple, this function computes the number of edges with the same head
 (head-degree, or out-degree), the same tail (tail-degree, or in-degree)
 or one of the two (total-degree) in the Knowledge Graph.
@@ -153,11 +153,11 @@ many-to-one(out-degree=1, in-degree&gt;1) or many-to-many
 as the input one.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>df</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="http://pandas.pydata.org/pandas-docs/dev/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.0.0.dev0+514.gd6c258691d)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a></span>) – A graph represented as a pd.DataFrame.
+<dd class="field-odd"><p><strong>df</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="http://pandas.pydata.org/pandas-docs/dev/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.0.0.dev0+523.gf5d754d4fc)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a></span>) – A graph represented as a pd.DataFrame.
 Must contain at least three columns <cite>h</cite>, <cite>r</cite>, <cite>t</cite>.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="http://pandas.pydata.org/pandas-docs/dev/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.0.0.dev0+514.gd6c258691d)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a></span></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="http://pandas.pydata.org/pandas-docs/dev/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.0.0.dev0+523.gf5d754d4fc)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a></span></p>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p><p>The results dataframe. Contains the following columns
@@ -188,7 +188,7 @@ the subgraph of edges with relation type r.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="kg_topology_toolbox.topology_toolbox.TopologyToolbox.edge_pattern_summary">
-<span class="sig-name descname"><span class="pre">edge_pattern_summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_metapath_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">composition_chunk_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">composition_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#TopologyToolbox.edge_pattern_summary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.TopologyToolbox.edge_pattern_summary" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">edge_pattern_summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_metapath_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">composition_chunk_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">composition_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#TopologyToolbox.edge_pattern_summary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.TopologyToolbox.edge_pattern_summary" title="Link to this definition"></a></dt>
 <dd><p>This function analyses the structural properties of each edge in the graph:
 symmetry, presence of inverse/inference(=parallel) edges and
 triangles supported on the edge.</p>
@@ -197,7 +197,7 @@ as the input one.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>df</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="http://pandas.pydata.org/pandas-docs/dev/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.0.0.dev0+514.gd6c258691d)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a></span>) – A graph represented as a pd.DataFrame.
+<li><p><strong>df</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="http://pandas.pydata.org/pandas-docs/dev/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.0.0.dev0+523.gf5d754d4fc)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a></span>) – A graph represented as a pd.DataFrame.
 Must contain at least three columns <cite>h</cite>, <cite>r</cite>, <cite>t</cite>.</p></li>
 <li><p><strong>return_metapath_list</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – If True, return the list of unique metapaths for all
 triangles supported over one edge. WARNING: very expensive for large graphs.</p></li>
@@ -207,7 +207,7 @@ to compute the triangle count.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="http://pandas.pydata.org/pandas-docs/dev/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.0.0.dev0+514.gd6c258691d)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a></span></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="http://pandas.pydata.org/pandas-docs/dev/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.0.0.dev0+523.gf5d754d4fc)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a></span></p>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p><p>The results dataframe. Contains the following columns
@@ -243,17 +243,17 @@ for the directed triangles.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="kg_topology_toolbox.topology_toolbox.TopologyToolbox.jaccard_similarity_relation_sets">
-<span class="sig-name descname"><span class="pre">jaccard_similarity_relation_sets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#TopologyToolbox.jaccard_similarity_relation_sets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.TopologyToolbox.jaccard_similarity_relation_sets" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">jaccard_similarity_relation_sets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#TopologyToolbox.jaccard_similarity_relation_sets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.TopologyToolbox.jaccard_similarity_relation_sets" title="Link to this definition"></a></dt>
 <dd><p>Compute the similarity between relations defined as the Jaccard Similarity
 between sets of entities (heads and tails) for all pairs
 of relations in the graph.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>df</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="http://pandas.pydata.org/pandas-docs/dev/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.0.0.dev0+514.gd6c258691d)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a></span>) – A graph represented as a pd.DataFrame.
+<dd class="field-odd"><p><strong>df</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="http://pandas.pydata.org/pandas-docs/dev/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.0.0.dev0+523.gf5d754d4fc)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a></span>) – A graph represented as a pd.DataFrame.
 Must contain at least three columns <cite>h</cite>, <cite>r</cite>, <cite>t</cite>.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="http://pandas.pydata.org/pandas-docs/dev/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.0.0.dev0+514.gd6c258691d)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a></span></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="http://pandas.pydata.org/pandas-docs/dev/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.0.0.dev0+523.gf5d754d4fc)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a></span></p>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p><p>The results dataframe. Contains the following columns:</p>
@@ -286,7 +286,7 @@ of r1 and r2.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="kg_topology_toolbox.topology_toolbox.TopologyToolbox.node_degree_summary">
-<span class="sig-name descname"><span class="pre">node_degree_summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_relation_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#TopologyToolbox.node_degree_summary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.TopologyToolbox.node_degree_summary" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">node_degree_summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_relation_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#TopologyToolbox.node_degree_summary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.TopologyToolbox.node_degree_summary" title="Link to this definition"></a></dt>
 <dd><p>For each entity, this function computes the number of edges having it as a head
 (head-degree, or out-degree), as a tail (tail-degree, or in-degree)
 or one of the two (total-degree) in the Knowledge Graph.
@@ -295,14 +295,14 @@ The in-going and out-going relation types are also identified.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>df</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="http://pandas.pydata.org/pandas-docs/dev/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.0.0.dev0+514.gd6c258691d)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a></span>) – A graph represented as a pd.DataFrame.
+<li><p><strong>df</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="http://pandas.pydata.org/pandas-docs/dev/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.0.0.dev0+523.gf5d754d4fc)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a></span>) – A graph represented as a pd.DataFrame.
 Must contain at least three columns <cite>h</cite>, <cite>r</cite>, <cite>t</cite>.</p></li>
 <li><p><strong>return_relation_list</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – If True, return the list of unique relations going
 in/out of an entity. WARNING: expensive for large graphs.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="http://pandas.pydata.org/pandas-docs/dev/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.0.0.dev0+514.gd6c258691d)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a></span></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="http://pandas.pydata.org/pandas-docs/dev/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.0.0.dev0+523.gf5d754d4fc)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a></span></p>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p><p>The results dataframe, indexed over the same entity ID <cite>e</cite> used in df,
@@ -328,7 +328,7 @@ with tail entity <cite>e</cite>.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="kg_topology_toolbox.topology_toolbox.TopologyToolbox.relational_affinity_ingram">
-<span class="sig-name descname"><span class="pre">relational_affinity_ingram</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_max_norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#TopologyToolbox.relational_affinity_ingram"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.TopologyToolbox.relational_affinity_ingram" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">relational_affinity_ingram</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_max_norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#TopologyToolbox.relational_affinity_ingram"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.TopologyToolbox.relational_affinity_ingram" title="Link to this definition"></a></dt>
 <dd><p>Compute the similarity between relations based on the approach proposed in
 InGram: Inductive Knowledge Graph Embedding via Relation Graphs,
 <a class="reference external" href="https://arxiv.org/abs/2305.19987">https://arxiv.org/abs/2305.19987</a>.</p>
@@ -337,13 +337,13 @@ returned dataframe.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>df</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="http://pandas.pydata.org/pandas-docs/dev/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.0.0.dev0+514.gd6c258691d)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a></span>) – A graph represented as a pd.DataFrame.
+<li><p><strong>df</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="http://pandas.pydata.org/pandas-docs/dev/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.0.0.dev0+523.gf5d754d4fc)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a></span>) – A graph represented as a pd.DataFrame.
 Must contain at least three columns <cite>h</cite>, <cite>r</cite>, <cite>t</cite>.</p></li>
 <li><p><strong>min_max_norm</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – min-max normalization of edge weights. Defaults to False.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="http://pandas.pydata.org/pandas-docs/dev/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.0.0.dev0+514.gd6c258691d)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a></span></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="http://pandas.pydata.org/pandas-docs/dev/reference/api/pandas.DataFrame.html#pandas.DataFrame" title="(in pandas v3.0.0.dev0+523.gf5d754d4fc)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a></span></p>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p><p>The results dataframe. Contains the following columns:</p>
