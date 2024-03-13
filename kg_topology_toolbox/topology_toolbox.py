@@ -52,17 +52,17 @@ class TopologyToolbox:
             - **n_loops** (int): number of loops around entity `e`.
         """
         n_entity = df[["h", "t"]].max().max() + 1
-        h_rel_list = {"h_rel_list": "unique"} if return_relation_list else {}
-        t_rel_list = {"t_rel_list": "unique"} if return_relation_list else {}
+        h_rel_list = {"h_rel_list": ("r", "unique")} if return_relation_list else {}
+        t_rel_list = {"t_rel_list": ("r", "unique")} if return_relation_list else {}
         nodes = pd.DataFrame(
-            df.groupby("h")["r"].agg(
-                h_degree="count", h_unique_rel="nunique", **h_rel_list
+            df.groupby("h").agg(
+                h_degree=("r", "count"), h_unique_rel=("r", "nunique"), **h_rel_list  # type: ignore
             ),
             index=np.arange(n_entity),
         )
         nodes = nodes.merge(
-            df.groupby("t")["r"].agg(
-                t_degree="count", t_unique_rel="nunique", **t_rel_list
+            df.groupby("t").agg(
+                t_degree=("r", "count"), t_unique_rel=("r", "nunique"), **t_rel_list  # type: ignore
             ),
             left_index=True,
             right_index=True,
@@ -233,15 +233,16 @@ class TopologyToolbox:
         df_inv = df.reindex(columns=["t", "r", "h"]).rename(
             columns={"t": "h", "r": "r", "h": "t"}
         )
-        df_inv["is_symmetric"] = True
-        df_res = pd.merge(df, df_inv, on=["h", "r", "t"], how="left")
-        df_res["is_symmetric"].fillna(False, inplace=True)
+        df_res = pd.DataFrame({"h": df.h, "r": df.r, "t": df.t, "is_symmetric": False})
+        df_res.loc[
+            df.reset_index().merge(df_inv)["index"],
+            "is_symmetric",
+        ] = True
         # loops are treated separately
         df_res["is_loop"] = df_res.h == df_res.t
         df_res.loc[df_res.h == df_res.t, "is_symmetric"] = False
 
         # inverse
-        df_inv = df_inv.drop("is_symmetric", axis=1)
         unique_inv_r_by_ht = df_inv.groupby(["h", "t"], as_index=False).agg(
             inverse_edge_types=("r", list),
         )

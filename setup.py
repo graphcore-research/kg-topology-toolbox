@@ -8,5 +8,6 @@ setuptools.setup(
     name="kg-topology-toolbox",
     description="A Python toolbox for Knowledge Graph topology metrics.",
     version="0.1",
+    python_requires=">=3.8",
     install_requires=Path("requirements.txt").read_text().rstrip("\n").split("\n"),
 )
