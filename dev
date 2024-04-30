@@ -50,7 +50,7 @@ def cli(*args: Any, **kwargs: Any) -> Callable[[T], T]:
 
 # Commands
 
-PYTHON_ROOTS = ["kg_topology_toolbox", "tests", "dev", "setup.py"]
+PYTHON_ROOTS = ["src/kg_topology_toolbox", "tests", "dev"]
 
 
 @cli("-k", "--filter")
