@@ -1,0 +1,13 @@
+#########################
+# Flake8 Configuration  #
+# (.flake8)             #
+#########################
+[flake8]
+ignore =
+    # line too long
+    E501
+    # line break before binary operator
+    W503
+     # whitespace before ':'
+    E203 
+max-line-length = 90

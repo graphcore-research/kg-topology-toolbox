@@ -1,0 +1,79 @@
+[build-system]
+requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kg-topology-toolbox"
+version = "0.1.0"
+authors = [
+    {name = "Alberto Cattaneo"},
+    {name = "Daniel Justus"},
+    {name = "Thomas Martynec"},
+    {name = "Stephen Bonner"},
+]
+description = "A Python toolbox for Knowledge Graph topology metrics."
+readme = "README.md"
+license = {text = "MIT License"}
+requires-python = ">=3.8"
+dependencies = [
+    'numpy >= 1.24.4',
+    'pandas >= 2.0.3',
+    'scipy >= 1.10.1',
+]
+
+[project.optional-dependencies]
+dev = [
+    'black',
+    'flake8',
+    'isort',
+    'mypy',
+    'pandas-stubs >= 2.0.3.230814',
+    'pytest >= 8.1.1',
+    'pytest-cov',
+    'sphinx >= 7.1.2',
+    'sphinx_rtd_theme',
+    'sphinx_autodoc_typehints',
+    'sphinx-automodapi',
+    'myst-parser',
+]
+
+[project.urls]
+repository = "https://github.com/graphcore-research/kg-topology-toolbox"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+exclude = ["tests"]
+namespaces = true
+
+[tool.black]
+target-version = ["py38", "py39", "py310", "py311"]
+
+[tool.isort]
+profile = "black"
+
+[tool.mypy]
+pretty = true
+show_error_codes = true
+strict = true
+check_untyped_defs = true
+plugins = ["numpy.typing.mypy_plugin"]
+
+[[tool.mypy.overrides]]
+module = "scipy.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "setuptools.*"
+ignore_missing_imports = true
+
+[tool.pytest]
+addopts = ["--no-cov-on-fail"]
+
+[tool.coverage.report]
+skip_covered = true
+show_missing = true
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError",
+    "assert False",
+]
