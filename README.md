@@ -20,3 +20,11 @@ pip install git+ssh://git@github.com/graphcore-research/kg-topology-toolbox
 ```python
 from kg_topology_toolbox import TopologyToolbox
 ```
+
+## License
+
+Copyright (c) 2023 Graphcore Ltd. Licensed under the MIT License.
+
+The included code is released under the MIT license (see [details of the license](LICENSE)).
+
+See [notices](NOTICE.md) for dependencies, credits, derived work and further details.
