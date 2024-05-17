@@ -36,6 +36,7 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.autosectionlabel",
     "myst_parser",
+    "nbsphinx",
 ]
 numpydoc_show_class_members = False
 todo_include_todos = True

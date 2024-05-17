@@ -14,7 +14,7 @@ from scipy.sparse import coo_array
 from kg_topology_toolbox.utils import composition_count, jaccard_similarity
 
 
-class TopologyToolbox:
+class KGTopologyToolbox:
     """
     Toolbox class to compute various Knowledge Graph topology statistics.
     """
@@ -361,8 +361,8 @@ class TopologyToolbox:
         """
         Aggregate topology metrics of all triples of the same relation type.
         To be applied to the output dataframe of either
-        :meth:`TopologyToolbox.edge_degree_cardinality_summary` or
-        :meth:`TopologyToolbox.edge_pattern_summary`.
+        :meth:`KGTopologyToolbox.edge_degree_cardinality_summary` or
+        :meth:`KGTopologyToolbox.edge_pattern_summary`.
 
         The returned dataframe is indexed over relation type IDs, with columns
         giving the aggregated statistics of triples of the correspondig relation.

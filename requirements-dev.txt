@@ -10,4 +10,5 @@ sphinx>=7.1.2
 sphinx_rtd_theme
 sphinx_autodoc_typehints
 sphinx-automodapi
+nbsphinx
 myst-parser

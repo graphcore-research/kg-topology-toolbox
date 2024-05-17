@@ -14,6 +14,8 @@ Our dependencies are (see [requirements.txt](requirements.txt)):
 
 We also use additional Python dependencies for development/testing/documentation (see [requirements-dev.txt](requirements-dev.txt)).
 
+The [tutorial notebook](docs/source/notebooks/ogb_biokg_demo.ipynb) make use of the [ogbl-biokg](https://ogb.stanford.edu/docs/linkprop/#ogbl-biokg) dataset, licensed under CC-0;
+
 ## Derived work
 
 This directory includes derived work from the following:

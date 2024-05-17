@@ -8,4 +8,5 @@ KG Topology Toolbox
    :caption: Contents
 
    User guide <user_guide>
+   notebooks/ogb_biokg_demo
    API reference <API_reference>

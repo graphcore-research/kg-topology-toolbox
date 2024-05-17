@@ -28,6 +28,21 @@ def jaccard_similarity(
     return float(intersection / union)
 
 
+def _composition_count_worker(
+    adj_csr: csr_array, adj_csc: csc_array, tail_shift: int = 0
+) -> pd.DataFrame:
+    adj_2hop = adj_csr @ adj_csc
+    adj_composition = (adj_2hop.tocsc() * (adj_csc > 0)).tocoo()
+    df_composition = pd.DataFrame(
+        dict(
+            h=adj_composition.row,
+            t=adj_composition.col + tail_shift,
+            n_triangles=adj_composition.data,
+        )
+    )
+    return df_composition
+
+
 def composition_count(
     df: pd.DataFrame, chunk_size: int, workers: int, directed: bool = True
 ) -> pd.DataFrame:
@@ -47,20 +62,6 @@ def composition_count(
         - **t** (int): Index of the tail entity.
         - **n_triangles** (int): Number of compositions for the (h, t) edge.
     """
-
-    def _composition_count_worker(
-        adj_csr: csr_array, adj_csc: csc_array, tail_shift: int = 0
-    ) -> pd.DataFrame:
-        adj_2hop = adj_csr @ adj_csc
-        adj_composition = (adj_2hop.tocsc() * (adj_csc > 0)).tocoo()
-        df_composition = pd.DataFrame(
-            dict(
-                h=adj_composition.row,
-                t=adj_composition.col + tail_shift,
-                n_triangles=adj_composition.data,
-            )
-        )
-        return df_composition
 
     adj = coo_array(
         (np.ones(len(df)), (df.h, df.t)),

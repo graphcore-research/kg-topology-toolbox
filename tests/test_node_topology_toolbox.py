@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from kg_topology_toolbox import TopologyToolbox
+from kg_topology_toolbox import KGTopologyToolbox
 
 df = pd.DataFrame(
     dict(
@@ -14,7 +14,7 @@ df = pd.DataFrame(
     )
 )
 
-tools = TopologyToolbox()
+tools = KGTopologyToolbox()
 
 
 @pytest.mark.parametrize("return_relation_list", [True, False])
