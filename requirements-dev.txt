@@ -4,6 +4,7 @@ flake8
 isort
 mypy
 pandas-stubs>=2.0.3.230814
+pandoc
 pytest>=8.1.1
 pytest-cov
 sphinx>=7.1.2
