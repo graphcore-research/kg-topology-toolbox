@@ -4,7 +4,7 @@ User guide
 Installation and usage
 ------------------------
 
-1. Pip install :code:`kg-topology-toolbox``:
+1. Pip install :code:`kg-topology-toolbox`:
 
 .. code-block::
 

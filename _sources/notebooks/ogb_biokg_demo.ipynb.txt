@@ -37,7 +37,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 1,
+   "execution_count": 2,
    "metadata": {},
    "outputs": [],
    "source": [
@@ -47,7 +47,7 @@
     "import seaborn as sns\n",
     "\n",
     "import ogb.linkproppred\n",
-    "from kg_topology_toolbox import TopologyToolbox  # edit name of class after merging\n",
+    "from kg_topology_toolbox import KGTopologyToolbox\n",
     "\n",
     "dataset_directory = \"../../../data/ogb-biokg/\""
    ]
@@ -63,7 +63,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 2,
+   "execution_count": 3,
    "metadata": {},
    "outputs": [
     {
@@ -181,7 +181,7 @@
        "[5088434 rows x 3 columns]"
       ]
      },
-     "execution_count": 2,
+     "execution_count": 3,
      "metadata": {},
      "output_type": "execute_result"
     }
@@ -207,11 +207,11 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 3,
+   "execution_count": 4,
    "metadata": {},
    "outputs": [],
    "source": [
-    "kgtt = TopologyToolbox()  # edit name of class after merging"
+    "kgtt = KGTopologyToolbox()"
    ]
   },
   {
@@ -231,7 +231,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 4,
+   "execution_count": 5,
    "metadata": {},
    "outputs": [
     {
@@ -385,7 +385,7 @@
        "[45085 rows x 6 columns]"
       ]
      },
-     "execution_count": 4,
+     "execution_count": 5,
      "metadata": {},
      "output_type": "execute_result"
     }

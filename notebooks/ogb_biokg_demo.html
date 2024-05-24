@@ -119,7 +119,7 @@ Uninstalling kg-topology-toolbox-0.1.0:
 </pre></div></div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>import numpy as np
@@ -128,7 +128,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 import ogb.linkproppred
-from kg_topology_toolbox import TopologyToolbox  # edit name of class after merging
+from kg_topology_toolbox import KGTopologyToolbox
 
 dataset_directory = &quot;../../../data/ogb-biokg/&quot;
 </pre></div>
@@ -139,7 +139,7 @@ dataset_directory = &quot;../../../data/ogb-biokg/&quot;
 <h2>Data preparation<a class="headerlink" href="#Data-preparation" title="Link to this heading"></a></h2>
 <p>We load the OGBL-BioKG dataset using the <code class="docutils literal notranslate"><span class="pre">ogb.linkproppred.LinkPropPredDataset</span></code> class and store all (h, r, t) triples in a <code class="docutils literal notranslate"><span class="pre">pandas</span></code> DataFrame.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>dataset = ogb.linkproppred.LinkPropPredDataset(
@@ -155,7 +155,7 @@ biokg_df
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -256,10 +256,10 @@ biokg_df
 </div>
 <p>Based on this representation of the knowledge graph, we can proceed to compute its topological properties using the <code class="docutils literal notranslate"><span class="pre">KGTopologyToolbox</span></code> class.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>kgtt = TopologyToolbox()  # edit name of class after merging
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>kgtt = KGTopologyToolbox()
 </pre></div>
 </div>
 </div>
@@ -275,7 +275,7 @@ biokg_df
 <li><p><code class="docutils literal notranslate"><span class="pre">n_loops</span></code> is the number of loop edges around the node.</p></li>
 </ul>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>node_ds = kgtt.node_degree_summary(biokg_df)
@@ -284,7 +284,7 @@ node_ds
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
