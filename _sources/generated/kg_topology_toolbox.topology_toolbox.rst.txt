@@ -23,7 +23,7 @@ kg\_topology\_toolbox.topology\_toolbox
       :toctree:
       :template: class.rst
    
-      TopologyToolbox
+      KGTopologyToolbox
    
    
 

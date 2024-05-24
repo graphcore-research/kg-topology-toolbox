@@ -18,6 +18,7 @@
         <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
@@ -45,6 +46,7 @@
               <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../user_guide.html">User guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../notebooks/ogb_biokg_demo.html">KGTopologyToolbox walk-through</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../API_reference.html">API reference</a></li>
 </ul>
 
@@ -106,6 +108,21 @@
 
 
 
+<span class="k">def</span> <span class="nf">_composition_count_worker</span><span class="p">(</span>
+    <span class="n">adj_csr</span><span class="p">:</span> <span class="n">csr_array</span><span class="p">,</span> <span class="n">adj_csc</span><span class="p">:</span> <span class="n">csc_array</span><span class="p">,</span> <span class="n">tail_shift</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+    <span class="n">adj_2hop</span> <span class="o">=</span> <span class="n">adj_csr</span> <span class="o">@</span> <span class="n">adj_csc</span>
+    <span class="n">adj_composition</span> <span class="o">=</span> <span class="p">(</span><span class="n">adj_2hop</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span> <span class="o">*</span> <span class="p">(</span><span class="n">adj_csc</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">tocoo</span><span class="p">()</span>
+    <span class="n">df_composition</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+        <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">h</span><span class="o">=</span><span class="n">adj_composition</span><span class="o">.</span><span class="n">row</span><span class="p">,</span>
+            <span class="n">t</span><span class="o">=</span><span class="n">adj_composition</span><span class="o">.</span><span class="n">col</span> <span class="o">+</span> <span class="n">tail_shift</span><span class="p">,</span>
+            <span class="n">n_triangles</span><span class="o">=</span><span class="n">adj_composition</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">df_composition</span>
+
+
 <div class="viewcode-block" id="composition_count">
 <a class="viewcode-back" href="../../generated/kg_topology_toolbox.utils.composition_count.html#kg_topology_toolbox.utils.composition_count">[docs]</a>
 <span class="k">def</span> <span class="nf">composition_count</span><span class="p">(</span>
@@ -127,20 +144,6 @@
 <span class="sd">        - **t** (int): Index of the tail entity.</span>
 <span class="sd">        - **n_triangles** (int): Number of compositions for the (h, t) edge.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="nf">_composition_count_worker</span><span class="p">(</span>
-        <span class="n">adj_csr</span><span class="p">:</span> <span class="n">csr_array</span><span class="p">,</span> <span class="n">adj_csc</span><span class="p">:</span> <span class="n">csc_array</span><span class="p">,</span> <span class="n">tail_shift</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-        <span class="n">adj_2hop</span> <span class="o">=</span> <span class="n">adj_csr</span> <span class="o">@</span> <span class="n">adj_csc</span>
-        <span class="n">adj_composition</span> <span class="o">=</span> <span class="p">(</span><span class="n">adj_2hop</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span> <span class="o">*</span> <span class="p">(</span><span class="n">adj_csc</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">tocoo</span><span class="p">()</span>
-        <span class="n">df_composition</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
-            <span class="nb">dict</span><span class="p">(</span>
-                <span class="n">h</span><span class="o">=</span><span class="n">adj_composition</span><span class="o">.</span><span class="n">row</span><span class="p">,</span>
-                <span class="n">t</span><span class="o">=</span><span class="n">adj_composition</span><span class="o">.</span><span class="n">col</span> <span class="o">+</span> <span class="n">tail_shift</span><span class="p">,</span>
-                <span class="n">n_triangles</span><span class="o">=</span><span class="n">adj_composition</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
-            <span class="p">)</span>
-        <span class="p">)</span>
-        <span class="k">return</span> <span class="n">df_composition</span>
 
     <span class="n">adj</span> <span class="o">=</span> <span class="n">coo_array</span><span class="p">(</span>
         <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)),</span> <span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">h</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">t</span><span class="p">)),</span>

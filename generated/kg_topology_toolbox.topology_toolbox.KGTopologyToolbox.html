@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>kg_topology_toolbox.topology_toolbox.TopologyToolbox &mdash; KG Topology Toolbox  documentation</title>
+  <title>kg_topology_toolbox.topology_toolbox.KGTopologyToolbox &mdash; KG Topology Toolbox  documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
@@ -19,6 +19,7 @@
         <script src="../_static/documentation_options.js?v=5929fcd5"></script>
         <script src="../_static/doctools.js?v=9a2dae69"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -48,10 +49,11 @@
               <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../user_guide.html">User guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../notebooks/ogb_biokg_demo.html">KGTopologyToolbox walk-through</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../API_reference.html">API reference</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="kg_topology_toolbox.topology_toolbox.html">kg_topology_toolbox.topology_toolbox</a><ul class="current">
-<li class="toctree-l3 current"><a class="current reference internal" href="#">kg_topology_toolbox.topology_toolbox.TopologyToolbox</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#kg_topology_toolbox.topology_toolbox.TopologyToolbox"><code class="docutils literal notranslate"><span class="pre">TopologyToolbox</span></code></a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">kg_topology_toolbox.topology_toolbox.KGTopologyToolbox</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox"><code class="docutils literal notranslate"><span class="pre">KGTopologyToolbox</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -77,9 +79,9 @@
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../API_reference.html">API Reference</a></li>
           <li class="breadcrumb-item"><a href="kg_topology_toolbox.topology_toolbox.html">kg_topology_toolbox.topology_toolbox</a></li>
-      <li class="breadcrumb-item active">kg_topology_toolbox.topology_toolbox.TopologyToolbox</li>
+      <li class="breadcrumb-item active">kg_topology_toolbox.topology_toolbox.KGTopologyToolbox</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../_sources/generated/kg_topology_toolbox.topology_toolbox.TopologyToolbox.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/generated/kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -87,19 +89,19 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="kg-topology-toolbox-topology-toolbox-topologytoolbox">
-<h1>kg_topology_toolbox.topology_toolbox.TopologyToolbox<a class="headerlink" href="#kg-topology-toolbox-topology-toolbox-topologytoolbox" title="Link to this heading"></a></h1>
+  <section id="kg-topology-toolbox-topology-toolbox-kgtopologytoolbox">
+<h1>kg_topology_toolbox.topology_toolbox.KGTopologyToolbox<a class="headerlink" href="#kg-topology-toolbox-topology-toolbox-kgtopologytoolbox" title="Link to this heading"></a></h1>
 <dl class="py class">
-<dt class="sig sig-object py" id="kg_topology_toolbox.topology_toolbox.TopologyToolbox">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">kg_topology_toolbox.topology_toolbox.</span></span><span class="sig-name descname"><span class="pre">TopologyToolbox</span></span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#TopologyToolbox"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.TopologyToolbox" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="kg_topology_toolbox.topology_toolbox.KGTopologyToolbox">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">kg_topology_toolbox.topology_toolbox.</span></span><span class="sig-name descname"><span class="pre">KGTopologyToolbox</span></span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#KGTopologyToolbox"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox" title="Link to this definition"></a></dt>
 <dd><p>Toolbox class to compute various Knowledge Graph topology statistics.</p>
 <dl class="py method">
-<dt class="sig sig-object py" id="kg_topology_toolbox.topology_toolbox.TopologyToolbox.aggregate_by_relation">
-<span class="sig-name descname"><span class="pre">aggregate_by_relation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">edge_topology_df</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#TopologyToolbox.aggregate_by_relation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.TopologyToolbox.aggregate_by_relation" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.aggregate_by_relation">
+<span class="sig-name descname"><span class="pre">aggregate_by_relation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">edge_topology_df</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#KGTopologyToolbox.aggregate_by_relation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.aggregate_by_relation" title="Link to this definition"></a></dt>
 <dd><p>Aggregate topology metrics of all triples of the same relation type.
 To be applied to the output dataframe of either
-<a class="reference internal" href="#kg_topology_toolbox.topology_toolbox.TopologyToolbox.edge_degree_cardinality_summary" title="kg_topology_toolbox.topology_toolbox.TopologyToolbox.edge_degree_cardinality_summary"><code class="xref py py-meth docutils literal notranslate"><span class="pre">TopologyToolbox.edge_degree_cardinality_summary()</span></code></a> or
-<a class="reference internal" href="#kg_topology_toolbox.topology_toolbox.TopologyToolbox.edge_pattern_summary" title="kg_topology_toolbox.topology_toolbox.TopologyToolbox.edge_pattern_summary"><code class="xref py py-meth docutils literal notranslate"><span class="pre">TopologyToolbox.edge_pattern_summary()</span></code></a>.</p>
+<a class="reference internal" href="#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.edge_degree_cardinality_summary" title="kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.edge_degree_cardinality_summary"><code class="xref py py-meth docutils literal notranslate"><span class="pre">KGTopologyToolbox.edge_degree_cardinality_summary()</span></code></a> or
+<a class="reference internal" href="#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.edge_pattern_summary" title="kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.edge_pattern_summary"><code class="xref py py-meth docutils literal notranslate"><span class="pre">KGTopologyToolbox.edge_pattern_summary()</span></code></a>.</p>
 <p>The returned dataframe is indexed over relation type IDs, with columns
 giving the aggregated statistics of triples of the correspondig relation.
 The name of the columns is of the form <code class="docutils literal notranslate"><span class="pre">column_name_in_input_df</span> <span class="pre">+</span> <span class="pre">suffix</span></code>.
@@ -140,8 +142,8 @@ relation type.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="kg_topology_toolbox.topology_toolbox.TopologyToolbox.edge_degree_cardinality_summary">
-<span class="sig-name descname"><span class="pre">edge_degree_cardinality_summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#TopologyToolbox.edge_degree_cardinality_summary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.TopologyToolbox.edge_degree_cardinality_summary" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.edge_degree_cardinality_summary">
+<span class="sig-name descname"><span class="pre">edge_degree_cardinality_summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#KGTopologyToolbox.edge_degree_cardinality_summary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.edge_degree_cardinality_summary" title="Link to this definition"></a></dt>
 <dd><p>For each triple, this function computes the number of edges with the same head
 (head-degree, or out-degree), the same tail (tail-degree, or in-degree)
 or one of the two (total-degree) in the Knowledge Graph.
@@ -187,8 +189,8 @@ the subgraph of edges with relation type r.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="kg_topology_toolbox.topology_toolbox.TopologyToolbox.edge_pattern_summary">
-<span class="sig-name descname"><span class="pre">edge_pattern_summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_metapath_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">composition_chunk_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">composition_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#TopologyToolbox.edge_pattern_summary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.TopologyToolbox.edge_pattern_summary" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.edge_pattern_summary">
+<span class="sig-name descname"><span class="pre">edge_pattern_summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_metapath_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">composition_chunk_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">composition_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#KGTopologyToolbox.edge_pattern_summary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.edge_pattern_summary" title="Link to this definition"></a></dt>
 <dd><p>This function analyses the structural properties of each edge in the graph:
 symmetry, presence of inverse/inference(=parallel) edges and
 triangles supported on the edge.</p>
@@ -242,8 +244,8 @@ for the directed triangles.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="kg_topology_toolbox.topology_toolbox.TopologyToolbox.jaccard_similarity_relation_sets">
-<span class="sig-name descname"><span class="pre">jaccard_similarity_relation_sets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#TopologyToolbox.jaccard_similarity_relation_sets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.TopologyToolbox.jaccard_similarity_relation_sets" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.jaccard_similarity_relation_sets">
+<span class="sig-name descname"><span class="pre">jaccard_similarity_relation_sets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#KGTopologyToolbox.jaccard_similarity_relation_sets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.jaccard_similarity_relation_sets" title="Link to this definition"></a></dt>
 <dd><p>Compute the similarity between relations defined as the Jaccard Similarity
 between sets of entities (heads and tails) for all pairs
 of relations in the graph.</p>
@@ -285,8 +287,8 @@ of r1 and r2.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="kg_topology_toolbox.topology_toolbox.TopologyToolbox.node_degree_summary">
-<span class="sig-name descname"><span class="pre">node_degree_summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_relation_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#TopologyToolbox.node_degree_summary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.TopologyToolbox.node_degree_summary" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.node_degree_summary">
+<span class="sig-name descname"><span class="pre">node_degree_summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_relation_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#KGTopologyToolbox.node_degree_summary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.node_degree_summary" title="Link to this definition"></a></dt>
 <dd><p>For each entity, this function computes the number of edges having it as a head
 (head-degree, or out-degree), as a tail (tail-degree, or in-degree)
 or one of the two (total-degree) in the Knowledge Graph.
@@ -327,8 +329,8 @@ with tail entity <cite>e</cite>.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="kg_topology_toolbox.topology_toolbox.TopologyToolbox.relational_affinity_ingram">
-<span class="sig-name descname"><span class="pre">relational_affinity_ingram</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_max_norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#TopologyToolbox.relational_affinity_ingram"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.TopologyToolbox.relational_affinity_ingram" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.relational_affinity_ingram">
+<span class="sig-name descname"><span class="pre">relational_affinity_ingram</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_max_norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#KGTopologyToolbox.relational_affinity_ingram"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.relational_affinity_ingram" title="Link to this definition"></a></dt>
 <dd><p>Compute the similarity between relations based on the approach proposed in
 InGram: Inductive Knowledge Graph Embedding via Relation Graphs,
 <a class="reference external" href="https://arxiv.org/abs/2305.19987">https://arxiv.org/abs/2305.19987</a>.</p>

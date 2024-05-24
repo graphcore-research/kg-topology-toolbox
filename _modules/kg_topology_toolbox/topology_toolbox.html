@@ -18,6 +18,7 @@
         <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
@@ -45,6 +46,7 @@
               <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../user_guide.html">User guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../notebooks/ogb_biokg_demo.html">KGTopologyToolbox walk-through</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../API_reference.html">API reference</a></li>
 </ul>
 
@@ -89,15 +91,15 @@
 <span class="kn">from</span> <span class="nn">kg_topology_toolbox.utils</span> <span class="kn">import</span> <span class="n">composition_count</span><span class="p">,</span> <span class="n">jaccard_similarity</span>
 
 
-<div class="viewcode-block" id="TopologyToolbox">
-<a class="viewcode-back" href="../../generated/kg_topology_toolbox.topology_toolbox.TopologyToolbox.html#kg_topology_toolbox.topology_toolbox.TopologyToolbox">[docs]</a>
-<span class="k">class</span> <span class="nc">TopologyToolbox</span><span class="p">:</span>
+<div class="viewcode-block" id="KGTopologyToolbox">
+<a class="viewcode-back" href="../../generated/kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.html#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox">[docs]</a>
+<span class="k">class</span> <span class="nc">KGTopologyToolbox</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Toolbox class to compute various Knowledge Graph topology statistics.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="TopologyToolbox.node_degree_summary">
-<a class="viewcode-back" href="../../generated/kg_topology_toolbox.topology_toolbox.TopologyToolbox.html#kg_topology_toolbox.topology_toolbox.TopologyToolbox.node_degree_summary">[docs]</a>
+<div class="viewcode-block" id="KGTopologyToolbox.node_degree_summary">
+<a class="viewcode-back" href="../../generated/kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.html#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.node_degree_summary">[docs]</a>
     <span class="k">def</span> <span class="nf">node_degree_summary</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">return_relation_list</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
@@ -169,8 +171,8 @@
         <span class="p">]</span></div>
 
 
-<div class="viewcode-block" id="TopologyToolbox.edge_degree_cardinality_summary">
-<a class="viewcode-back" href="../../generated/kg_topology_toolbox.topology_toolbox.TopologyToolbox.html#kg_topology_toolbox.topology_toolbox.TopologyToolbox.edge_degree_cardinality_summary">[docs]</a>
+<div class="viewcode-block" id="KGTopologyToolbox.edge_degree_cardinality_summary">
+<a class="viewcode-back" href="../../generated/kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.html#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.edge_degree_cardinality_summary">[docs]</a>
     <span class="k">def</span> <span class="nf">edge_degree_cardinality_summary</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        For each triple, this function computes the number of edges with the same head</span>
@@ -262,8 +264,8 @@
         <span class="k">return</span> <span class="n">df_res</span></div>
 
 
-<div class="viewcode-block" id="TopologyToolbox.edge_pattern_summary">
-<a class="viewcode-back" href="../../generated/kg_topology_toolbox.topology_toolbox.TopologyToolbox.html#kg_topology_toolbox.topology_toolbox.TopologyToolbox.edge_pattern_summary">[docs]</a>
+<div class="viewcode-block" id="KGTopologyToolbox.edge_pattern_summary">
+<a class="viewcode-back" href="../../generated/kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.html#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.edge_pattern_summary">[docs]</a>
     <span class="k">def</span> <span class="nf">edge_pattern_summary</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
@@ -443,14 +445,14 @@
         <span class="p">]</span></div>
 
 
-<div class="viewcode-block" id="TopologyToolbox.aggregate_by_relation">
-<a class="viewcode-back" href="../../generated/kg_topology_toolbox.topology_toolbox.TopologyToolbox.html#kg_topology_toolbox.topology_toolbox.TopologyToolbox.aggregate_by_relation">[docs]</a>
+<div class="viewcode-block" id="KGTopologyToolbox.aggregate_by_relation">
+<a class="viewcode-back" href="../../generated/kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.html#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.aggregate_by_relation">[docs]</a>
     <span class="k">def</span> <span class="nf">aggregate_by_relation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">edge_topology_df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Aggregate topology metrics of all triples of the same relation type.</span>
 <span class="sd">        To be applied to the output dataframe of either</span>
-<span class="sd">        :meth:`TopologyToolbox.edge_degree_cardinality_summary` or</span>
-<span class="sd">        :meth:`TopologyToolbox.edge_pattern_summary`.</span>
+<span class="sd">        :meth:`KGTopologyToolbox.edge_degree_cardinality_summary` or</span>
+<span class="sd">        :meth:`KGTopologyToolbox.edge_pattern_summary`.</span>
 
 <span class="sd">        The returned dataframe is indexed over relation type IDs, with columns</span>
 <span class="sd">        giving the aggregated statistics of triples of the correspondig relation.</span>
@@ -525,8 +527,8 @@
         <span class="k">return</span> <span class="n">df_res</span></div>
 
 
-<div class="viewcode-block" id="TopologyToolbox.jaccard_similarity_relation_sets">
-<a class="viewcode-back" href="../../generated/kg_topology_toolbox.topology_toolbox.TopologyToolbox.html#kg_topology_toolbox.topology_toolbox.TopologyToolbox.jaccard_similarity_relation_sets">[docs]</a>
+<div class="viewcode-block" id="KGTopologyToolbox.jaccard_similarity_relation_sets">
+<a class="viewcode-back" href="../../generated/kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.html#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.jaccard_similarity_relation_sets">[docs]</a>
     <span class="k">def</span> <span class="nf">jaccard_similarity_relation_sets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the similarity between relations defined as the Jaccard Similarity</span>
@@ -623,8 +625,8 @@
         <span class="k">return</span> <span class="n">df_res</span></div>
 
 
-<div class="viewcode-block" id="TopologyToolbox.relational_affinity_ingram">
-<a class="viewcode-back" href="../../generated/kg_topology_toolbox.topology_toolbox.TopologyToolbox.html#kg_topology_toolbox.topology_toolbox.TopologyToolbox.relational_affinity_ingram">[docs]</a>
+<div class="viewcode-block" id="KGTopologyToolbox.relational_affinity_ingram">
+<a class="viewcode-back" href="../../generated/kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.html#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.relational_affinity_ingram">[docs]</a>
     <span class="k">def</span> <span class="nf">relational_affinity_ingram</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">min_max_norm</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>

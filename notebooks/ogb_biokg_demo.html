@@ -1,0 +1,1935 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KGTopologyToolbox walk-through &mdash; KG Topology Toolbox  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="API Reference" href="../API_reference.html" />
+    <link rel="prev" title="User guide" href="../user_guide.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            KG Topology Toolbox
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../user_guide.html">User guide</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">KGTopologyToolbox walk-through</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#Dependencies">Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Data-preparation">Data preparation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Node-level-analysis">Node-level analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Edge-level-analysis">Edge-level analysis</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Edge-degrees-and-cardinality">Edge degrees and cardinality</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Edge-topological-patterns">Edge topological patterns</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#Relation-level-analysis">Relation-level analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../API_reference.html">API reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">KG Topology Toolbox</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">KGTopologyToolbox walk-through</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/notebooks/ogb_biokg_demo.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="KGTopologyToolbox-walk-through">
+<h1>KGTopologyToolbox walk-through<a class="headerlink" href="#KGTopologyToolbox-walk-through" title="Link to this heading"></a></h1>
+<p>Copyright (c) 2024 Graphcore Ltd. All rights reserved.</p>
+<p>In this notebook we give a general overview of the classes and methods included in the <code class="docutils literal notranslate"><span class="pre">kg-topology-toolbox</span></code> library and explain how to use them to extract topological data from any knowledge graph. As an example, we use the open-source biomedical dataset <a class="reference external" href="https://ogb.stanford.edu/docs/linkprop/#ogbl-biokg">ogbl-biokg</a>.</p>
+<section id="Dependencies">
+<h2>Dependencies<a class="headerlink" href="#Dependencies" title="Link to this heading"></a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>import sys
+!{sys.executable} -m pip uninstall -y kg_topology_toolbox
+!pip install -q git+ssh://git@github.com/graphcore-research/kg-topology-toolbox
+!pip install -q jupyter ipywidgets ogb seaborn
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Found existing installation: kg-topology-toolbox 0.1.0
+Uninstalling kg-topology-toolbox-0.1.0:
+  Successfully uninstalled kg-topology-toolbox-0.1.0
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+import ogb.linkproppred
+from kg_topology_toolbox import TopologyToolbox  # edit name of class after merging
+
+dataset_directory = &quot;../../../data/ogb-biokg/&quot;
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Data-preparation">
+<h2>Data preparation<a class="headerlink" href="#Data-preparation" title="Link to this heading"></a></h2>
+<p>We load the OGBL-BioKG dataset using the <code class="docutils literal notranslate"><span class="pre">ogb.linkproppred.LinkPropPredDataset</span></code> class and store all (h, r, t) triples in a <code class="docutils literal notranslate"><span class="pre">pandas</span></code> DataFrame.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>dataset = ogb.linkproppred.LinkPropPredDataset(
+    name=&quot;ogbl-biokg&quot;, root=dataset_directory
+)
+
+all_triples = []
+for split in dataset.get_edge_split().values():
+    all_triples.append(np.stack([split[&quot;head&quot;], split[&quot;relation&quot;], split[&quot;tail&quot;]]).T)
+biokg_df = pd.DataFrame(np.concatenate(all_triples), columns=[&quot;h&quot;, &quot;r&quot;, &quot;t&quot;])
+biokg_df
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>h</th>
+      <th>r</th>
+      <th>t</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1718</td>
+      <td>0</td>
+      <td>3207</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>4903</td>
+      <td>0</td>
+      <td>13662</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>5480</td>
+      <td>0</td>
+      <td>15999</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>3148</td>
+      <td>0</td>
+      <td>7247</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>10300</td>
+      <td>0</td>
+      <td>16202</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>5088429</th>
+      <td>2451</td>
+      <td>50</td>
+      <td>5097</td>
+    </tr>
+    <tr>
+      <th>5088430</th>
+      <td>6456</td>
+      <td>50</td>
+      <td>8833</td>
+    </tr>
+    <tr>
+      <th>5088431</th>
+      <td>9484</td>
+      <td>50</td>
+      <td>15873</td>
+    </tr>
+    <tr>
+      <th>5088432</th>
+      <td>6365</td>
+      <td>50</td>
+      <td>496</td>
+    </tr>
+    <tr>
+      <th>5088433</th>
+      <td>13860</td>
+      <td>50</td>
+      <td>6368</td>
+    </tr>
+  </tbody>
+</table>
+<p>5088434 rows × 3 columns</p>
+</div></div>
+</div>
+<p>Based on this representation of the knowledge graph, we can proceed to compute its topological properties using the <code class="docutils literal notranslate"><span class="pre">KGTopologyToolbox</span></code> class.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>kgtt = TopologyToolbox()  # edit name of class after merging
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Node-level-analysis">
+<h2>Node-level analysis<a class="headerlink" href="#Node-level-analysis" title="Link to this heading"></a></h2>
+<p>The method <code class="docutils literal notranslate"><span class="pre">node_degree_summary</span></code> provides a summary of the degrees of each individual node in the knowledge graph. The returned dataframe is indexed on the node ID.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">h_degree</span></code> is the number of edges coming out from the node;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">t_degree</span></code> is the number of edges going into the node;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tot_degree</span></code> is the number of edges that use the node as either head or tail;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">h_unique_rel</span></code> (resp. <code class="docutils literal notranslate"><span class="pre">t_unique_rel</span></code>) is the number of unique relation types come out from (resp. go into) the node;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">n_loops</span></code> is the number of loop edges around the node.</p></li>
+</ul>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>node_ds = kgtt.node_degree_summary(biokg_df)
+node_ds
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>h_degree</th>
+      <th>t_degree</th>
+      <th>tot_degree</th>
+      <th>h_unique_rel</th>
+      <th>t_unique_rel</th>
+      <th>n_loops</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>27</td>
+      <td>72</td>
+      <td>99</td>
+      <td>4</td>
+      <td>4</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>14</td>
+      <td>94</td>
+      <td>108</td>
+      <td>3</td>
+      <td>6</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>208</td>
+      <td>95</td>
+      <td>303</td>
+      <td>5</td>
+      <td>7</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>28999</td>
+      <td>26154</td>
+      <td>55153</td>
+      <td>10</td>
+      <td>11</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>362</td>
+      <td>302</td>
+      <td>664</td>
+      <td>11</td>
+      <td>12</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>45080</th>
+      <td>21</td>
+      <td>22</td>
+      <td>43</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>45081</th>
+      <td>29</td>
+      <td>32</td>
+      <td>61</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>45082</th>
+      <td>28</td>
+      <td>30</td>
+      <td>58</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>45083</th>
+      <td>17</td>
+      <td>19</td>
+      <td>36</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>45084</th>
+      <td>28</td>
+      <td>31</td>
+      <td>59</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+<p>45085 rows × 6 columns</p>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>metrics = [
+    &quot;h_degree&quot;,
+    &quot;t_degree&quot;,
+]
+fig, ax = plt.subplots(1, len(metrics), figsize=(4.5 * len(metrics), 4))
+
+for i, metric in enumerate(metrics):
+    x = np.log2(node_ds[metric])
+    sns.histplot(
+        x=x, stat=&quot;probability&quot;, binwidth=1, binrange=[0, x.max() + 1], ax=ax[i]
+    )
+    ax[i].set_xlabel(f&quot;log2({metric})&quot;)
+plt.tight_layout()
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/nethome/albertoc/research/knowledge_graphs/kg-topology-toolbox/.venv38/lib/python3.8/site-packages/pandas/core/arraylike.py:396: RuntimeWarning: divide by zero encountered in log2
+  result = getattr(ufunc, method)(*inputs, **kwargs)
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_ogb_biokg_demo_9_1.png" src="../_images/notebooks_ogb_biokg_demo_9_1.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>metrics = [
+    &quot;h_unique_rel&quot;,
+    &quot;t_unique_rel&quot;,
+]
+fig, ax = plt.subplots(1, len(metrics), figsize=(4.5 * len(metrics), 4))
+
+for i, metric in enumerate(metrics):
+    x = node_ds[metric]
+    sns.histplot(
+        x=x, stat=&quot;probability&quot;, binwidth=1, binrange=[0, x.max() + 1], ax=ax[i]
+    )
+    ax[i].set_xlabel(f&quot;{metric}&quot;)
+plt.tight_layout()
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_ogb_biokg_demo_10_0.png" src="../_images/notebooks_ogb_biokg_demo_10_0.png" />
+</div>
+</div>
+</section>
+<section id="Edge-level-analysis">
+<h2>Edge-level analysis<a class="headerlink" href="#Edge-level-analysis" title="Link to this heading"></a></h2>
+<section id="Edge-degrees-and-cardinality">
+<h3>Edge degrees and cardinality<a class="headerlink" href="#Edge-degrees-and-cardinality" title="Link to this heading"></a></h3>
+<p>The method <code class="docutils literal notranslate"><span class="pre">edge_degree_cardinality_summary</span></code> provides, for each edge (h, r, t) in the KG, detailed information on the connectivity patterns of the head and tail nodes:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">h_unique_rel</span></code> (resp. <code class="docutils literal notranslate"><span class="pre">t_unique_rel</span></code>) is the number of unique relation types coming out of the head node (resp. going into the tail node);</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">h_degree</span></code> is the out-degree of the head node and <code class="docutils literal notranslate"><span class="pre">h_degree_same_rel</span></code> is the degree when only considering edges of the same relation type <code class="docutils literal notranslate"><span class="pre">r</span></code>;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">t_degree</span></code> is the in-degree of the tail node and <code class="docutils literal notranslate"><span class="pre">t_degree_same_rel</span></code> is the degree when only considering edges of the same relation type <code class="docutils literal notranslate"><span class="pre">r</span></code>;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tot_degree</span></code> is the total number of edges with either head entity <code class="docutils literal notranslate"><span class="pre">h</span></code> or tail entity <code class="docutils literal notranslate"><span class="pre">t</span></code> (in particular, <code class="docutils literal notranslate"><span class="pre">tot_degree</span> <span class="pre">&lt;=</span> <span class="pre">h_degree</span> <span class="pre">+</span> <span class="pre">t_degree</span></code>); <code class="docutils literal notranslate"><span class="pre">tot_degree_same_rel</span></code> is computed only considering edges of the same relation type <code class="docutils literal notranslate"><span class="pre">r</span></code>;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">triple_cardinality</span></code> is the cardinality type of the edge:</p>
+<ul>
+<li><p><em>one-to-one</em> (1:1) if <code class="docutils literal notranslate"><span class="pre">h_degree</span> <span class="pre">=</span> <span class="pre">1</span></code>, <code class="docutils literal notranslate"><span class="pre">t_degree</span> <span class="pre">=</span> <span class="pre">1</span></code>;</p></li>
+<li><p><em>one-to-many</em> (1:M) if <code class="docutils literal notranslate"><span class="pre">h_degree</span> <span class="pre">&gt;</span> <span class="pre">1</span></code>, <code class="docutils literal notranslate"><span class="pre">t_degree</span> <span class="pre">=</span> <span class="pre">1</span></code>;</p></li>
+<li><p><em>many-to-one</em> (M:1) if <code class="docutils literal notranslate"><span class="pre">h_degree</span> <span class="pre">=</span> <span class="pre">1</span></code>, <code class="docutils literal notranslate"><span class="pre">t_degree</span> <span class="pre">&gt;</span> <span class="pre">1</span></code>;</p></li>
+<li><p><em>many-to-many</em> (M:M) if <code class="docutils literal notranslate"><span class="pre">h_degree</span> <span class="pre">&gt;</span> <span class="pre">1</span></code>, <code class="docutils literal notranslate"><span class="pre">t_degree</span> <span class="pre">&gt;</span> <span class="pre">1</span></code>.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">triple_cardinality_same_rel</span></code> is defined as <code class="docutils literal notranslate"><span class="pre">triple_cardinality</span></code> but using <code class="docutils literal notranslate"><span class="pre">h_degree_same_rel</span></code>, <code class="docutils literal notranslate"><span class="pre">t_degree_same_rel</span></code>.</p></li>
+</ul>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>edge_dcs = kgtt.edge_degree_cardinality_summary(biokg_df)
+edge_dcs
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>h</th>
+      <th>r</th>
+      <th>t</th>
+      <th>h_unique_rel</th>
+      <th>h_degree</th>
+      <th>h_degree_same_rel</th>
+      <th>t_unique_rel</th>
+      <th>t_degree</th>
+      <th>t_degree_same_rel</th>
+      <th>tot_degree</th>
+      <th>tot_degree_same_rel</th>
+      <th>triple_cardinality</th>
+      <th>triple_cardinality_same_rel</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1718</td>
+      <td>0</td>
+      <td>3207</td>
+      <td>5</td>
+      <td>191</td>
+      <td>116</td>
+      <td>6</td>
+      <td>46</td>
+      <td>14</td>
+      <td>236</td>
+      <td>129</td>
+      <td>M:M</td>
+      <td>M:M</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>4903</td>
+      <td>0</td>
+      <td>13662</td>
+      <td>8</td>
+      <td>544</td>
+      <td>33</td>
+      <td>9</td>
+      <td>1975</td>
+      <td>50</td>
+      <td>2518</td>
+      <td>82</td>
+      <td>M:M</td>
+      <td>M:M</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>5480</td>
+      <td>0</td>
+      <td>15999</td>
+      <td>3</td>
+      <td>108</td>
+      <td>5</td>
+      <td>4</td>
+      <td>72</td>
+      <td>22</td>
+      <td>179</td>
+      <td>26</td>
+      <td>M:M</td>
+      <td>M:M</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>3148</td>
+      <td>0</td>
+      <td>7247</td>
+      <td>4</td>
+      <td>110</td>
+      <td>99</td>
+      <td>11</td>
+      <td>673</td>
+      <td>271</td>
+      <td>782</td>
+      <td>369</td>
+      <td>M:M</td>
+      <td>M:M</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>10300</td>
+      <td>0</td>
+      <td>16202</td>
+      <td>4</td>
+      <td>414</td>
+      <td>315</td>
+      <td>6</td>
+      <td>148</td>
+      <td>31</td>
+      <td>561</td>
+      <td>345</td>
+      <td>M:M</td>
+      <td>M:M</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>5088429</th>
+      <td>2451</td>
+      <td>50</td>
+      <td>5097</td>
+      <td>5</td>
+      <td>636</td>
+      <td>272</td>
+      <td>10</td>
+      <td>803</td>
+      <td>272</td>
+      <td>1437</td>
+      <td>543</td>
+      <td>M:M</td>
+      <td>M:M</td>
+    </tr>
+    <tr>
+      <th>5088430</th>
+      <td>6456</td>
+      <td>50</td>
+      <td>8833</td>
+      <td>10</td>
+      <td>743</td>
+      <td>259</td>
+      <td>10</td>
+      <td>371</td>
+      <td>100</td>
+      <td>1111</td>
+      <td>358</td>
+      <td>M:M</td>
+      <td>M:M</td>
+    </tr>
+    <tr>
+      <th>5088431</th>
+      <td>9484</td>
+      <td>50</td>
+      <td>15873</td>
+      <td>8</td>
+      <td>652</td>
+      <td>213</td>
+      <td>6</td>
+      <td>486</td>
+      <td>163</td>
+      <td>1135</td>
+      <td>375</td>
+      <td>M:M</td>
+      <td>M:M</td>
+    </tr>
+    <tr>
+      <th>5088432</th>
+      <td>6365</td>
+      <td>50</td>
+      <td>496</td>
+      <td>9</td>
+      <td>922</td>
+      <td>277</td>
+      <td>19</td>
+      <td>618</td>
+      <td>173</td>
+      <td>1537</td>
+      <td>449</td>
+      <td>M:M</td>
+      <td>M:M</td>
+    </tr>
+    <tr>
+      <th>5088433</th>
+      <td>13860</td>
+      <td>50</td>
+      <td>6368</td>
+      <td>7</td>
+      <td>485</td>
+      <td>175</td>
+      <td>8</td>
+      <td>455</td>
+      <td>147</td>
+      <td>939</td>
+      <td>321</td>
+      <td>M:M</td>
+      <td>M:M</td>
+    </tr>
+  </tbody>
+</table>
+<p>5088434 rows × 13 columns</p>
+</div></div>
+</div>
+<p>The data on the distribution of degrees and cardinalities can be then easily visualized.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Edge frequency when binning by head and tail degree
+
+metrics = [(&quot;h_degree&quot;, &quot;t_degree&quot;), (&quot;h_degree_same_rel&quot;, &quot;t_degree_same_rel&quot;)]
+fig, ax = plt.subplots(1, len(metrics), figsize=[5 * len(metrics), 4.5])
+
+for i, (group_metric_1, group_metric_2) in enumerate(metrics):
+    df_empty = pd.DataFrame(
+        columns=np.int32(2 ** np.arange(15)), index=np.int32(2 ** np.arange(15))
+    )
+    df_tmp = edge_dcs[[group_metric_1, group_metric_2]]
+    df_tmp.insert(
+        0,
+        f&quot;log_{group_metric_1}&quot;,
+        np.int32(2 ** np.floor(np.log2(df_tmp[group_metric_1]))),
+    )
+    df_tmp.insert(
+        0,
+        f&quot;log_{group_metric_2}&quot;,
+        np.int32(2 ** np.floor(np.log2(df_tmp[group_metric_2]))),
+    )
+    df_tmp = (
+        df_tmp.groupby([f&quot;log_{group_metric_1}&quot;, f&quot;log_{group_metric_2}&quot;])
+        .count()
+        .reset_index()
+    )
+    df_tmp[group_metric_1] /= df_tmp[group_metric_1].sum()
+    sns.heatmap(
+        df_tmp.reset_index()
+        .pivot(
+            columns=f&quot;log_{group_metric_2}&quot;,
+            index=f&quot;log_{group_metric_1}&quot;,
+            values=group_metric_1,
+        )
+        .combine_first(df_empty),
+        annot=False,
+        vmin=0,
+        vmax=0.05,
+        ax=ax[i],
+    )
+    ax[i].set_xlabel(group_metric_2)
+    ax[i].set_ylabel(group_metric_1)
+    ax[i].invert_yaxis()
+fig.suptitle(&quot;Edge frequency&quot;)
+plt.tight_layout()
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_ogb_biokg_demo_14_0.png" src="../_images/notebooks_ogb_biokg_demo_14_0.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>metrics = [&quot;triple_cardinality&quot;, &quot;triple_cardinality_same_rel&quot;]
+fig, ax = plt.subplots(1, len(metrics), figsize=[4 * len(metrics), 4])
+
+for i, metric in enumerate(metrics):
+    sns.countplot(
+        x=edge_dcs[metric],
+        order=[&quot;1:1&quot;, &quot;1:M&quot;, &quot;M:1&quot;, &quot;M:M&quot;],
+        stat=&quot;probability&quot;,
+        ax=ax[i],
+    )
+fig.suptitle(&quot;Cardinality distribution&quot;)
+plt.tight_layout()
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_ogb_biokg_demo_15_0.png" src="../_images/notebooks_ogb_biokg_demo_15_0.png" />
+</div>
+</div>
+</section>
+<section id="Edge-topological-patterns">
+<h3>Edge topological patterns<a class="headerlink" href="#Edge-topological-patterns" title="Link to this heading"></a></h3>
+<p>The second method provided by <code class="docutils literal notranslate"><span class="pre">KGTopologyToolbox</span></code> for topological analysis at the edge level is <code class="docutils literal notranslate"><span class="pre">edge_pattern_summary</span></code>, which extracts information on several significant edge topological patterns. In particular, it detects whether the edge (h,r,t) is a loop, is symmetric or has inverse, inference, composition (directed and undirected):</p>
+<p><img alt="image info" src="../_images/edge_patterns.png" /></p>
+<p>For inverse/inference, the method also provides the number and types of unique relations <code class="docutils literal notranslate"><span class="pre">r'</span></code> realizing the counterpart edges; for composition, the number of triangles supported by the edge is provided (the unique metapaths <code class="docutils literal notranslate"><span class="pre">[r_1,</span> <span class="pre">r_2]</span></code> can also be listed by setting <code class="docutils literal notranslate"><span class="pre">return_metapath_list=True</span></code> when calling the method).</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>edge_eps = kgtt.edge_pattern_summary(biokg_df)
+edge_eps
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>h</th>
+      <th>r</th>
+      <th>t</th>
+      <th>is_loop</th>
+      <th>is_symmetric</th>
+      <th>has_inverse</th>
+      <th>n_inverse_relations</th>
+      <th>inverse_edge_types</th>
+      <th>has_inference</th>
+      <th>n_inference_relations</th>
+      <th>inference_edge_types</th>
+      <th>has_composition</th>
+      <th>has_undirected_composition</th>
+      <th>n_triangles</th>
+      <th>n_undirected_triangles</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1718</td>
+      <td>0</td>
+      <td>3207</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>0</td>
+      <td>[]</td>
+      <td>False</td>
+      <td>0</td>
+      <td>[0]</td>
+      <td>False</td>
+      <td>True</td>
+      <td>0</td>
+      <td>15</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>4903</td>
+      <td>0</td>
+      <td>13662</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>0</td>
+      <td>[]</td>
+      <td>False</td>
+      <td>0</td>
+      <td>[0]</td>
+      <td>True</td>
+      <td>True</td>
+      <td>44</td>
+      <td>153</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>5480</td>
+      <td>0</td>
+      <td>15999</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>0</td>
+      <td>[]</td>
+      <td>False</td>
+      <td>0</td>
+      <td>[0]</td>
+      <td>False</td>
+      <td>True</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>3148</td>
+      <td>0</td>
+      <td>7247</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>0</td>
+      <td>[]</td>
+      <td>False</td>
+      <td>0</td>
+      <td>[0]</td>
+      <td>True</td>
+      <td>True</td>
+      <td>10</td>
+      <td>29</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>10300</td>
+      <td>0</td>
+      <td>16202</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>0</td>
+      <td>[]</td>
+      <td>False</td>
+      <td>0</td>
+      <td>[0]</td>
+      <td>True</td>
+      <td>True</td>
+      <td>3</td>
+      <td>79</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>5088429</th>
+      <td>2451</td>
+      <td>50</td>
+      <td>5097</td>
+      <td>False</td>
+      <td>False</td>
+      <td>True</td>
+      <td>1</td>
+      <td>[46]</td>
+      <td>True</td>
+      <td>1</td>
+      <td>[46, 50]</td>
+      <td>True</td>
+      <td>True</td>
+      <td>1532</td>
+      <td>5722</td>
+    </tr>
+    <tr>
+      <th>5088430</th>
+      <td>6456</td>
+      <td>50</td>
+      <td>8833</td>
+      <td>False</td>
+      <td>False</td>
+      <td>True</td>
+      <td>2</td>
+      <td>[45, 46]</td>
+      <td>True</td>
+      <td>2</td>
+      <td>[45, 46, 50]</td>
+      <td>True</td>
+      <td>True</td>
+      <td>234</td>
+      <td>913</td>
+    </tr>
+    <tr>
+      <th>5088431</th>
+      <td>9484</td>
+      <td>50</td>
+      <td>15873</td>
+      <td>False</td>
+      <td>False</td>
+      <td>True</td>
+      <td>1</td>
+      <td>[46]</td>
+      <td>True</td>
+      <td>2</td>
+      <td>[46, 45, 50]</td>
+      <td>True</td>
+      <td>True</td>
+      <td>1326</td>
+      <td>5004</td>
+    </tr>
+    <tr>
+      <th>5088432</th>
+      <td>6365</td>
+      <td>50</td>
+      <td>496</td>
+      <td>False</td>
+      <td>False</td>
+      <td>True</td>
+      <td>2</td>
+      <td>[45, 46]</td>
+      <td>True</td>
+      <td>2</td>
+      <td>[45, 46, 50]</td>
+      <td>True</td>
+      <td>True</td>
+      <td>1433</td>
+      <td>5554</td>
+    </tr>
+    <tr>
+      <th>5088433</th>
+      <td>13860</td>
+      <td>50</td>
+      <td>6368</td>
+      <td>False</td>
+      <td>False</td>
+      <td>False</td>
+      <td>0</td>
+      <td>[]</td>
+      <td>False</td>
+      <td>0</td>
+      <td>[50]</td>
+      <td>True</td>
+      <td>True</td>
+      <td>119</td>
+      <td>489</td>
+    </tr>
+  </tbody>
+</table>
+<p>5088434 rows × 15 columns</p>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>print(&quot;Fraction of triples with property:&quot;)
+edge_eps[
+    [&quot;is_loop&quot;, &quot;is_symmetric&quot;, &quot;has_inverse&quot;, &quot;has_inference&quot;, &quot;has_composition&quot;]
+].mean()
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Fraction of triples with property:
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+is_loop            0.000011
+is_symmetric       0.713743
+has_inverse        0.409704
+has_inference      0.410111
+has_composition    0.997605
+dtype: float64
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>metrics = [
+    &quot;n_inverse_relations&quot;,
+    &quot;n_inference_relations&quot;,
+    &quot;n_triangles&quot;,
+    &quot;n_undirected_triangles&quot;,
+]
+fig, ax = plt.subplots(2, 2, figsize=(9, 7))
+
+for axn, metric in zip(ax.flatten(), metrics):
+    x = np.sqrt(edge_eps[metric])
+    sns.histplot(x=x, stat=&quot;probability&quot;, binwidth=1, binrange=[0, x.max() + 1], ax=axn)
+    axn.set_xlabel(f&quot;sqrt({metric})&quot;)
+plt.tight_layout()
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/notebooks_ogb_biokg_demo_19_0.png" src="../_images/notebooks_ogb_biokg_demo_19_0.png" />
+</div>
+</div>
+</section>
+</section>
+<section id="Relation-level-analysis">
+<h2>Relation-level analysis<a class="headerlink" href="#Relation-level-analysis" title="Link to this heading"></a></h2>
+<p>The method <code class="docutils literal notranslate"><span class="pre">aggregate_by_relation</span></code> allows the user to aggregate at the relation-level the statistics outputted by the edge-level methods <code class="docutils literal notranslate"><span class="pre">edge_degree_cardinality_summary</span></code> and <code class="docutils literal notranslate"><span class="pre">edge_pattern_summary</span></code>. This converts DataFrames indexed on the KG edges to DataFrames indexed on the IDs of the unique relation types.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>kgtt.aggregate_by_relation(edge_dcs).head(10)
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>num_triples</th>
+      <th>frac_triples</th>
+      <th>unique_h</th>
+      <th>unique_t</th>
+      <th>h_unique_rel_mean</th>
+      <th>h_unique_rel_std</th>
+      <th>h_unique_rel_quartile1</th>
+      <th>h_unique_rel_quartile2</th>
+      <th>h_unique_rel_quartile3</th>
+      <th>h_degree_mean</th>
+      <th>...</th>
+      <th>tot_degree_same_rel_quartile1</th>
+      <th>tot_degree_same_rel_quartile2</th>
+      <th>tot_degree_same_rel_quartile3</th>
+      <th>triple_cardinality_1:M_frac</th>
+      <th>triple_cardinality_M:1_frac</th>
+      <th>triple_cardinality_M:M_frac</th>
+      <th>triple_cardinality_same_rel_1:1_frac</th>
+      <th>triple_cardinality_same_rel_1:M_frac</th>
+      <th>triple_cardinality_same_rel_M:1_frac</th>
+      <th>triple_cardinality_same_rel_M:M_frac</th>
+    </tr>
+    <tr>
+      <th>r</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>81066</td>
+      <td>0.015931</td>
+      <td>9742</td>
+      <td>9337</td>
+      <td>8.110293</td>
+      <td>8.247277</td>
+      <td>4.0</td>
+      <td>5.0</td>
+      <td>8.0</td>
+      <td>569.252202</td>
+      <td>...</td>
+      <td>45.0</td>
+      <td>112.0</td>
+      <td>211.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.001628</td>
+      <td>0.023586</td>
+      <td>0.064959</td>
+      <td>0.909827</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>5669</td>
+      <td>0.001114</td>
+      <td>698</td>
+      <td>1536</td>
+      <td>27.048157</td>
+      <td>12.936410</td>
+      <td>17.0</td>
+      <td>31.0</td>
+      <td>36.0</td>
+      <td>2518.765391</td>
+      <td>...</td>
+      <td>14.0</td>
+      <td>32.0</td>
+      <td>60.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.002822</td>
+      <td>0.104251</td>
+      <td>0.027518</td>
+      <td>0.865408</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>66954</td>
+      <td>0.013158</td>
+      <td>612</td>
+      <td>612</td>
+      <td>36.404307</td>
+      <td>5.600706</td>
+      <td>33.0</td>
+      <td>36.0</td>
+      <td>41.0</td>
+      <td>4129.511919</td>
+      <td>...</td>
+      <td>332.0</td>
+      <td>404.0</td>
+      <td>482.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.000000</td>
+      <td>0.000254</td>
+      <td>0.000239</td>
+      <td>0.999507</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>19585</td>
+      <td>0.003849</td>
+      <td>491</td>
+      <td>491</td>
+      <td>37.095941</td>
+      <td>5.547389</td>
+      <td>33.0</td>
+      <td>37.0</td>
+      <td>41.0</td>
+      <td>4527.399592</td>
+      <td>...</td>
+      <td>114.0</td>
+      <td>157.0</td>
+      <td>202.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.000000</td>
+      <td>0.000868</td>
+      <td>0.000970</td>
+      <td>0.998162</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>32034</td>
+      <td>0.006295</td>
+      <td>526</td>
+      <td>525</td>
+      <td>37.319567</td>
+      <td>5.384523</td>
+      <td>34.0</td>
+      <td>38.0</td>
+      <td>41.0</td>
+      <td>4511.067834</td>
+      <td>...</td>
+      <td>188.0</td>
+      <td>243.0</td>
+      <td>299.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.000062</td>
+      <td>0.000531</td>
+      <td>0.000593</td>
+      <td>0.998814</td>
+    </tr>
+  </tbody>
+</table>
+<p>5 rows × 51 columns</p>
+</div></div>
+</div>
+<p>Notice on the left the columns <code class="docutils literal notranslate"><span class="pre">num_triples</span></code>, <code class="docutils literal notranslate"><span class="pre">frac_triples</span></code>, <code class="docutils literal notranslate"><span class="pre">unique_h</span></code>, <code class="docutils literal notranslate"><span class="pre">unique_t</span></code> giving additional statistics for relation types (number of edges and relative frequency, number of unique entities used as heads/tails by triples of the relation type).</p>
+<p>Similarly, by aggregating the <code class="docutils literal notranslate"><span class="pre">edge_eps</span></code> DataFrame we can look at the distribution of edge topological patterns within each relation type.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>kgtt.aggregate_by_relation(edge_eps).head(10)
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>num_triples</th>
+      <th>frac_triples</th>
+      <th>unique_h</th>
+      <th>unique_t</th>
+      <th>is_loop_frac</th>
+      <th>is_symmetric_frac</th>
+      <th>has_inverse_frac</th>
+      <th>n_inverse_relations_mean</th>
+      <th>n_inverse_relations_std</th>
+      <th>n_inverse_relations_quartile1</th>
+      <th>...</th>
+      <th>n_triangles_mean</th>
+      <th>n_triangles_std</th>
+      <th>n_triangles_quartile1</th>
+      <th>n_triangles_quartile2</th>
+      <th>n_triangles_quartile3</th>
+      <th>n_undirected_triangles_mean</th>
+      <th>n_undirected_triangles_std</th>
+      <th>n_undirected_triangles_quartile1</th>
+      <th>n_undirected_triangles_quartile2</th>
+      <th>n_undirected_triangles_quartile3</th>
+    </tr>
+    <tr>
+      <th>r</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>81066</td>
+      <td>0.015931</td>
+      <td>9742</td>
+      <td>9337</td>
+      <td>0.000012</td>
+      <td>0.000222</td>
+      <td>0.009474</td>
+      <td>0.018762</td>
+      <td>0.336120</td>
+      <td>0.0</td>
+      <td>...</td>
+      <td>49.615572</td>
+      <td>816.776738</td>
+      <td>3.0</td>
+      <td>7.0</td>
+      <td>16.00</td>
+      <td>136.452841</td>
+      <td>1421.830008</td>
+      <td>18.00</td>
+      <td>36.0</td>
+      <td>68.0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>5669</td>
+      <td>0.001114</td>
+      <td>698</td>
+      <td>1536</td>
+      <td>0.000000</td>
+      <td>0.000353</td>
+      <td>0.061563</td>
+      <td>0.527783</td>
+      <td>2.502323</td>
+      <td>0.0</td>
+      <td>...</td>
+      <td>1630.912154</td>
+      <td>6563.522736</td>
+      <td>13.0</td>
+      <td>84.0</td>
+      <td>234.00</td>
+      <td>2864.104428</td>
+      <td>9520.116812</td>
+      <td>54.00</td>
+      <td>224.0</td>
+      <td>586.0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>66954</td>
+      <td>0.013158</td>
+      <td>612</td>
+      <td>612</td>
+      <td>0.000000</td>
+      <td>0.947367</td>
+      <td>0.998253</td>
+      <td>11.019118</td>
+      <td>4.707246</td>
+      <td>8.0</td>
+      <td>...</td>
+      <td>27666.694925</td>
+      <td>15797.649746</td>
+      <td>14990.0</td>
+      <td>25934.0</td>
+      <td>38868.50</td>
+      <td>32678.993563</td>
+      <td>18619.016056</td>
+      <td>16691.00</td>
+      <td>32647.5</td>
+      <td>48637.0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>19585</td>
+      <td>0.003849</td>
+      <td>491</td>
+      <td>491</td>
+      <td>0.000000</td>
+      <td>0.947358</td>
+      <td>0.999592</td>
+      <td>13.417258</td>
+      <td>4.585150</td>
+      <td>10.0</td>
+      <td>...</td>
+      <td>30250.858974</td>
+      <td>17053.925410</td>
+      <td>16204.0</td>
+      <td>28873.0</td>
+      <td>43798.00</td>
+      <td>32696.125351</td>
+      <td>18685.281686</td>
+      <td>16563.00</td>
+      <td>32808.0</td>
+      <td>48653.0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>32034</td>
+      <td>0.006295</td>
+      <td>526</td>
+      <td>525</td>
+      <td>0.000000</td>
+      <td>0.947368</td>
+      <td>0.999376</td>
+      <td>13.299588</td>
+      <td>4.427898</td>
+      <td>10.0</td>
+      <td>...</td>
+      <td>30942.231192</td>
+      <td>16888.956656</td>
+      <td>17303.0</td>
+      <td>30137.5</td>
+      <td>44161.25</td>
+      <td>32685.210464</td>
+      <td>18685.267154</td>
+      <td>16645.25</td>
+      <td>32580.0</td>
+      <td>48767.0</td>
+    </tr>
+  </tbody>
+</table>
+<p>5 rows × 32 columns</p>
+</div></div>
+</div>
+<p>Additional methods are provided for the analysis at the relation level: <code class="docutils literal notranslate"><span class="pre">jaccard_similarity_relation_sets</span></code> to compute the Jaccard similarity of the sets of head/tail entities used by each relation; <code class="docutils literal notranslate"><span class="pre">relational_affinity_ingram</span></code> to compute the InGram pairwise relation similarity (see <a class="reference external" href="https://arxiv.org/abs/2305.19987">paper</a>).</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>kgtt.jaccard_similarity_relation_sets(biokg_df)
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>r1</th>
+      <th>r2</th>
+      <th>num_triples_both</th>
+      <th>frac_triples_both</th>
+      <th>num_entities_both</th>
+      <th>num_h_r1</th>
+      <th>num_h_r2</th>
+      <th>num_t_r1</th>
+      <th>num_t_r2</th>
+      <th>jaccard_head_head</th>
+      <th>jaccard_head_tail</th>
+      <th>jaccard_tail_head</th>
+      <th>jaccard_tail_tail</th>
+      <th>jaccard_both</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>1</th>
+      <td>0</td>
+      <td>1</td>
+      <td>86735</td>
+      <td>0.017046</td>
+      <td>14338</td>
+      <td>9742</td>
+      <td>698</td>
+      <td>9337</td>
+      <td>1536</td>
+      <td>0.064112</td>
+      <td>0.055301</td>
+      <td>0.037317</td>
+      <td>0.079635</td>
+      <td>0.112289</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>0</td>
+      <td>2</td>
+      <td>148020</td>
+      <td>0.029089</td>
+      <td>13934</td>
+      <td>9742</td>
+      <td>612</td>
+      <td>9337</td>
+      <td>612</td>
+      <td>0.056531</td>
+      <td>0.056531</td>
+      <td>0.031947</td>
+      <td>0.031947</td>
+      <td>0.041768</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>0</td>
+      <td>3</td>
+      <td>100651</td>
+      <td>0.019780</td>
+      <td>13929</td>
+      <td>9742</td>
+      <td>491</td>
+      <td>9337</td>
+      <td>491</td>
+      <td>0.045037</td>
+      <td>0.045037</td>
+      <td>0.026530</td>
+      <td>0.026530</td>
+      <td>0.033527</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>0</td>
+      <td>4</td>
+      <td>113100</td>
+      <td>0.022227</td>
+      <td>13931</td>
+      <td>9742</td>
+      <td>526</td>
+      <td>9337</td>
+      <td>525</td>
+      <td>0.048290</td>
+      <td>0.048188</td>
+      <td>0.027610</td>
+      <td>0.027506</td>
+      <td>0.035819</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>0</td>
+      <td>5</td>
+      <td>132276</td>
+      <td>0.025995</td>
+      <td>13931</td>
+      <td>9742</td>
+      <td>576</td>
+      <td>9337</td>
+      <td>578</td>
+      <td>0.053287</td>
+      <td>0.053491</td>
+      <td>0.029815</td>
+      <td>0.029916</td>
+      <td>0.039624</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>2446</th>
+      <td>47</td>
+      <td>49</td>
+      <td>18021</td>
+      <td>0.003542</td>
+      <td>2414</td>
+      <td>806</td>
+      <td>1885</td>
+      <td>809</td>
+      <td>1886</td>
+      <td>0.131148</td>
+      <td>0.131568</td>
+      <td>0.132409</td>
+      <td>0.132353</td>
+      <td>0.135874</td>
+    </tr>
+    <tr>
+      <th>2447</th>
+      <td>47</td>
+      <td>50</td>
+      <td>374193</td>
+      <td>0.073538</td>
+      <td>5592</td>
+      <td>806</td>
+      <td>5224</td>
+      <td>809</td>
+      <td>5228</td>
+      <td>0.082391</td>
+      <td>0.082526</td>
+      <td>0.083318</td>
+      <td>0.083453</td>
+      <td>0.084764</td>
+    </tr>
+    <tr>
+      <th>2497</th>
+      <td>48</td>
+      <td>49</td>
+      <td>43122</td>
+      <td>0.008475</td>
+      <td>3407</td>
+      <td>2728</td>
+      <td>1885</td>
+      <td>2729</td>
+      <td>1886</td>
+      <td>0.371284</td>
+      <td>0.369952</td>
+      <td>0.371989</td>
+      <td>0.371064</td>
+      <td>0.370707</td>
+    </tr>
+    <tr>
+      <th>2498</th>
+      <td>48</td>
+      <td>50</td>
+      <td>399294</td>
+      <td>0.078471</td>
+      <td>6201</td>
+      <td>2728</td>
+      <td>5224</td>
+      <td>2729</td>
+      <td>5228</td>
+      <td>0.287356</td>
+      <td>0.287379</td>
+      <td>0.286061</td>
+      <td>0.286084</td>
+      <td>0.289147</td>
+    </tr>
+    <tr>
+      <th>2549</th>
+      <td>49</td>
+      <td>50</td>
+      <td>388092</td>
+      <td>0.076269</td>
+      <td>6169</td>
+      <td>1885</td>
+      <td>5224</td>
+      <td>1886</td>
+      <td>5228</td>
+      <td>0.156876</td>
+      <td>0.156773</td>
+      <td>0.156850</td>
+      <td>0.156748</td>
+      <td>0.158373</td>
+    </tr>
+  </tbody>
+</table>
+<p>1275 rows × 14 columns</p>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>kgtt.relational_affinity_ingram(biokg_df)
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>h_relation</th>
+      <th>t_relation</th>
+      <th>edge_weight</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>0</td>
+      <td>1</td>
+      <td>5.565931</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>0</td>
+      <td>2</td>
+      <td>0.244410</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>0</td>
+      <td>3</td>
+      <td>0.049564</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>0</td>
+      <td>4</td>
+      <td>0.079068</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>0</td>
+      <td>5</td>
+      <td>0.159787</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>2545</th>
+      <td>50</td>
+      <td>45</td>
+      <td>393.082900</td>
+    </tr>
+    <tr>
+      <th>2546</th>
+      <td>50</td>
+      <td>46</td>
+      <td>421.818843</td>
+    </tr>
+    <tr>
+      <th>2547</th>
+      <td>50</td>
+      <td>47</td>
+      <td>1.194898</td>
+    </tr>
+    <tr>
+      <th>2548</th>
+      <td>50</td>
+      <td>48</td>
+      <td>18.124874</td>
+    </tr>
+    <tr>
+      <th>2549</th>
+      <td>50</td>
+      <td>49</td>
+      <td>5.420267</td>
+    </tr>
+  </tbody>
+</table>
+<p>2550 rows × 3 columns</p>
+</div></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../user_guide.html" class="btn btn-neutral float-left" title="User guide" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../API_reference.html" class="btn btn-neutral float-right" title="API Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright (c) 2023 Graphcore Ltd. All rights reserved.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
