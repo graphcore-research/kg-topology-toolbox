@@ -7,7 +7,8 @@ Installation and usage
 1. Pip install :code:`kg-topology-toolbox`:
 
 .. code-block::
-
+    
+    pip install wheel
     pip install git+https://github.com/graphcore-research/kg-topology-toolbox.git
 
 2. Import and use:
