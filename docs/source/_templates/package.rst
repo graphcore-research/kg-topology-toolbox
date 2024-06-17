@@ -1,0 +1,61 @@
+..
+   # Copyright (c) 2023 Graphcore Ltd. All rights reserved.
+   # Copyright (c) 2007-2023 by the Sphinx team. All rights reserved.
+
+{%- macro automodule(modname, options) -%}
+.. automodule:: {{ modname }}
+{%- for option in options %}
+   :{{ option }}:
+{%- endfor %}
+{%- endmacro %}
+
+{%- macro toctree(docnames) -%}
+.. toctree::
+   :maxdepth: {{ maxdepth }}
+{% for docname in docnames %}
+   {{ docname }}
+{%- endfor %}
+{%- endmacro %}
+
+{%- if is_namespace %}
+{{- [pkgname, "namespace"] | join(" ") | e | heading }}
+{% else %}
+{{- [pkgname, "package"] | join(" ") | e | heading }}
+{% endif %}
+
+{%- if is_namespace %}
+.. py:module:: {{ pkgname }}
+{% endif %}
+
+{%- if modulefirst and not is_namespace %}
+{{ automodule(pkgname, automodule_options) }}
+{% endif %}
+
+{%- if subpackages %}
+Subpackages
+-----------
+
+{{ toctree(subpackages) }}
+{% endif %}
+
+{%- if submodules %}
+Submodules
+----------
+{% if separatemodules %}
+{{ toctree(submodules) }}
+{% else %}
+{%- for submodule in submodules %}
+{% if show_headings %}
+{{- submodule | e | heading(2) }}
+{% endif %}
+{{ automodule(submodule, automodule_options) }}
+{% endfor %}
+{%- endif %}
+{%- endif %}
+
+{%- if not modulefirst and not is_namespace %}
+Module contents
+---------------
+
+{{ automodule(pkgname, automodule_options) }}
+{% endif %}

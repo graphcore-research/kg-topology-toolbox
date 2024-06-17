@@ -1,0 +1,60 @@
+..
+   # Copyright (c) 2023 Graphcore Ltd. All rights reserved.
+   # Copyright (c) 2007-2023 by the Sphinx team. All rights reserved.
+
+{{ fullname | escape | underline}}
+
+.. automodule:: {{ fullname }}
+
+   {% block attributes %}
+   {% if attributes %}
+   .. rubric:: {{ _('Module Attributes') }}
+
+   .. autosummary::
+      :toctree:
+   {% for item in attributes %}
+      {{ item }}
+   {%- endfor %}
+   {% endif %}
+   {% endblock %}
+
+   {% block functions %}
+   {% if functions %}
+   .. rubric:: {{ _('Functions') }}
+
+   .. autosummary::
+      :toctree:
+   {% for item in functions %}
+      {{ item }}
+   {%- endfor %}
+   {% endif %}
+   {% endblock %}
+
+   {% block classes %}
+   {% if classes %}
+   .. rubric:: {{ _('Classes') }}
+
+   .. autosummary::
+      :toctree:
+      :template: class.rst
+   {% for item in classes %}
+      {{ item }}
+   {%- endfor %}
+   {% endif %}
+   {% endblock %}
+
+{% block modules %}
+{% if modules %}
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :template: class.rst
+   :recursive:
+{% for item in modules %}
+   {% if "test" not in item and "docs" not in item %}
+      {{ item }}
+   {% endif %}
+{%- endfor %}
+{% endif %}
+{% endblock %}
