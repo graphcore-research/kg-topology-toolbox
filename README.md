@@ -3,7 +3,7 @@
 
 A Python toolbox to compute topological metrics and statistics for Knowledge Graphs.
 
-Documentation can be found at https://curly-barnacle-lnejye6.pages.github.io/
+Documentation can be found at https://graphcore-research.github.io/kg-topology-toolbox/
 
 For a walkthrough of the main functionalities, we provide an introductory [Jupyter notebook](docs/source/notebooks/ogb_biokg_demo.ipynb).
 
@@ -15,7 +15,7 @@ To install the `kg-topology-toolbox` library, run
 
 ```
 pip install wheel
-pip install git+ssh://git@github.com/graphcore-research/kg-topology-toolbox
+pip install git+https://github.com/graphcore-research/kg-topology-toolbox.git
 ```
 
 4\. Import and use:
