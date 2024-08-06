@@ -98,7 +98,7 @@
 <section id="Dependencies">
 <h2>Dependencies<a class="headerlink" href="#Dependencies" title="Link to this heading"></a></h2>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>import sys
@@ -119,7 +119,7 @@ Uninstalling kg-topology-toolbox-0.1.0:
 </pre></div></div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>import numpy as np
@@ -139,7 +139,7 @@ dataset_directory = &quot;../../../data/ogb-biokg/&quot;
 <h2>Data preparation<a class="headerlink" href="#Data-preparation" title="Link to this heading"></a></h2>
 <p>We load the OGBL-BioKG dataset using the <code class="docutils literal notranslate"><span class="pre">ogb.linkproppred.LinkPropPredDataset</span></code> class and store all (h, r, t) triples in a <code class="docutils literal notranslate"><span class="pre">pandas</span></code> DataFrame.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>dataset = ogb.linkproppred.LinkPropPredDataset(
@@ -155,7 +155,7 @@ biokg_df
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -256,7 +256,7 @@ biokg_df
 </div>
 <p>Based on this representation of the knowledge graph, we can proceed to compute its topological properties using the <code class="docutils literal notranslate"><span class="pre">KGTopologyToolbox</span></code> class.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>kgtt = KGTopologyToolbox()
@@ -271,11 +271,11 @@ biokg_df
 <li><p><code class="docutils literal notranslate"><span class="pre">h_degree</span></code> is the number of edges coming out from the node;</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">t_degree</span></code> is the number of edges going into the node;</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tot_degree</span></code> is the number of edges that use the node as either head or tail;</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">h_unique_rel</span></code> (resp. <code class="docutils literal notranslate"><span class="pre">t_unique_rel</span></code>) is the number of unique relation types come out from (resp. go into) the node;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">h_unique_rel</span></code> (resp., <code class="docutils literal notranslate"><span class="pre">t_unique_rel</span></code>) is the number of unique relation types that come out from (resp., go into) the node;</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">n_loops</span></code> is the number of loop edges around the node.</p></li>
 </ul>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>node_ds = kgtt.node_degree_summary(biokg_df)
@@ -284,7 +284,7 @@ node_ds
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -420,7 +420,7 @@ node_ds
 </div></div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>metrics = [
@@ -444,7 +444,7 @@ plt.tight_layout()
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-/nethome/albertoc/research/knowledge_graphs/kg-topology-toolbox/.venv38/lib/python3.8/site-packages/pandas/core/arraylike.py:396: RuntimeWarning: divide by zero encountered in log2
+/nethome/albertoc/research/knowledge_graphs/kg-topology-toolbox/.venv/lib/python3.10/site-packages/pandas/core/arraylike.py:399: RuntimeWarning: divide by zero encountered in log2
   result = getattr(ufunc, method)(*inputs, **kwargs)
 </pre></div></div>
 </div>
@@ -456,7 +456,7 @@ plt.tight_layout()
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>metrics = [
@@ -504,7 +504,7 @@ plt.tight_layout()
 <li><p><code class="docutils literal notranslate"><span class="pre">triple_cardinality_same_rel</span></code> is defined as <code class="docutils literal notranslate"><span class="pre">triple_cardinality</span></code> but using <code class="docutils literal notranslate"><span class="pre">h_degree_same_rel</span></code>, <code class="docutils literal notranslate"><span class="pre">t_degree_same_rel</span></code>.</p></li>
 </ul>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>edge_dcs = kgtt.edge_degree_cardinality_summary(biokg_df)
@@ -513,7 +513,7 @@ edge_dcs
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -734,7 +734,7 @@ edge_dcs
 </div>
 <p>The data on the distribution of degrees and cardinalities can be then easily visualized.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Edge frequency when binning by head and tail degree
@@ -792,7 +792,7 @@ plt.tight_layout()
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>metrics = [&quot;triple_cardinality&quot;, &quot;triple_cardinality_same_rel&quot;]
@@ -824,7 +824,7 @@ plt.tight_layout()
 <p><img alt="image info" src="../_images/edge_patterns.png" /></p>
 <p>For inverse/inference, the method also provides the number and types of unique relations <code class="docutils literal notranslate"><span class="pre">r'</span></code> realizing the counterpart edges; for composition, the number of triangles supported by the edge is provided (the unique metapaths <code class="docutils literal notranslate"><span class="pre">[r_1,</span> <span class="pre">r_2]</span></code> can also be listed by setting <code class="docutils literal notranslate"><span class="pre">return_metapath_list=True</span></code> when calling the method).</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>edge_eps = kgtt.edge_pattern_summary(biokg_df)
@@ -833,7 +833,7 @@ edge_eps
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -1077,7 +1077,7 @@ edge_eps
 </div></div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>print(&quot;Fraction of triples with property:&quot;)
@@ -1096,7 +1096,7 @@ Fraction of triples with property:
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
 </pre></div>
 </div>
 <div class="output_area docutils container">
@@ -1110,7 +1110,7 @@ dtype: float64
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>metrics = [
@@ -1142,15 +1142,16 @@ plt.tight_layout()
 <h2>Relation-level analysis<a class="headerlink" href="#Relation-level-analysis" title="Link to this heading"></a></h2>
 <p>The method <code class="docutils literal notranslate"><span class="pre">aggregate_by_relation</span></code> allows the user to aggregate at the relation-level the statistics outputted by the edge-level methods <code class="docutils literal notranslate"><span class="pre">edge_degree_cardinality_summary</span></code> and <code class="docutils literal notranslate"><span class="pre">edge_pattern_summary</span></code>. This converts DataFrames indexed on the KG edges to DataFrames indexed on the IDs of the unique relation types.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>kgtt.aggregate_by_relation(edge_dcs).head(10)
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>kgtt.aggregate_by_relation(edge_dcs).head()
 </pre></div>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
 <div>
@@ -1347,15 +1348,16 @@ plt.tight_layout()
 <p>Notice on the left the columns <code class="docutils literal notranslate"><span class="pre">num_triples</span></code>, <code class="docutils literal notranslate"><span class="pre">frac_triples</span></code>, <code class="docutils literal notranslate"><span class="pre">unique_h</span></code>, <code class="docutils literal notranslate"><span class="pre">unique_t</span></code> giving additional statistics for relation types (number of edges and relative frequency, number of unique entities used as heads/tails by triples of the relation type).</p>
 <p>Similarly, by aggregating the <code class="docutils literal notranslate"><span class="pre">edge_eps</span></code> DataFrame we can look at the distribution of edge topological patterns within each relation type.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>kgtt.aggregate_by_relation(edge_eps).head(10)
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>kgtt.aggregate_by_relation(edge_eps).head()
 </pre></div>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
 <div>
@@ -1551,7 +1553,7 @@ plt.tight_layout()
 </div>
 <p>Additional methods are provided for the analysis at the relation level: <code class="docutils literal notranslate"><span class="pre">jaccard_similarity_relation_sets</span></code> to compute the Jaccard similarity of the sets of head/tail entities used by each relation; <code class="docutils literal notranslate"><span class="pre">relational_affinity_ingram</span></code> to compute the InGram pairwise relation similarity (see <a class="reference external" href="https://arxiv.org/abs/2305.19987">paper</a>).</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>kgtt.jaccard_similarity_relation_sets(biokg_df)
@@ -1559,7 +1561,7 @@ plt.tight_layout()
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -1791,7 +1793,7 @@ plt.tight_layout()
 </div></div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>kgtt.relational_affinity_ingram(biokg_df)
@@ -1799,7 +1801,7 @@ plt.tight_layout()
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
