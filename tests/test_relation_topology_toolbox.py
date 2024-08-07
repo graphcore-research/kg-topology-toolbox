@@ -10,23 +10,23 @@ from kg_topology_toolbox import KGTopologyToolbox
 
 df = pd.DataFrame(
     dict(
-        h=[0, 0, 0, 1, 2, 2, 2, 3, 3, 4],
-        t=[1, 1, 2, 2, 0, 3, 4, 2, 4, 3],
-        r=[0, 1, 0, 1, 0, 1, 1, 0, 0, 1],
+        H=[0, 0, 0, 1, 2, 2, 2, 3, 3, 4],
+        T=[1, 1, 2, 2, 0, 3, 4, 2, 4, 3],
+        R=[0, 1, 0, 1, 0, 1, 1, 0, 0, 1],
         n=["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"],
     )
 )
 
-tools = KGTopologyToolbox()
+kgtt = KGTopologyToolbox(df, head_column="H", relation_column="R", tail_column="T")
 
 
 def test_small_graph_metrics() -> None:
     # Define a small graph on five nodes with all the features tested by
     # the relation_topology_toolbox
 
-    dcs = tools.aggregate_by_relation(tools.edge_degree_cardinality_summary(df))
-    eps = tools.aggregate_by_relation(
-        tools.edge_pattern_summary(df, return_metapath_list=True)
+    dcs = kgtt.aggregate_by_relation(kgtt.edge_degree_cardinality_summary())
+    eps = kgtt.aggregate_by_relation(
+        kgtt.edge_pattern_summary(return_metapath_list=True)
     )
 
     assert np.allclose(dcs["num_triples"], [5, 5])
@@ -73,7 +73,7 @@ def test_small_graph_metrics() -> None:
 
 def test_jaccard_similarity() -> None:
     # jaccard_similarity_relation_sets
-    res = tools.jaccard_similarity_relation_sets(df)
+    res = kgtt.jaccard_similarity_relation_sets()
     assert np.allclose(res["jaccard_head_head"], [2 / 5])
     assert np.allclose(res["jaccard_tail_tail"], [3 / 5])
     assert np.allclose(res["jaccard_head_tail"], [2 / 5])
@@ -86,5 +86,5 @@ def test_jaccard_similarity() -> None:
 )
 def test_ingram_affinity(min_max_norm: bool, expected: List[float]) -> None:
     # relational_affinity_ingram
-    res = tools.relational_affinity_ingram(df, min_max_norm)
+    res = kgtt.relational_affinity_ingram(min_max_norm)
     assert np.allclose(res["edge_weight"], expected)

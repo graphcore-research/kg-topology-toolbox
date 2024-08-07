@@ -8,14 +8,16 @@ from kg_topology_toolbox import KGTopologyToolbox
 
 df = pd.DataFrame(
     dict(
-        h=[0, 0, 0, 1, 2, 2, 1, 2],
-        t=[1, 1, 2, 2, 0, 0, 1, 2],
-        r=[0, 1, 0, 1, 0, 1, 1, 0],
+        H=[0, 0, 0, 1, 2, 2, 1, 2],
+        T=[1, 1, 2, 2, 0, 0, 1, 2],
+        R=[0, 1, 0, 1, 0, 1, 1, 0],
         n=["a", "b", "c", "d", "e", "f", "g", "h"],
     )
 )
 
-tools = KGTopologyToolbox()
+kgtt = KGTopologyToolbox(
+    kg_df=df, head_column="H", relation_column="R", tail_column="T"
+)
 
 
 @pytest.mark.parametrize("return_metapath_list", [True, False])
@@ -24,7 +26,7 @@ def test_small_graph_metrics(return_metapath_list: bool) -> None:
     # the edge_topology_toolbox
 
     # entity degrees statistics
-    res = tools.edge_degree_cardinality_summary(df)
+    res = kgtt.edge_degree_cardinality_summary()
     assert np.allclose(res["h_unique_rel"], [2, 2, 2, 1, 2, 2, 1, 2])
     assert np.allclose(res["h_degree"], [3, 3, 3, 2, 3, 3, 2, 3])
     assert np.allclose(res["h_degree_same_rel"], [2, 1, 2, 2, 2, 1, 2, 2])
@@ -57,7 +59,7 @@ def test_small_graph_metrics(return_metapath_list: bool) -> None:
     ]
 
     # relation pattern symmetry
-    res = tools.edge_pattern_summary(df, return_metapath_list=return_metapath_list)
+    res = kgtt.edge_pattern_summary(return_metapath_list=return_metapath_list)
     assert np.allclose(
         res["is_loop"], [False, False, False, False, False, False, True, True]
     )

@@ -63,7 +63,7 @@ def composition_count(
         - **n_triangles** (int): Number of compositions for the (h, t) edge.
     """
 
-    n_nodes = max(df[["h", "t"]].max()) + 1
+    n_nodes = df[["h", "t"]].max().max() + 1
     adj = coo_array(
         (np.ones(len(df)), (df.h, df.t)),
         shape=[n_nodes, n_nodes],
