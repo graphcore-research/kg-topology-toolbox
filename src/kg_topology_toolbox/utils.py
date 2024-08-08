@@ -31,6 +31,7 @@ def node_degrees_and_rels(
     :return:
         The result DataFrame, indexed on the IDs of the graph entities,
         with columns:
+
         - **degree** (int): Number of triples in the aggregation.
         - **unique_rel** (int): Number of distinct relation types
             in the set of aggregated edges.
