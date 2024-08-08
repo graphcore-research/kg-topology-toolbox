@@ -312,7 +312,10 @@ class KGTopologyToolbox:
               the subgraph of edges with relation type r.
         """
         df_res = pd.merge(
-            self.edge_head_degree(), self.edge_tail_degree(), on=["h", "r", "t"]
+            self.edge_head_degree(),
+            self.edge_tail_degree(),
+            on=["h", "r", "t"],
+            how="left",
         )
         # compute number of parallel edges to avoid double-counting them
         # in total degree
