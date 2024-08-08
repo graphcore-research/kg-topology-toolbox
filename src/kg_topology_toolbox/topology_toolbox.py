@@ -311,11 +311,12 @@ class KGTopologyToolbox:
             - **triple_cardinality_same_rel** (int): cardinality type of the edge in
               the subgraph of edges with relation type r.
         """
-        df_res = pd.merge(
-            self.edge_head_degree(),
-            self.edge_tail_degree(),
-            on=["h", "r", "t"],
-            how="left",
+        df_res = pd.concat(
+            [
+                self.edge_head_degree(),
+                self.edge_tail_degree().drop(columns=["h", "r", "t"]),
+            ],
+            axis=1,
         )
         # compute number of parallel edges to avoid double-counting them
         # in total degree
