@@ -4,6 +4,7 @@
 Utility functions
 """
 
+from collections.abc import Iterable
 from multiprocessing import Pool
 
 import numpy as np
@@ -50,6 +51,89 @@ def node_degrees_and_rels(
         deg_df[["degree", "unique_rel"]].fillna(0).astype(int)
     )
     return deg_df
+
+
+def aggregate_by_relation(edge_topology_df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Aggregate topology metrics of all triples of the same relation type.
+    To be applied to a DataFrame of metrics having at least columns
+    `h`, `r`, `t` (e.g., the output of
+    :meth:`KGTopologyToolbox.edge_degree_cardinality_summary` or
+    :meth:`KGTopologyToolbox.edge_pattern_summary`).
+
+    The returned dataframe is indexed over relation type IDs, with columns
+    giving the aggregated statistics of triples of the corresponding relation.
+    The name of the columns is of the form ``column_name_in_input_df + suffix``.
+    The aggregation is performed by returning:
+
+    - for numerical metrics: mean, standard deviation and quartiles
+      (``suffix`` = "_mean", "_std", "_quartile1", "_quartile2", "_quartile3");
+    - for boolean metrics: the fraction of triples of the relation type
+      with metric = True (``suffix`` = "_frac");
+    - for string metrics: for each possible label, the fraction of triples
+      of the relation type with that metric value (``suffix`` = "_{label}_frac")
+    - for list metrics: the unique metric values across triples of the relation
+      type (``suffix`` = "_unique").
+
+    :param edge_topology_df:
+        pd.DataFrame of edge topology metrics.
+        Must contain at least three columns `h`, `r`, `t`.
+
+    :return:
+        The results dataframe. In addition to the columns with the aggregated
+        metrics by relation type, it also contains columns:
+
+        - **num_triples** (int): Number of triples for each relation type.
+        - **frac_triples** (float): Fraction of overall triples represented by each
+          relation type.
+        - **unique_h** (int): Number of unique head entities used by triples of each
+          relation type.
+        - **unique_t** (int): Number of unique tail entities used by triples of each
+          relation type.
+    """
+    df_by_r = edge_topology_df.groupby("r")
+    df_res = df_by_r.agg(num_triples=("r", "count"))
+    df_res["frac_triples"] = df_res["num_triples"] / edge_topology_df.shape[0]
+    col: str
+    for col, col_dtype in edge_topology_df.drop(columns=["r"]).dtypes.items():  # type: ignore
+        if col in ["h", "t"]:
+            df_res[f"unique_{col}"] = df_by_r[col].nunique()
+        elif col_dtype == object:
+            if isinstance(edge_topology_df[col].iloc[0], str):
+                for label in np.unique(edge_topology_df[col]):
+                    df_res[f"{col}_{label}_frac"] = (
+                        edge_topology_df[edge_topology_df[col] == label]
+                        .groupby("r")[col]
+                        .count()
+                        / df_res["num_triples"]
+                    ).fillna(0)
+            elif isinstance(edge_topology_df[col].iloc[0], Iterable):
+                df_res[f"{col}_unique"] = (
+                    df_by_r[col]
+                    .agg(np.unique)
+                    .apply(
+                        lambda x: (
+                            np.unique(
+                                np.concatenate(
+                                    [lst for lst in x if len(lst) > 0] or [[]]
+                                )
+                            ).tolist()
+                        )
+                    )
+                )
+            else:
+                print(f"Skipping column {col}: no known aggregation mode")
+                continue
+        elif col_dtype == int or col_dtype == float:
+            df_res[f"{col}_mean"] = df_by_r[col].mean()
+            df_res[f"{col}_std"] = df_by_r[col].std()
+            for q in range(1, 4):
+                df_res[f"{col}_quartile{q}"] = df_by_r[col].agg(
+                    lambda x: np.quantile(x, 0.25 * q)
+                )
+        elif col_dtype == bool:
+            df_res[f"{col}_frac"] = df_by_r[col].mean()
+    return df_res
 
 
 def jaccard_similarity(

@@ -24,10 +24,8 @@ def test_small_graph_metrics() -> None:
     # Define a small graph on five nodes with all the features tested by
     # the relation_topology_toolbox
 
-    dcs = kgtt.aggregate_by_relation(kgtt.edge_degree_cardinality_summary())
-    eps = kgtt.aggregate_by_relation(
-        kgtt.edge_pattern_summary(return_metapath_list=True)
-    )
+    dcs = kgtt.edge_degree_cardinality_summary(aggregate_by_r=True)
+    eps = kgtt.edge_pattern_summary(return_metapath_list=True, aggregate_by_r=True)
 
     assert np.allclose(dcs["num_triples"], [5, 5])
     assert np.allclose(dcs["frac_triples"], [0.5, 0.5])
