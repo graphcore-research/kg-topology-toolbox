@@ -12,7 +12,11 @@ import pandas as pd
 from pandas.api.types import is_integer_dtype
 from scipy.sparse import coo_array
 
-from kg_topology_toolbox.utils import composition_count, jaccard_similarity
+from kg_topology_toolbox.utils import (
+    composition_count,
+    jaccard_similarity,
+    node_degrees_and_rels,
+)
 
 
 class KGTopologyToolbox:
@@ -57,6 +61,73 @@ class KGTopologyToolbox:
         self.n_entity = self.df[["h", "t"]].max().max() + 1
         self.n_rel = self.df.r.max() + 1
 
+    def loop_count(self) -> pd.DataFrame:
+        """
+        For each entity in the KG, compute the number of loops around the entity
+        (i.e., the number of edges having the entity as both head and tail).
+
+        :return:
+            Loop count DataFrame, indexed on the IDs of the graph entities.
+        """
+        n_loops = (
+            self.df[self.df.h == self.df.t].groupby("h").agg(n_loops=("r", "count"))
+        )
+        return (
+            pd.DataFrame(n_loops, index=np.arange(self.n_entity)).fillna(0).astype(int)
+        )
+
+    def node_head_degree(self, return_relation_list: bool = False) -> pd.DataFrame:
+        """
+        For each entity in the KG, compute the number of edges having it as head
+        (head-degree, or out-degree of the head node).
+        The relation types going out of the head node are also identified.
+
+        :param return_relation_list:
+            If True, return the list of unique relations going
+            out of the head node. WARNING: expensive for large graphs.
+            Default: False.
+
+        :return:
+            The result DataFrame, indexed on the IDs `e` of the graph entities,
+            with columns:
+            - **h_degree** (int): Number of triples with head entity `e`.
+            - **h_unique_rel** (int): Number of distinct relation types
+              among edges with head entity `e`.
+            - **h_rel_list** (Optional[list]): List of unique relation types
+              among edges with head entity `e`.
+              Only returned if `return_relation_list = True`.
+        """
+        node_df = node_degrees_and_rels(
+            self.df, "h", self.n_entity, return_relation_list
+        )
+        return node_df.rename(columns={n: "h_" + n for n in node_df.columns})
+
+    def node_tail_degree(self, return_relation_list: bool = False) -> pd.DataFrame:
+        """
+        For each entity in the KG, compute the number of edges having it as tail
+        (tail-degree, or in-degree of the tail node).
+        The relation types going into the tail node are also identified.
+
+        :param return_relation_list:
+            If True, return the list of unique relation types going
+            into the tail node. WARNING: expensive for large graphs.
+            Default: False.
+
+        :return:
+            The result DataFrame, indexed on the IDs `e` of the graph entities,
+            with columns:
+            - **t_degree** (int): Number of triples with tail entity `e`.
+            - **t_unique_rel** (int): Number of distinct relation types
+              among edges with tail entity `e`.
+            - **t_rel_list** (Optional[list]): List of unique relation types
+              among edges with tail entity `e`.
+              Only returned if `return_relation_list = True`.
+        """
+        node_df = node_degrees_and_rels(
+            self.df, "t", self.n_entity, return_relation_list
+        )
+        return node_df.rename(columns={n: "t_" + n for n in node_df.columns})
+
     def node_degree_summary(self, return_relation_list: bool = False) -> pd.DataFrame:
         """
         For each entity, this function computes the number of edges having it as a head
@@ -87,36 +158,23 @@ class KGTopologyToolbox:
               with tail entity `e`.
             - **n_loops** (int): number of loops around entity `e`.
         """
-        h_rel_list = {"h_rel_list": ("r", "unique")} if return_relation_list else {}
-        t_rel_list = {"t_rel_list": ("r", "unique")} if return_relation_list else {}
-        nodes = pd.DataFrame(
-            self.df.groupby("h").agg(
-                h_degree=("r", "count"), h_unique_rel=("r", "nunique"), **h_rel_list  # type: ignore
-            ),
-            index=np.arange(self.n_entity),
-        )
-        nodes = nodes.merge(
-            self.df.groupby("t").agg(
-                t_degree=("r", "count"), t_unique_rel=("r", "nunique"), **t_rel_list  # type: ignore
-            ),
+        nodes_df = pd.merge(
+            self.node_head_degree(return_relation_list),
+            self.node_tail_degree(return_relation_list),
             left_index=True,
             right_index=True,
-            how="left",
         )
-        nodes = nodes.merge(
-            self.df[self.df.h == self.df.t].groupby("h").agg(n_loops=("r", "count")),
+        nodes_df = pd.merge(
+            nodes_df,
+            self.loop_count(),
             left_index=True,
             right_index=True,
-            how="left",
         )
-        nodes[["h_degree", "h_unique_rel", "t_degree", "t_unique_rel", "n_loops"]] = (
-            nodes[["h_degree", "h_unique_rel", "t_degree", "t_unique_rel", "n_loops"]]
-            .fillna(0)
-            .astype(int)
+        nodes_df["tot_degree"] = (
+            nodes_df["h_degree"] + nodes_df["t_degree"] - nodes_df["n_loops"]
         )
-        nodes["tot_degree"] = nodes["h_degree"] + nodes["t_degree"] - nodes["n_loops"]
 
-        return nodes[
+        return nodes_df[
             ["h_degree", "t_degree", "tot_degree", "h_unique_rel"]
             + (["h_rel_list"] if return_relation_list else [])
             + ["t_unique_rel"]
@@ -226,13 +284,17 @@ class KGTopologyToolbox:
         The output dataframe maintains the same indexing and ordering of triples
         as the original Knowledge Graph dataframe.
 
-        :param return_metapath_list: If True, return the list of unique metapaths for all
+        :param return_metapath_list:
+            If True, return the list of unique metapaths for all
             triangles supported over one edge. WARNING: very expensive for large graphs.
-        :param composition_chunk_size: Size of column chunks of sparse adjacency matrix
+        :param composition_chunk_size:
+            Size of column chunks of sparse adjacency matrix
             to compute the triangle count.
-        :param composition_workers: Number of workers to compute the triangle count.
+        :param composition_workers:
+            Number of workers to compute the triangle count.
 
-        :return: The results dataframe. Contains the following columns
+        :return:
+            The results dataframe. Contains the following columns
             (in addition to `h`, `r`, `t` in ``df``):
 
             - **is_loop** (bool): True if the triple is a loop (``h == t``).
