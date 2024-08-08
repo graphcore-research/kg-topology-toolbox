@@ -7,7 +7,7 @@ Topology toolbox main functionalities
 
 from collections.abc import Iterable
 from functools import cache
-
+import warnings
 import numpy as np
 import pandas as pd
 from pandas.api.types import is_integer_dtype
@@ -59,6 +59,11 @@ class KGTopologyToolbox:
         self.df = kg_df[[head_column, relation_column, tail_column]].rename(
             columns={head_column: "h", relation_column: "r", tail_column: "t"}
         )
+        if self.df.duplicated(subset=["h", "r", "t"]).any():
+            warnings.warn(
+                "The Knowledge Graph contains duplicated edges"
+                " -- some functionalities may produce incorrect results"
+            )
         self.n_entity = self.df[["h", "t"]].max().max() + 1
         self.n_rel = self.df.r.max() + 1
 
