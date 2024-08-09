@@ -60,7 +60,7 @@ class KGTopologyToolbox:
         self.df = kg_df[[head_column, relation_column, tail_column]].rename(
             columns={head_column: "h", relation_column: "r", tail_column: "t"}
         )
-        if self.df.duplicated(subset=["h", "r", "t"]).any():
+        if self.df.duplicated().any():
             warnings.warn(
                 "The Knowledge Graph contains duplicated edges"
                 " -- some functionalities may produce incorrect results"
