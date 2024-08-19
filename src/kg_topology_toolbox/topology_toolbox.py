@@ -5,16 +5,15 @@
 Topology toolbox main functionalities
 """
 
-import warnings
 from functools import cache
 
 import numpy as np
 import pandas as pd
-from pandas.api.types import is_integer_dtype
 from scipy.sparse import coo_array
 
 from kg_topology_toolbox.utils import (
     aggregate_by_relation,
+    check_kg_df_structure,
     composition_count,
     jaccard_similarity,
     node_degrees_and_rels,
@@ -49,22 +48,11 @@ class KGTopologyToolbox:
             The name of the column with the IDs of tail entities. Default: "t".
 
         """
-        for col_name in [head_column, relation_column, tail_column]:
-            if col_name in kg_df.columns:
-                if not is_integer_dtype(kg_df[col_name]):
-                    raise TypeError(
-                        f"Column {col_name} needs to be of an integer dtype"
-                    )
-            else:
-                raise ValueError(f"DataFrame {kg_df} has no column named {col_name}")
+        check_kg_df_structure(kg_df, head_column, relation_column, tail_column)
+
         self.df = kg_df[[head_column, relation_column, tail_column]].rename(
             columns={head_column: "h", relation_column: "r", tail_column: "t"}
         )
-        if self.df.duplicated().any():
-            warnings.warn(
-                "The Knowledge Graph contains duplicated edges"
-                " -- some functionalities may produce incorrect results"
-            )
         self.n_entity = self.df[["h", "t"]].max().max() + 1
         self.n_rel = self.df.r.max() + 1
 

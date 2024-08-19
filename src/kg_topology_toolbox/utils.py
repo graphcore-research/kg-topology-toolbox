@@ -4,13 +4,45 @@
 Utility functions
 """
 
+import warnings
 from collections.abc import Iterable
 from multiprocessing import Pool
 
 import numpy as np
 import pandas as pd
 from numpy.typing import NDArray
+from pandas.api.types import is_integer_dtype
 from scipy.sparse import coo_array, csc_array, csr_array
+
+
+def check_kg_df_structure(kg_df: pd.DataFrame, h: str, r: str, t: str) -> None:
+    """
+    Utility to perform sanity checks on the structure of the provided DataFrame,
+    to ensure that it encodes a Knowledge Graph in a compatible way.
+
+    :param kg_df:
+        The Knowledge Graph DataFrame.
+    :param h:
+        The name of the column with the IDs of head entities.
+    :param r:
+        The name of the column with the IDs of relation types.
+    :param t:
+        The name of the column with the IDs of tail entities.
+
+    """
+    # check h,r,t columns are present and of an integer type
+    for col_name in [h, r, t]:
+        if col_name in kg_df.columns:
+            if not is_integer_dtype(kg_df[col_name]):
+                raise TypeError(f"Column {col_name} needs to be of an integer dtype")
+        else:
+            raise ValueError(f"DataFrame {kg_df} has no column named {col_name}")
+    # check there are no duplicated (h,r,t) triples
+    if kg_df[[h, r, t]].duplicated().any():
+        warnings.warn(
+            "The Knowledge Graph contains duplicated edges"
+            " -- some functionalities may produce incorrect results"
+        )
 
 
 def node_degrees_and_rels(
