@@ -5,37 +5,143 @@
 Topology toolbox main functionalities
 """
 
-from collections.abc import Iterable
+from functools import cache
 
 import numpy as np
 import pandas as pd
 from scipy.sparse import coo_array
 
-from kg_topology_toolbox.utils import composition_count, jaccard_similarity
+from kg_topology_toolbox.utils import (
+    aggregate_by_relation,
+    check_kg_df_structure,
+    composition_count,
+    jaccard_similarity,
+    node_degrees_and_rels,
+)
 
 
 class KGTopologyToolbox:
     """
-    Toolbox class to compute various Knowledge Graph topology statistics.
+    Toolbox class to compute Knowledge Graph topology statistics.
     """
 
-    def node_degree_summary(
-        self, df: pd.DataFrame, return_relation_list: bool = False
-    ) -> pd.DataFrame:
+    def __init__(
+        self,
+        kg_df: pd.DataFrame,
+        head_column: str = "h",
+        relation_column: str = "r",
+        tail_column: str = "t",
+    ):
         """
-        For each entity, this function computes the number of edges having it as a head
+        Instantiate the Topology Toolbox for a Knowledge Graph defined
+        by the list of its edges (h,r,t).
+
+        :param kg_df:
+            A Knowledge Graph represented as a pd.DataFrame.
+            Must contain at least three columns, which specify the IDs of
+            head entity, relation type and tail entity for each edge.
+        :param head_column:
+            The name of the column with the IDs of head entities. Default: "h".
+        :param head_column:
+            The name of the column with the IDs of relation types. Default: "r".
+        :param head_column:
+            The name of the column with the IDs of tail entities. Default: "t".
+
+        """
+        check_kg_df_structure(kg_df, head_column, relation_column, tail_column)
+
+        self.df = kg_df[[head_column, relation_column, tail_column]].rename(
+            columns={head_column: "h", relation_column: "r", tail_column: "t"}
+        )
+        self.n_entity = self.df[["h", "t"]].max().max() + 1
+        self.n_rel = self.df.r.max() + 1
+
+    def loop_count(self) -> pd.DataFrame:
+        """
+        For each entity in the KG, compute the number of loops around the entity
+        (i.e., the number of edges having the entity as both head and tail).
+
+        :return:
+            Loop count DataFrame, indexed on the IDs of the graph entities.
+        """
+        n_loops = (
+            self.df[self.df.h == self.df.t].groupby("h").agg(n_loops=("r", "count"))
+        )
+        return (
+            pd.DataFrame(n_loops, index=np.arange(self.n_entity)).fillna(0).astype(int)
+        )
+
+    @cache
+    def node_head_degree(self, return_relation_list: bool = False) -> pd.DataFrame:
+        """
+        For each entity in the KG, compute the number of edges having it as head
+        (head-degree, or out-degree of the head node).
+        The relation types going out of the head node are also identified.
+
+        :param return_relation_list:
+            If True, return the list of unique relations going
+            out of the head node. WARNING: expensive for large graphs.
+            Default: False.
+
+        :return:
+            The result DataFrame, indexed on the IDs `e` of the graph entities,
+            with columns:
+
+            - **h_degree** (int): Number of triples with head entity `e`.
+            - **h_unique_rel** (int): Number of distinct relation types
+              among edges with head entity `e`.
+            - **h_rel_list** (Optional[list]): List of unique relation types
+              among edges with head entity `e`.
+              Only returned if `return_relation_list = True`.
+        """
+        node_df = node_degrees_and_rels(
+            self.df, "h", self.n_entity, return_relation_list
+        )
+        return node_df.rename(columns={n: "h_" + n for n in node_df.columns})
+
+    @cache
+    def node_tail_degree(self, return_relation_list: bool = False) -> pd.DataFrame:
+        """
+        For each entity in the KG, compute the number of edges having it as tail
+        (tail-degree, or in-degree of the tail node).
+        The relation types going into the tail node are also identified.
+
+        :param return_relation_list:
+            If True, return the list of unique relation types going
+            into the tail node. WARNING: expensive for large graphs.
+            Default: False.
+
+        :return:
+            The result DataFrame, indexed on the IDs `e` of the graph entities,
+            with columns:
+
+            - **t_degree** (int): Number of triples with tail entity `e`.
+            - **t_unique_rel** (int): Number of distinct relation types
+              among edges with tail entity `e`.
+            - **t_rel_list** (Optional[list]): List of unique relation types
+              among edges with tail entity `e`.
+              Only returned if `return_relation_list = True`.
+        """
+        node_df = node_degrees_and_rels(
+            self.df, "t", self.n_entity, return_relation_list
+        )
+        return node_df.rename(columns={n: "t_" + n for n in node_df.columns})
+
+    def node_degree_summary(self, return_relation_list: bool = False) -> pd.DataFrame:
+        """
+        For each entity in the KG, compute the number of edges having it as a head
         (head-degree, or out-degree), as a tail (tail-degree, or in-degree)
-        or one of the two (total-degree) in the Knowledge Graph.
+        or one of the two (total-degree).
         The in-going and out-going relation types are also identified.
 
         The output dataframe is indexed on the IDs of the graph entities.
 
-        :param df: A graph represented as a pd.DataFrame.
-            Must contain at least three columns `h`, `r`, `t`.
-        :param return_relation_list: If True, return the list of unique relations going
+        :param return_relation_list:
+            If True, return the list of unique relations going
             in/out of an entity. WARNING: expensive for large graphs.
 
-        :return: The results dataframe, indexed over the same entity ID `e` used in df,
+        :return:
+            The results dataframe, indexed on the IDs `e` of the graph entities,
             with columns:
 
             - **h_degree** (int): Number of triples with head entity `e`.
@@ -43,45 +149,33 @@ class KGTopologyToolbox:
             - **tot_degree** (int): Number of triples with head entity `e` or tail entity `e`.
             - **h_unique_rel** (int): Number of distinct relation types
               among edges with head entity `e`.
-            - **h_rel_list** (list): List of unique relation types among edges
+            - **h_rel_list** (Optional[list]): List of unique relation types among edges
               with head entity `e`.
+              Only returned if `return_relation_list = True`.
             - **t_unique_rel** (int): Number of distinct relation types
               among edges with tail entity `e`.
-            - **t_rel_list** (list): List of unique relation types among edges
+            - **t_rel_list** (Optional[list]): List of unique relation types among edges
               with tail entity `e`.
+              Only returned if `return_relation_list = True`.
             - **n_loops** (int): number of loops around entity `e`.
         """
-        n_entity = df[["h", "t"]].max().max() + 1
-        h_rel_list = {"h_rel_list": ("r", "unique")} if return_relation_list else {}
-        t_rel_list = {"t_rel_list": ("r", "unique")} if return_relation_list else {}
-        nodes = pd.DataFrame(
-            df.groupby("h").agg(
-                h_degree=("r", "count"), h_unique_rel=("r", "nunique"), **h_rel_list  # type: ignore
-            ),
-            index=np.arange(n_entity),
-        )
-        nodes = nodes.merge(
-            df.groupby("t").agg(
-                t_degree=("r", "count"), t_unique_rel=("r", "nunique"), **t_rel_list  # type: ignore
-            ),
+        nodes_df = pd.merge(
+            self.node_head_degree(return_relation_list),
+            self.node_tail_degree(return_relation_list),
             left_index=True,
             right_index=True,
-            how="left",
         )
-        nodes = nodes.merge(
-            df[df.h == df.t].groupby("h").agg(n_loops=("r", "count")),
+        nodes_df = pd.merge(
+            nodes_df,
+            self.loop_count(),
             left_index=True,
             right_index=True,
-            how="left",
         )
-        nodes[["h_degree", "h_unique_rel", "t_degree", "t_unique_rel", "n_loops"]] = (
-            nodes[["h_degree", "h_unique_rel", "t_degree", "t_unique_rel", "n_loops"]]
-            .fillna(0)
-            .astype(int)
+        nodes_df["tot_degree"] = (
+            nodes_df["h_degree"] + nodes_df["t_degree"] - nodes_df["n_loops"]
         )
-        nodes["tot_degree"] = nodes["h_degree"] + nodes["t_degree"] - nodes["n_loops"]
 
-        return nodes[
+        return nodes_df[
             ["h_degree", "t_degree", "tot_degree", "h_unique_rel"]
             + (["h_rel_list"] if return_relation_list else [])
             + ["t_unique_rel"]
@@ -89,24 +183,115 @@ class KGTopologyToolbox:
             + ["n_loops"]
         ]
 
-    def edge_degree_cardinality_summary(self, df: pd.DataFrame) -> pd.DataFrame:
+    @cache
+    def edge_head_degree(self) -> pd.DataFrame:
         """
-        For each triple, this function computes the number of edges with the same head
+        For each edge in the KG, compute the number of edges
+        (in total or of the same relation type) with the same head node.
+
+        :return:
+            The result DataFrame, with the same indexing and ordering of
+            triples as the original KG DataFrame, with columns
+            (in addition to `h`, `r`, `t`):
+
+            - **h_unique_rel** (int): Number of distinct relation types
+              among edges with head entity `h`.
+            - **h_degree** (int): Number of triples with head entity `h`.
+            - **h_degree_same_rel** (int): Number of triples with head entity `h`
+              and relation type `r`.
+        """
+        edge_by_hr_count = self.df.groupby(["h", "r"], as_index=False).agg(
+            h_degree_same_rel=("t", "count")
+        )
+        df_res = self.df.merge(
+            self.node_head_degree(), left_on=["h"], right_index=True, how="left"
+        )
+        return df_res.merge(edge_by_hr_count, on=["h", "r"], how="left")
+
+    @cache
+    def edge_tail_degree(self) -> pd.DataFrame:
+        """
+        For each edge in the KG, compute the number of edges
+        (in total or of the same relation type) with the same tail node.
+
+        :return:
+            The result DataFrame, with the same indexing and ordering of
+            triples as the original KG DataFrame, with columns
+            (in addition to `h`, `r`, `t`):
+
+            - **t_unique_rel** (int): Number of distinct relation types
+              among edges with tail entity `t`.
+            - **t_degree** (int): Number of triples with tail entity `t`.
+            - **t_degree_same_rel** (int): Number of triples with tail entity `t`
+              and relation type `r`.
+        """
+        edge_by_rt_count = self.df.groupby(["r", "t"], as_index=False).agg(
+            t_degree_same_rel=("h", "count")
+        )
+        df_res = self.df.merge(
+            self.node_tail_degree(), left_on=["t"], right_index=True, how="left"
+        )
+        return df_res.merge(edge_by_rt_count, on=["r", "t"], how="left")
+
+    def edge_cardinality(self) -> pd.DataFrame:
+        """
+        Classify the cardinality of each edge in the KG: one-to-one
+        (out-degree=in-degree=1), one-to-many (out-degree>1, in-degree=1),
+        many-to-one(out-degree=1, in-degree>1) or many-to-many
+        (in-degree>1, out-degree>1).
+
+        :return:
+            The result DataFrame, with the same indexing and ordering of
+            triples as the original KG DataFrame, with columns
+            (in addition to `h`, `r`, `t`):
+
+            - **triple_cardinality** (int): cardinality type of the edge.
+            - **triple_cardinality_same_rel** (int): cardinality type of the edge in
+              the subgraph of edges with relation type `r`.
+        """
+        head_degree = self.edge_head_degree()
+        tail_degree = self.edge_tail_degree()
+        df_res = pd.DataFrame(
+            {"h": head_degree.h, "r": head_degree.r, "t": head_degree.t}
+        )
+        # check if the values in the pair (h_degree, t_degree) are =1 or >1
+        # to determine the edge cardinality
+        for suffix in ["", "_same_rel"]:
+            # check if the values in the pair (h_degree, t_degree) are =1 or >1
+            # to determine the edge cardinality
+            edge_type = 2 * (head_degree["h_degree" + suffix] == 1) + (
+                tail_degree["t_degree" + suffix] == 1
+            )
+            df_res["triple_cardinality" + suffix] = pd.cut(
+                edge_type,
+                bins=[0, 1, 2, 3, 4],
+                right=False,
+                labels=["M:M", "1:M", "M:1", "1:1"],
+            ).astype(str)
+        return df_res
+
+    def edge_degree_cardinality_summary(
+        self, aggregate_by_r: bool = False
+    ) -> pd.DataFrame:
+        """
+        For each edge in the KG, compute the number of edges with the same head
         (head-degree, or out-degree), the same tail (tail-degree, or in-degree)
-        or one of the two (total-degree) in the Knowledge Graph.
+        or one of the two (total-degree).
         Based on entity degrees, each triple is classified as either one-to-one
         (out-degree=in-degree=1), one-to-many (out-degree>1, in-degree=1),
         many-to-one(out-degree=1, in-degree>1) or many-to-many
         (in-degree>1, out-degree>1).
 
         The output dataframe maintains the same indexing and ordering of triples
-        as the input one.
+        as the original Knowledge Graph dataframe.
 
-        :param df: A graph represented as a pd.DataFrame.
-            Must contain at least three columns `h`, `r`, `t`.
+        :param aggregate_by_r:
+            If True, return metrics aggregated by relation type
+            (the output DataFrame will be indexed over relation IDs).
 
-        :return: The results dataframe. Contains the following columns
-            (in addition to `h`, `r`, `t` in ``df``):
+        :return:
+            The results dataframe. Contains the following columns
+            (in addition to `h`, `r`, `t`):
 
             - **h_unique_rel** (int): Number of distinct relation types
               among edges with head entity h.
@@ -126,33 +311,18 @@ class KGTopologyToolbox:
             - **triple_cardinality_same_rel** (int): cardinality type of the edge in
               the subgraph of edges with relation type r.
         """
-        gr_by_h_count = df.groupby("h", as_index=False).agg(
-            h_unique_rel=("r", "nunique"), h_degree=("t", "count")
-        )
-        gr_by_hr_count = df.groupby(["h", "r"], as_index=False).agg(
-            h_degree_same_rel=("t", "count")
-        )
-        gr_by_t_count = df.groupby("t", as_index=False).agg(
-            t_unique_rel=("r", "nunique"), t_degree=("h", "count")
-        )
-        gr_by_rt_count = df.groupby(["r", "t"], as_index=False).agg(
-            t_degree_same_rel=("h", "count")
-        )
-
-        df_res = df.merge(gr_by_h_count, left_on=["h"], right_on=["h"], how="left")
-        df_res = df_res.merge(
-            gr_by_hr_count, left_on=["h", "r"], right_on=["h", "r"], how="left"
-        )
-        df_res = df_res.merge(gr_by_t_count, left_on=["t"], right_on=["t"], how="left")
-        df_res = df_res.merge(
-            gr_by_rt_count, left_on=["t", "r"], right_on=["t", "r"], how="left"
+        df_res = pd.concat(
+            [
+                self.edge_head_degree(),
+                self.edge_tail_degree().drop(columns=["h", "r", "t"]),
+            ],
+            axis=1,
         )
         # compute number of parallel edges to avoid double-counting them
         # in total degree
         num_parallel = df_res.merge(
-            df.groupby(["h", "t"], as_index=False).agg(n_parallel=("r", "count")),
-            left_on=["h", "t"],
-            right_on=["h", "t"],
+            self.df.groupby(["h", "t"], as_index=False).agg(n_parallel=("r", "count")),
+            on=["h", "t"],
             how="left",
         )
         df_res["tot_degree"] = (
@@ -164,46 +334,43 @@ class KGTopologyToolbox:
             df_res.h_degree_same_rel + df_res.t_degree_same_rel - 1
         )
 
-        # check if the values in the pair (h_degree, t_degree) are =1 or >1
-        # to determine the edge cardinality
-        legend = {
-            0: "M:M",
-            1: "1:M",
-            2: "M:1",
-            3: "1:1",
-        }
-        for suffix in ["", "_same_rel"]:
-            edge_type = 2 * (df_res["h_degree" + suffix] == 1) + (
-                df_res["t_degree" + suffix] == 1
-            )
-            df_res["triple_cardinality" + suffix] = edge_type.apply(lambda x: legend[x])
-        return df_res
+        edge_cardinality = self.edge_cardinality()
+        df_res["triple_cardinality"] = edge_cardinality["triple_cardinality"]
+        df_res["triple_cardinality_same_rel"] = edge_cardinality[
+            "triple_cardinality_same_rel"
+        ]
+        return aggregate_by_relation(df_res) if aggregate_by_r else df_res
 
     def edge_pattern_summary(
         self,
-        df: pd.DataFrame,
         return_metapath_list: bool = False,
         composition_chunk_size: int = 2**8,
         composition_workers: int = 32,
+        aggregate_by_r: bool = False,
     ) -> pd.DataFrame:
         """
-        This function analyses the structural properties of each edge in the graph:
+        Analyse structural properties of each edge in the KG:
         symmetry, presence of inverse/inference(=parallel) edges and
         triangles supported on the edge.
 
         The output dataframe maintains the same indexing and ordering of triples
-        as the input one.
+        as the original Knowledge Graph dataframe.
 
-        :param df: A graph represented as a pd.DataFrame.
-            Must contain at least three columns `h`, `r`, `t`.
-        :param return_metapath_list: If True, return the list of unique metapaths for all
+        :param return_metapath_list:
+            If True, return the list of unique metapaths for all
             triangles supported over one edge. WARNING: very expensive for large graphs.
-        :param composition_chunk_size: Size of column chunks of sparse adjacency matrix
+        :param composition_chunk_size:
+            Size of column chunks of sparse adjacency matrix
             to compute the triangle count.
-        :param composition_workers: Number of workers to compute the triangle count.
+        :param composition_workers:
+            Number of workers to compute the triangle count.
+        :param aggregate_by_r:
+            If True, return metrics aggregated by relation type
+            (the output DataFrame will be indexed over relation IDs).
 
-        :return: The results dataframe. Contains the following columns
-            (in addition to `h`, `r`, `t` in ``df``):
+        :return:
+            The results dataframe. Contains the following columns
+            (in addition to `h`, `r`, `t`):
 
             - **is_loop** (bool): True if the triple is a loop (``h == t``).
             - **is_symmetric** (bool): True if the triple (t, r, h) is also contained
@@ -230,12 +397,14 @@ class KGTopologyToolbox:
         """
         # symmetry-asymmetry
         # edges with h/t switched
-        df_inv = df.reindex(columns=["t", "r", "h"]).rename(
+        df_inv = self.df.reindex(columns=["t", "r", "h"]).rename(
             columns={"t": "h", "r": "r", "h": "t"}
         )
-        df_res = pd.DataFrame({"h": df.h, "r": df.r, "t": df.t, "is_symmetric": False})
+        df_res = pd.DataFrame(
+            {"h": self.df.h, "r": self.df.r, "t": self.df.t, "is_symmetric": False}
+        )
         df_res.loc[
-            df.reset_index().merge(df_inv)["index"],
+            self.df.reset_index().merge(df_inv)["index"],
             "is_symmetric",
         ] = True
         # loops are treated separately
@@ -277,7 +446,7 @@ class KGTopologyToolbox:
 
         # composition & metapaths
         # discard loops as edges of a triangle
-        df_wo_loops = df[df.h != df.t]
+        df_wo_loops = self.df[self.df.h != self.df.t]
         if return_metapath_list:
             # 2-hop paths
             df_bridges = df_wo_loops.merge(
@@ -336,7 +505,7 @@ class KGTopologyToolbox:
         )
         df_res["has_undirected_composition"] = df_res["n_undirected_triangles"] > 0
 
-        return df_res[
+        df_res = df_res[
             [
                 "h",
                 "r",
@@ -357,95 +526,16 @@ class KGTopologyToolbox:
             + (["metapath_list"] if return_metapath_list else [])
         ]
 
-    def aggregate_by_relation(self, edge_topology_df: pd.DataFrame) -> pd.DataFrame:
-        """
-        Aggregate topology metrics of all triples of the same relation type.
-        To be applied to the output dataframe of either
-        :meth:`KGTopologyToolbox.edge_degree_cardinality_summary` or
-        :meth:`KGTopologyToolbox.edge_pattern_summary`.
+        return aggregate_by_relation(df_res) if aggregate_by_r else df_res
 
-        The returned dataframe is indexed over relation type IDs, with columns
-        giving the aggregated statistics of triples of the correspondig relation.
-        The name of the columns is of the form ``column_name_in_input_df + suffix``.
-        The aggregation is perfomed by returning:
-
-        - for numerical metrics: mean, standard deviation and quartiles
-          (``suffix`` = "_mean", "_std", "_quartile1", "_quartile2", "_quartile3");
-        - for boolean metrics: the fraction of triples of the relation type
-          with metric = True (``suffix`` = "_frac");
-        - for string metrics: for each possible label, the fraction of triples
-          of the relation type with that metric value (``suffix`` = "_{label}_frac")
-        - for list metrics: the unique metric values across triples of the relation
-          type (``suffix`` = "_unique").
-
-        :param edge_topology_df: pd.DataFrame of edge topology metrics.
-            Must contain at least three columns `h`, `r`, `t`.
-
-        :return: The results dataframe. In addition to the columns with the aggregated
-            metrics by relation type, it also contains columns:
-
-            - **num_triples** (int): Number of triples for each relation type.
-            - **frac_triples** (float): Fraction of overall triples represented by each
-              relation type.
-            - **unique_h** (int): Number of unique head entities used by triples of each
-              relation type.
-            - **unique_t** (int): Number of unique tail entities used by triples of each
-              relation type.
-        """
-        df_by_r = edge_topology_df.groupby("r")
-        df_res = df_by_r.agg(num_triples=("r", "count"))
-        df_res["frac_triples"] = df_res["num_triples"] / edge_topology_df.shape[0]
-        col: str
-        for col, col_dtype in edge_topology_df.drop(columns=["r"]).dtypes.items():  # type: ignore
-            if col in ["h", "t"]:
-                df_res[f"unique_{col}"] = df_by_r[col].nunique()
-            elif col_dtype == object:
-                if isinstance(edge_topology_df[col].iloc[0], str):
-                    for label in np.unique(edge_topology_df[col]):
-                        df_res[f"{col}_{label}_frac"] = (
-                            edge_topology_df[edge_topology_df[col] == label]
-                            .groupby("r")[col]
-                            .count()
-                            / df_res["num_triples"]
-                        ).fillna(0)
-                elif isinstance(edge_topology_df[col].iloc[0], Iterable):
-                    df_res[f"{col}_unique"] = (
-                        df_by_r[col]
-                        .agg(np.unique)
-                        .apply(
-                            lambda x: (
-                                np.unique(
-                                    np.concatenate(
-                                        [lst for lst in x if len(lst) > 0] or [[]]
-                                    )
-                                ).tolist()
-                            )
-                        )
-                    )
-                else:
-                    print(f"Skipping column {col}: no known aggregation mode")
-                    continue
-            elif col_dtype == int or col_dtype == float:
-                df_res[f"{col}_mean"] = df_by_r[col].mean()
-                df_res[f"{col}_std"] = df_by_r[col].std()
-                for q in range(1, 4):
-                    df_res[f"{col}_quartile{q}"] = df_by_r[col].agg(
-                        lambda x: np.quantile(x, 0.25 * q)
-                    )
-            elif col_dtype == bool:
-                df_res[f"{col}_frac"] = df_by_r[col].mean()
-        return df_res
-
-    def jaccard_similarity_relation_sets(self, df: pd.DataFrame) -> pd.DataFrame:
+    def jaccard_similarity_relation_sets(self) -> pd.DataFrame:
         """
         Compute the similarity between relations defined as the Jaccard Similarity
         between sets of entities (heads and tails) for all pairs
         of relations in the graph.
 
-        :param df: A graph represented as a pd.DataFrame.
-            Must contain at least three columns `h`, `r`, `t`.
-
-        :return: The results dataframe. Contains the following columns:
+        :return:
+            The results dataframe. Contains the following columns:
 
             - **r1** (int): Index of the first relation.
             - **r2** (int): Index of the second relation.
@@ -468,7 +558,7 @@ class KGTopologyToolbox:
             - **jaccard_both** (float): Jaccard similarity between the full entity set
               of r1 and r2.
         """
-        ent_unique = df.groupby("r", as_index=False).agg(
+        ent_unique = self.df.groupby("r", as_index=False).agg(
             num_triples=("r", "count"), head=("h", "unique"), tail=("t", "unique")
         )
         ent_unique["both"] = ent_unique.apply(
@@ -487,7 +577,7 @@ class KGTopologyToolbox:
         df_res = df_res[df_res.r1 < df_res.r2]
 
         df_res["num_triples_both"] = df_res["num_triples_r1"] + df_res["num_triples_r2"]
-        df_res["frac_triples_both"] = df_res["num_triples_both"] / df.shape[0]
+        df_res["frac_triples_both"] = df_res["num_triples_both"] / self.df.shape[0]
         df_res["num_entities_both"] = df_res.apply(
             lambda x: len(
                 np.unique(
@@ -531,9 +621,7 @@ class KGTopologyToolbox:
         ]
         return df_res
 
-    def relational_affinity_ingram(
-        self, df: pd.DataFrame, min_max_norm: bool = False
-    ) -> pd.DataFrame:
+    def relational_affinity_ingram(self, min_max_norm: bool = False) -> pd.DataFrame:
         """
         Compute the similarity between relations based on the approach proposed in
         InGram: Inductive Knowledge Graph Embedding via Relation Graphs,
@@ -542,34 +630,31 @@ class KGTopologyToolbox:
         Only the pairs of relations witn ``affinity > 0`` are shown in the
         returned dataframe.
 
-        :param df: A graph represented as a pd.DataFrame.
-            Must contain at least three columns `h`, `r`, `t`.
-        :param min_max_norm: min-max normalization of edge weights. Defaults to False.
+        :param min_max_norm:
+            min-max normalization of edge weights. Defaults to False.
 
-        :return: The results dataframe. Contains the following columns:
+        :return:
+            The results dataframe. Contains the following columns:
 
             - **h_relation** (int): Index of the head relation.
             - **t_relation** (int): Index of the tail relation.
             - **edge_weight** (float): Weight for the affinity between
               the head and the tail relation.
         """
-        n_entities = df[["h", "t"]].max().max() + 1
-        n_rels = df.r.max() + 1
-
-        hr_freqs = df.groupby(["h", "r"], as_index=False).count()
+        hr_freqs = self.df.groupby(["h", "r"], as_index=False).count()
         # normalize by global h frequency
         hr_freqs["t"] = hr_freqs["t"] / hr_freqs.groupby("h")["t"].transform("sum")
-        rt_freqs = df.groupby(["t", "r"], as_index=False).count()
+        rt_freqs = self.df.groupby(["t", "r"], as_index=False).count()
         # normalize by global t frequency
         rt_freqs["h"] = rt_freqs["h"] / rt_freqs.groupby("t")["h"].transform("sum")
 
         E_h = coo_array(
             (hr_freqs.t, (hr_freqs.h, hr_freqs.r)),
-            shape=[n_entities, n_rels],
+            shape=[self.n_entity, self.n_rel],
         )
         E_t = coo_array(
             (rt_freqs.h, (rt_freqs.t, rt_freqs.r)),
-            shape=[n_entities, n_rels],
+            shape=[self.n_entity, self.n_rel],
         )
 
         A = (E_h.T @ E_h).toarray() + (E_t.T @ E_t).toarray()
