@@ -1,0 +1,6 @@
+kg\_topology\_toolbox.utils.node\_degrees\_and\_rels
+====================================================
+
+.. currentmodule:: kg_topology_toolbox.utils
+
+.. autofunction:: node_degrees_and_rels

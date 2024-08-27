@@ -93,48 +93,43 @@
 <h1>kg_topology_toolbox.topology_toolbox.KGTopologyToolbox<a class="headerlink" href="#kg-topology-toolbox-topology-toolbox-kgtopologytoolbox" title="Link to this heading"></a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="kg_topology_toolbox.topology_toolbox.KGTopologyToolbox">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">kg_topology_toolbox.topology_toolbox.</span></span><span class="sig-name descname"><span class="pre">KGTopologyToolbox</span></span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#KGTopologyToolbox"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox" title="Link to this definition"></a></dt>
-<dd><p>Toolbox class to compute various Knowledge Graph topology statistics.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.aggregate_by_relation">
-<span class="sig-name descname"><span class="pre">aggregate_by_relation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">edge_topology_df</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#KGTopologyToolbox.aggregate_by_relation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.aggregate_by_relation" title="Link to this definition"></a></dt>
-<dd><p>Aggregate topology metrics of all triples of the same relation type.
-To be applied to the output dataframe of either
-<a class="reference internal" href="#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.edge_degree_cardinality_summary" title="kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.edge_degree_cardinality_summary"><code class="xref py py-meth docutils literal notranslate"><span class="pre">KGTopologyToolbox.edge_degree_cardinality_summary()</span></code></a> or
-<a class="reference internal" href="#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.edge_pattern_summary" title="kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.edge_pattern_summary"><code class="xref py py-meth docutils literal notranslate"><span class="pre">KGTopologyToolbox.edge_pattern_summary()</span></code></a>.</p>
-<p>The returned dataframe is indexed over relation type IDs, with columns
-giving the aggregated statistics of triples of the correspondig relation.
-The name of the columns is of the form <code class="docutils literal notranslate"><span class="pre">column_name_in_input_df</span> <span class="pre">+</span> <span class="pre">suffix</span></code>.
-The aggregation is perfomed by returning:</p>
-<ul class="simple">
-<li><p>for numerical metrics: mean, standard deviation and quartiles
-(<code class="docutils literal notranslate"><span class="pre">suffix</span></code> = “_mean”, “_std”, “_quartile1”, “_quartile2”, “_quartile3”);</p></li>
-<li><p>for boolean metrics: the fraction of triples of the relation type
-with metric = True (<code class="docutils literal notranslate"><span class="pre">suffix</span></code> = “_frac”);</p></li>
-<li><p>for string metrics: for each possible label, the fraction of triples
-of the relation type with that metric value (<code class="docutils literal notranslate"><span class="pre">suffix</span></code> = “_{label}_frac”)</p></li>
-<li><p>for list metrics: the unique metric values across triples of the relation
-type (<code class="docutils literal notranslate"><span class="pre">suffix</span></code> = “_unique”).</p></li>
-</ul>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">kg_topology_toolbox.topology_toolbox.</span></span><span class="sig-name descname"><span class="pre">KGTopologyToolbox</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kg_df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">head_column</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'h'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">relation_column</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'r'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tail_column</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'t'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#KGTopologyToolbox"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox" title="Link to this definition"></a></dt>
+<dd><p>Toolbox class to compute Knowledge Graph topology statistics.</p>
+<p>Instantiate the Topology Toolbox for a Knowledge Graph defined
+by the list of its edges (h,r,t).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>edge_topology_df</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></span>) – pd.DataFrame of edge topology metrics.
-Must contain at least three columns <cite>h</cite>, <cite>r</cite>, <cite>t</cite>.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>kg_df</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></span>) – A Knowledge Graph represented as a pd.DataFrame.
+Must contain at least three columns, which specify the IDs of
+head entity, relation type and tail entity for each edge.</p></li>
+<li><p><strong>head_column</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – The name of the column with the IDs of head entities. Default: “h”.</p></li>
+<li><p><strong>head_column</strong> – The name of the column with the IDs of relation types. Default: “r”.</p></li>
+<li><p><strong>head_column</strong> – The name of the column with the IDs of tail entities. Default: “t”.</p></li>
+<li><p><strong>relation_column</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>)</p></li>
+<li><p><strong>tail_column</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>)</p></li>
+</ul>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></span></p>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.edge_cardinality">
+<span class="sig-name descname"><span class="pre">edge_cardinality</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#KGTopologyToolbox.edge_cardinality"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.edge_cardinality" title="Link to this definition"></a></dt>
+<dd><p>Classify the cardinality of each edge in the KG: one-to-one
+(out-degree=in-degree=1), one-to-many (out-degree&gt;1, in-degree=1),
+many-to-one(out-degree=1, in-degree&gt;1) or many-to-many
+(in-degree&gt;1, out-degree&gt;1).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></span></p>
 </dd>
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p><p>The results dataframe. In addition to the columns with the aggregated
-metrics by relation type, it also contains columns:</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p>The result DataFrame, with the same indexing and ordering of
+triples as the original KG DataFrame, with columns
+(in addition to <cite>h</cite>, <cite>r</cite>, <cite>t</cite>):</p>
 <ul class="simple">
-<li><p><strong>num_triples</strong> (int): Number of triples for each relation type.</p></li>
-<li><p><strong>frac_triples</strong> (float): Fraction of overall triples represented by each
-relation type.</p></li>
-<li><p><strong>unique_h</strong> (int): Number of unique head entities used by triples of each
-relation type.</p></li>
-<li><p><strong>unique_t</strong> (int): Number of unique tail entities used by triples of each
-relation type.</p></li>
+<li><p><strong>triple_cardinality</strong> (int): cardinality type of the edge.</p></li>
+<li><p><strong>triple_cardinality_same_rel</strong> (int): cardinality type of the edge in
+the subgraph of edges with relation type <cite>r</cite>.</p></li>
 </ul>
 </p>
 </dd>
@@ -143,27 +138,27 @@ relation type.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.edge_degree_cardinality_summary">
-<span class="sig-name descname"><span class="pre">edge_degree_cardinality_summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#KGTopologyToolbox.edge_degree_cardinality_summary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.edge_degree_cardinality_summary" title="Link to this definition"></a></dt>
-<dd><p>For each triple, this function computes the number of edges with the same head
+<span class="sig-name descname"><span class="pre">edge_degree_cardinality_summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">aggregate_by_r</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#KGTopologyToolbox.edge_degree_cardinality_summary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.edge_degree_cardinality_summary" title="Link to this definition"></a></dt>
+<dd><p>For each edge in the KG, compute the number of edges with the same head
 (head-degree, or out-degree), the same tail (tail-degree, or in-degree)
-or one of the two (total-degree) in the Knowledge Graph.
+or one of the two (total-degree).
 Based on entity degrees, each triple is classified as either one-to-one
 (out-degree=in-degree=1), one-to-many (out-degree&gt;1, in-degree=1),
 many-to-one(out-degree=1, in-degree&gt;1) or many-to-many
 (in-degree&gt;1, out-degree&gt;1).</p>
 <p>The output dataframe maintains the same indexing and ordering of triples
-as the input one.</p>
+as the original Knowledge Graph dataframe.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>df</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></span>) – A graph represented as a pd.DataFrame.
-Must contain at least three columns <cite>h</cite>, <cite>r</cite>, <cite>t</cite>.</p>
+<dd class="field-odd"><p><strong>aggregate_by_r</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – If True, return metrics aggregated by relation type
+(the output DataFrame will be indexed over relation IDs).</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></span></p>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p><p>The results dataframe. Contains the following columns
-(in addition to <cite>h</cite>, <cite>r</cite>, <cite>t</cite> in <code class="docutils literal notranslate"><span class="pre">df</span></code>):</p>
+(in addition to <cite>h</cite>, <cite>r</cite>, <cite>t</cite>):</p>
 <ul class="simple">
 <li><p><strong>h_unique_rel</strong> (int): Number of distinct relation types
 among edges with head entity h.</p></li>
@@ -189,23 +184,48 @@ the subgraph of edges with relation type r.</p></li>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.edge_head_degree">
+<span class="sig-name descname"><span class="pre">edge_head_degree</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#KGTopologyToolbox.edge_head_degree"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.edge_head_degree" title="Link to this definition"></a></dt>
+<dd><p>For each edge in the KG, compute the number of edges
+(in total or of the same relation type) with the same head node.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p>The result DataFrame, with the same indexing and ordering of
+triples as the original KG DataFrame, with columns
+(in addition to <cite>h</cite>, <cite>r</cite>, <cite>t</cite>):</p>
+<ul class="simple">
+<li><p><strong>h_unique_rel</strong> (int): Number of distinct relation types
+among edges with head entity <cite>h</cite>.</p></li>
+<li><p><strong>h_degree</strong> (int): Number of triples with head entity <cite>h</cite>.</p></li>
+<li><p><strong>h_degree_same_rel</strong> (int): Number of triples with head entity <cite>h</cite>
+and relation type <cite>r</cite>.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.edge_pattern_summary">
-<span class="sig-name descname"><span class="pre">edge_pattern_summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_metapath_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">composition_chunk_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">composition_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#KGTopologyToolbox.edge_pattern_summary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.edge_pattern_summary" title="Link to this definition"></a></dt>
-<dd><p>This function analyses the structural properties of each edge in the graph:
+<span class="sig-name descname"><span class="pre">edge_pattern_summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">return_metapath_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">composition_chunk_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">composition_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aggregate_by_r</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#KGTopologyToolbox.edge_pattern_summary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.edge_pattern_summary" title="Link to this definition"></a></dt>
+<dd><p>Analyse structural properties of each edge in the KG:
 symmetry, presence of inverse/inference(=parallel) edges and
 triangles supported on the edge.</p>
 <p>The output dataframe maintains the same indexing and ordering of triples
-as the input one.</p>
+as the original Knowledge Graph dataframe.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>df</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></span>) – A graph represented as a pd.DataFrame.
-Must contain at least three columns <cite>h</cite>, <cite>r</cite>, <cite>t</cite>.</p></li>
 <li><p><strong>return_metapath_list</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – If True, return the list of unique metapaths for all
 triangles supported over one edge. WARNING: very expensive for large graphs.</p></li>
 <li><p><strong>composition_chunk_size</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – Size of column chunks of sparse adjacency matrix
 to compute the triangle count.</p></li>
 <li><p><strong>composition_workers</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – Number of workers to compute the triangle count.</p></li>
+<li><p><strong>aggregate_by_r</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – If True, return metrics aggregated by relation type
+(the output DataFrame will be indexed over relation IDs).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
@@ -213,7 +233,7 @@ to compute the triangle count.</p></li>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p><p>The results dataframe. Contains the following columns
-(in addition to <cite>h</cite>, <cite>r</cite>, <cite>t</cite> in <code class="docutils literal notranslate"><span class="pre">df</span></code>):</p>
+(in addition to <cite>h</cite>, <cite>r</cite>, <cite>t</cite>):</p>
 <ul class="simple">
 <li><p><strong>is_loop</strong> (bool): True if the triple is a loop (<code class="docutils literal notranslate"><span class="pre">h</span> <span class="pre">==</span> <span class="pre">t</span></code>).</p></li>
 <li><p><strong>is_symmetric</strong> (bool): True if the triple (t, r, h) is also contained
@@ -244,21 +264,42 @@ for the directed triangles.</p></li>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.edge_tail_degree">
+<span class="sig-name descname"><span class="pre">edge_tail_degree</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#KGTopologyToolbox.edge_tail_degree"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.edge_tail_degree" title="Link to this definition"></a></dt>
+<dd><p>For each edge in the KG, compute the number of edges
+(in total or of the same relation type) with the same tail node.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p>The result DataFrame, with the same indexing and ordering of
+triples as the original KG DataFrame, with columns
+(in addition to <cite>h</cite>, <cite>r</cite>, <cite>t</cite>):</p>
+<ul class="simple">
+<li><p><strong>t_unique_rel</strong> (int): Number of distinct relation types
+among edges with tail entity <cite>t</cite>.</p></li>
+<li><p><strong>t_degree</strong> (int): Number of triples with tail entity <cite>t</cite>.</p></li>
+<li><p><strong>t_degree_same_rel</strong> (int): Number of triples with tail entity <cite>t</cite>
+and relation type <cite>r</cite>.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.jaccard_similarity_relation_sets">
-<span class="sig-name descname"><span class="pre">jaccard_similarity_relation_sets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#KGTopologyToolbox.jaccard_similarity_relation_sets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.jaccard_similarity_relation_sets" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">jaccard_similarity_relation_sets</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#KGTopologyToolbox.jaccard_similarity_relation_sets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.jaccard_similarity_relation_sets" title="Link to this definition"></a></dt>
 <dd><p>Compute the similarity between relations defined as the Jaccard Similarity
 between sets of entities (heads and tails) for all pairs
 of relations in the graph.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>df</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></span>) – A graph represented as a pd.DataFrame.
-Must contain at least three columns <cite>h</cite>, <cite>r</cite>, <cite>t</cite>.</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></span></p>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></span></p>
-</dd>
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p><p>The results dataframe. Contains the following columns:</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p>The results dataframe. Contains the following columns:</p>
 <ul class="simple">
 <li><p><strong>r1</strong> (int): Index of the first relation.</p></li>
 <li><p><strong>r2</strong> (int): Index of the second relation.</p></li>
@@ -287,27 +328,38 @@ of r1 and r2.</p></li>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.loop_count">
+<span class="sig-name descname"><span class="pre">loop_count</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#KGTopologyToolbox.loop_count"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.loop_count" title="Link to this definition"></a></dt>
+<dd><p>For each entity in the KG, compute the number of loops around the entity
+(i.e., the number of edges having the entity as both head and tail).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Loop count DataFrame, indexed on the IDs of the graph entities.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.node_degree_summary">
-<span class="sig-name descname"><span class="pre">node_degree_summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_relation_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#KGTopologyToolbox.node_degree_summary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.node_degree_summary" title="Link to this definition"></a></dt>
-<dd><p>For each entity, this function computes the number of edges having it as a head
+<span class="sig-name descname"><span class="pre">node_degree_summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">return_relation_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#KGTopologyToolbox.node_degree_summary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.node_degree_summary" title="Link to this definition"></a></dt>
+<dd><p>For each entity in the KG, compute the number of edges having it as a head
 (head-degree, or out-degree), as a tail (tail-degree, or in-degree)
-or one of the two (total-degree) in the Knowledge Graph.
+or one of the two (total-degree).
 The in-going and out-going relation types are also identified.</p>
 <p>The output dataframe is indexed on the IDs of the graph entities.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>df</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></span>) – A graph represented as a pd.DataFrame.
-Must contain at least three columns <cite>h</cite>, <cite>r</cite>, <cite>t</cite>.</p></li>
-<li><p><strong>return_relation_list</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – If True, return the list of unique relations going
-in/out of an entity. WARNING: expensive for large graphs.</p></li>
-</ul>
+<dd class="field-odd"><p><strong>return_relation_list</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – If True, return the list of unique relations going
+in/out of an entity. WARNING: expensive for large graphs.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></span></p>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p><p>The results dataframe, indexed over the same entity ID <cite>e</cite> used in df,
+<dd class="field-odd"><p><p>The results dataframe, indexed on the IDs <cite>e</cite> of the graph entities,
 with columns:</p>
 <ul class="simple">
 <li><p><strong>h_degree</strong> (int): Number of triples with head entity <cite>e</cite>.</p></li>
@@ -315,12 +367,14 @@ with columns:</p>
 <li><p><strong>tot_degree</strong> (int): Number of triples with head entity <cite>e</cite> or tail entity <cite>e</cite>.</p></li>
 <li><p><strong>h_unique_rel</strong> (int): Number of distinct relation types
 among edges with head entity <cite>e</cite>.</p></li>
-<li><p><strong>h_rel_list</strong> (list): List of unique relation types among edges
-with head entity <cite>e</cite>.</p></li>
+<li><p><strong>h_rel_list</strong> (Optional[list]): List of unique relation types among edges
+with head entity <cite>e</cite>.
+Only returned if <cite>return_relation_list = True</cite>.</p></li>
 <li><p><strong>t_unique_rel</strong> (int): Number of distinct relation types
 among edges with tail entity <cite>e</cite>.</p></li>
-<li><p><strong>t_rel_list</strong> (list): List of unique relation types among edges
-with tail entity <cite>e</cite>.</p></li>
+<li><p><strong>t_rel_list</strong> (Optional[list]): List of unique relation types among edges
+with tail entity <cite>e</cite>.
+Only returned if <cite>return_relation_list = True</cite>.</p></li>
 <li><p><strong>n_loops</strong> (int): number of loops around entity <cite>e</cite>.</p></li>
 </ul>
 </p>
@@ -329,8 +383,70 @@ with tail entity <cite>e</cite>.</p></li>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.node_head_degree">
+<span class="sig-name descname"><span class="pre">node_head_degree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">return_relation_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#KGTopologyToolbox.node_head_degree"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.node_head_degree" title="Link to this definition"></a></dt>
+<dd><p>For each entity in the KG, compute the number of edges having it as head
+(head-degree, or out-degree of the head node).
+The relation types going out of the head node are also identified.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>return_relation_list</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – If True, return the list of unique relations going
+out of the head node. WARNING: expensive for large graphs.
+Default: False.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><p>The result DataFrame, indexed on the IDs <cite>e</cite> of the graph entities,
+with columns:</p>
+<ul class="simple">
+<li><p><strong>h_degree</strong> (int): Number of triples with head entity <cite>e</cite>.</p></li>
+<li><p><strong>h_unique_rel</strong> (int): Number of distinct relation types
+among edges with head entity <cite>e</cite>.</p></li>
+<li><p><strong>h_rel_list</strong> (Optional[list]): List of unique relation types
+among edges with head entity <cite>e</cite>.
+Only returned if <cite>return_relation_list = True</cite>.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.node_tail_degree">
+<span class="sig-name descname"><span class="pre">node_tail_degree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">return_relation_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#KGTopologyToolbox.node_tail_degree"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.node_tail_degree" title="Link to this definition"></a></dt>
+<dd><p>For each entity in the KG, compute the number of edges having it as tail
+(tail-degree, or in-degree of the tail node).
+The relation types going into the tail node are also identified.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>return_relation_list</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – If True, return the list of unique relation types going
+into the tail node. WARNING: expensive for large graphs.
+Default: False.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><p>The result DataFrame, indexed on the IDs <cite>e</cite> of the graph entities,
+with columns:</p>
+<ul class="simple">
+<li><p><strong>t_degree</strong> (int): Number of triples with tail entity <cite>e</cite>.</p></li>
+<li><p><strong>t_unique_rel</strong> (int): Number of distinct relation types
+among edges with tail entity <cite>e</cite>.</p></li>
+<li><p><strong>t_rel_list</strong> (Optional[list]): List of unique relation types
+among edges with tail entity <cite>e</cite>.
+Only returned if <cite>return_relation_list = True</cite>.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.relational_affinity_ingram">
-<span class="sig-name descname"><span class="pre">relational_affinity_ingram</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_max_norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#KGTopologyToolbox.relational_affinity_ingram"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.relational_affinity_ingram" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">relational_affinity_ingram</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">min_max_norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#KGTopologyToolbox.relational_affinity_ingram"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.relational_affinity_ingram" title="Link to this definition"></a></dt>
 <dd><p>Compute the similarity between relations based on the approach proposed in
 InGram: Inductive Knowledge Graph Embedding via Relation Graphs,
 <a class="reference external" href="https://arxiv.org/abs/2305.19987">https://arxiv.org/abs/2305.19987</a>.</p>
@@ -338,11 +454,7 @@ InGram: Inductive Knowledge Graph Embedding via Relation Graphs,
 returned dataframe.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>df</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></span>) – A graph represented as a pd.DataFrame.
-Must contain at least three columns <cite>h</cite>, <cite>r</cite>, <cite>t</cite>.</p></li>
-<li><p><strong>min_max_norm</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – min-max normalization of edge weights. Defaults to False.</p></li>
-</ul>
+<dd class="field-odd"><p><strong>min_max_norm</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – min-max normalization of edge weights. Defaults to False.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></span></p>

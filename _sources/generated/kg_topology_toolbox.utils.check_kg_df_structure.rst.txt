@@ -1,0 +1,6 @@
+kg\_topology\_toolbox.utils.check\_kg\_df\_structure
+====================================================
+
+.. currentmodule:: kg_topology_toolbox.utils
+
+.. autofunction:: check_kg_df_structure

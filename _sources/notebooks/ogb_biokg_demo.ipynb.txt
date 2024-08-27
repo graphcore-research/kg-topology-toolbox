@@ -15,7 +15,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 3,
+   "execution_count": 1,
    "metadata": {},
    "outputs": [
     {
@@ -31,13 +31,13 @@
    "source": [
     "import sys\n",
     "!{sys.executable} -m pip uninstall -y kg_topology_toolbox\n",
-    "!pip install -q git+https://github.com/graphcore-research/kg-topology-toolbox.git\n",
+    "!pip install -q git+https://github.com/graphcore-research/kg-topology-toolbox.git --no-cache-dir\n",
     "!pip install -q jupyter ipywidgets ogb seaborn"
    ]
   },
   {
    "cell_type": "code",
-   "execution_count": 4,
+   "execution_count": 2,
    "metadata": {},
    "outputs": [],
    "source": [
@@ -63,7 +63,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 5,
+   "execution_count": 3,
    "metadata": {},
    "outputs": [
     {
@@ -181,7 +181,7 @@
        "[5088434 rows x 3 columns]"
       ]
      },
-     "execution_count": 5,
+     "execution_count": 3,
      "metadata": {},
      "output_type": "execute_result"
     }
@@ -194,7 +194,9 @@
     "all_triples = []\n",
     "for split in dataset.get_edge_split().values():\n",
     "    all_triples.append(np.stack([split[\"head\"], split[\"relation\"], split[\"tail\"]]).T)\n",
-    "biokg_df = pd.DataFrame(np.concatenate(all_triples), columns=[\"h\", \"r\", \"t\"])\n",
+    "biokg_df = pd.DataFrame(\n",
+    "    np.concatenate(all_triples).astype(np.int32), columns=[\"h\", \"r\", \"t\"]\n",
+    ")\n",
     "biokg_df"
    ]
   },
@@ -202,16 +204,32 @@
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "Based on this representation of the knowledge graph, we can proceed to compute its topological properties using the `KGTopologyToolbox` class."
+    "Based on this representation of the knowledge graph, we can proceed to instantiate the `KGTopologyToolbox` class to compute topological properties."
    ]
   },
   {
    "cell_type": "code",
-   "execution_count": 6,
+   "execution_count": 4,
    "metadata": {},
-   "outputs": [],
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "/nethome/albertoc/research/knowledge_graphs/kg-topology-toolbox/.venv/lib/python3.10/site-packages/kg_topology_toolbox/topology_toolbox.py:64: UserWarning: The Knowledge Graph contains duplicated edges -- some functionalities may produce incorrect results\n",
+      "  warnings.warn(\n"
+     ]
+    }
+   ],
    "source": [
-    "kgtt = KGTopologyToolbox()"
+    "kgtt = KGTopologyToolbox(biokg_df)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Notice the warning raised by the constructor, which detects duplicated edges in the `biokg_df` DataFrame: to ensure optimal functionalities, duplicated edges should be removed before instantiating the `KGTopologyToolbox` class."
    ]
   },
   {
@@ -231,7 +249,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 7,
+   "execution_count": 5,
    "metadata": {},
    "outputs": [
     {
@@ -385,19 +403,19 @@
        "[45085 rows x 6 columns]"
       ]
      },
-     "execution_count": 7,
+     "execution_count": 5,
      "metadata": {},
      "output_type": "execute_result"
     }
    ],
    "source": [
-    "node_ds = kgtt.node_degree_summary(biokg_df)\n",
+    "node_ds = kgtt.node_degree_summary()\n",
     "node_ds"
    ]
   },
   {
    "cell_type": "code",
-   "execution_count": 8,
+   "execution_count": 6,
    "metadata": {},
    "outputs": [
     {
@@ -437,7 +455,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 9,
+   "execution_count": 7,
    "metadata": {},
    "outputs": [
     {
@@ -491,7 +509,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 10,
+   "execution_count": 8,
    "metadata": {},
    "outputs": [
     {
@@ -518,11 +536,11 @@
        "      <th>h</th>\n",
        "      <th>r</th>\n",
        "      <th>t</th>\n",
-       "      <th>h_unique_rel</th>\n",
        "      <th>h_degree</th>\n",
+       "      <th>h_unique_rel</th>\n",
        "      <th>h_degree_same_rel</th>\n",
-       "      <th>t_unique_rel</th>\n",
        "      <th>t_degree</th>\n",
+       "      <th>t_unique_rel</th>\n",
        "      <th>t_degree_same_rel</th>\n",
        "      <th>tot_degree</th>\n",
        "      <th>tot_degree_same_rel</th>\n",
@@ -536,11 +554,11 @@
        "      <td>1718</td>\n",
        "      <td>0</td>\n",
        "      <td>3207</td>\n",
-       "      <td>5</td>\n",
        "      <td>191</td>\n",
+       "      <td>5</td>\n",
        "      <td>116</td>\n",
-       "      <td>6</td>\n",
        "      <td>46</td>\n",
+       "      <td>6</td>\n",
        "      <td>14</td>\n",
        "      <td>236</td>\n",
        "      <td>129</td>\n",
@@ -552,11 +570,11 @@
        "      <td>4903</td>\n",
        "      <td>0</td>\n",
        "      <td>13662</td>\n",
-       "      <td>8</td>\n",
        "      <td>544</td>\n",
+       "      <td>8</td>\n",
        "      <td>33</td>\n",
-       "      <td>9</td>\n",
        "      <td>1975</td>\n",
+       "      <td>9</td>\n",
        "      <td>50</td>\n",
        "      <td>2518</td>\n",
        "      <td>82</td>\n",
@@ -568,11 +586,11 @@
        "      <td>5480</td>\n",
        "      <td>0</td>\n",
        "      <td>15999</td>\n",
-       "      <td>3</td>\n",
        "      <td>108</td>\n",
+       "      <td>3</td>\n",
        "      <td>5</td>\n",
-       "      <td>4</td>\n",
        "      <td>72</td>\n",
+       "      <td>4</td>\n",
        "      <td>22</td>\n",
        "      <td>179</td>\n",
        "      <td>26</td>\n",
@@ -584,11 +602,11 @@
        "      <td>3148</td>\n",
        "      <td>0</td>\n",
        "      <td>7247</td>\n",
-       "      <td>4</td>\n",
        "      <td>110</td>\n",
+       "      <td>4</td>\n",
        "      <td>99</td>\n",
-       "      <td>11</td>\n",
        "      <td>673</td>\n",
+       "      <td>11</td>\n",
        "      <td>271</td>\n",
        "      <td>782</td>\n",
        "      <td>369</td>\n",
@@ -600,11 +618,11 @@
        "      <td>10300</td>\n",
        "      <td>0</td>\n",
        "      <td>16202</td>\n",
-       "      <td>4</td>\n",
        "      <td>414</td>\n",
+       "      <td>4</td>\n",
        "      <td>315</td>\n",
-       "      <td>6</td>\n",
        "      <td>148</td>\n",
+       "      <td>6</td>\n",
        "      <td>31</td>\n",
        "      <td>561</td>\n",
        "      <td>345</td>\n",
@@ -632,11 +650,11 @@
        "      <td>2451</td>\n",
        "      <td>50</td>\n",
        "      <td>5097</td>\n",
-       "      <td>5</td>\n",
        "      <td>636</td>\n",
+       "      <td>5</td>\n",
        "      <td>272</td>\n",
-       "      <td>10</td>\n",
        "      <td>803</td>\n",
+       "      <td>10</td>\n",
        "      <td>272</td>\n",
        "      <td>1437</td>\n",
        "      <td>543</td>\n",
@@ -648,11 +666,11 @@
        "      <td>6456</td>\n",
        "      <td>50</td>\n",
        "      <td>8833</td>\n",
-       "      <td>10</td>\n",
        "      <td>743</td>\n",
-       "      <td>259</td>\n",
        "      <td>10</td>\n",
+       "      <td>259</td>\n",
        "      <td>371</td>\n",
+       "      <td>10</td>\n",
        "      <td>100</td>\n",
        "      <td>1111</td>\n",
        "      <td>358</td>\n",
@@ -664,11 +682,11 @@
        "      <td>9484</td>\n",
        "      <td>50</td>\n",
        "      <td>15873</td>\n",
-       "      <td>8</td>\n",
        "      <td>652</td>\n",
+       "      <td>8</td>\n",
        "      <td>213</td>\n",
-       "      <td>6</td>\n",
        "      <td>486</td>\n",
+       "      <td>6</td>\n",
        "      <td>163</td>\n",
        "      <td>1135</td>\n",
        "      <td>375</td>\n",
@@ -680,11 +698,11 @@
        "      <td>6365</td>\n",
        "      <td>50</td>\n",
        "      <td>496</td>\n",
-       "      <td>9</td>\n",
        "      <td>922</td>\n",
+       "      <td>9</td>\n",
        "      <td>277</td>\n",
-       "      <td>19</td>\n",
        "      <td>618</td>\n",
+       "      <td>19</td>\n",
        "      <td>173</td>\n",
        "      <td>1537</td>\n",
        "      <td>449</td>\n",
@@ -696,11 +714,11 @@
        "      <td>13860</td>\n",
        "      <td>50</td>\n",
        "      <td>6368</td>\n",
-       "      <td>7</td>\n",
        "      <td>485</td>\n",
+       "      <td>7</td>\n",
        "      <td>175</td>\n",
-       "      <td>8</td>\n",
        "      <td>455</td>\n",
+       "      <td>8</td>\n",
        "      <td>147</td>\n",
        "      <td>939</td>\n",
        "      <td>321</td>\n",
@@ -713,31 +731,31 @@
        "</div>"
       ],
       "text/plain": [
-       "             h   r      t  h_unique_rel  h_degree  h_degree_same_rel  \\\n",
-       "0         1718   0   3207             5       191                116   \n",
-       "1         4903   0  13662             8       544                 33   \n",
-       "2         5480   0  15999             3       108                  5   \n",
-       "3         3148   0   7247             4       110                 99   \n",
-       "4        10300   0  16202             4       414                315   \n",
-       "...        ...  ..    ...           ...       ...                ...   \n",
-       "5088429   2451  50   5097             5       636                272   \n",
-       "5088430   6456  50   8833            10       743                259   \n",
-       "5088431   9484  50  15873             8       652                213   \n",
-       "5088432   6365  50    496             9       922                277   \n",
-       "5088433  13860  50   6368             7       485                175   \n",
+       "             h   r      t  h_degree  h_unique_rel  h_degree_same_rel  \\\n",
+       "0         1718   0   3207       191             5                116   \n",
+       "1         4903   0  13662       544             8                 33   \n",
+       "2         5480   0  15999       108             3                  5   \n",
+       "3         3148   0   7247       110             4                 99   \n",
+       "4        10300   0  16202       414             4                315   \n",
+       "...        ...  ..    ...       ...           ...                ...   \n",
+       "5088429   2451  50   5097       636             5                272   \n",
+       "5088430   6456  50   8833       743            10                259   \n",
+       "5088431   9484  50  15873       652             8                213   \n",
+       "5088432   6365  50    496       922             9                277   \n",
+       "5088433  13860  50   6368       485             7                175   \n",
        "\n",
-       "         t_unique_rel  t_degree  t_degree_same_rel  tot_degree  \\\n",
-       "0                   6        46                 14         236   \n",
-       "1                   9      1975                 50        2518   \n",
-       "2                   4        72                 22         179   \n",
-       "3                  11       673                271         782   \n",
-       "4                   6       148                 31         561   \n",
-       "...               ...       ...                ...         ...   \n",
-       "5088429            10       803                272        1437   \n",
-       "5088430            10       371                100        1111   \n",
-       "5088431             6       486                163        1135   \n",
-       "5088432            19       618                173        1537   \n",
-       "5088433             8       455                147         939   \n",
+       "         t_degree  t_unique_rel  t_degree_same_rel  tot_degree  \\\n",
+       "0              46             6                 14         236   \n",
+       "1            1975             9                 50        2518   \n",
+       "2              72             4                 22         179   \n",
+       "3             673            11                271         782   \n",
+       "4             148             6                 31         561   \n",
+       "...           ...           ...                ...         ...   \n",
+       "5088429       803            10                272        1437   \n",
+       "5088430       371            10                100        1111   \n",
+       "5088431       486             6                163        1135   \n",
+       "5088432       618            19                173        1537   \n",
+       "5088433       455             8                147         939   \n",
        "\n",
        "         tot_degree_same_rel triple_cardinality triple_cardinality_same_rel  \n",
        "0                        129                M:M                         M:M  \n",
@@ -755,13 +773,13 @@
        "[5088434 rows x 13 columns]"
       ]
      },
-     "execution_count": 10,
+     "execution_count": 8,
      "metadata": {},
      "output_type": "execute_result"
     }
    ],
    "source": [
-    "edge_dcs = kgtt.edge_degree_cardinality_summary(biokg_df)\n",
+    "edge_dcs = kgtt.edge_degree_cardinality_summary()\n",
     "edge_dcs"
    ]
   },
@@ -774,7 +792,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 11,
+   "execution_count": 9,
    "metadata": {},
    "outputs": [
     {
@@ -837,7 +855,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 12,
+   "execution_count": 10,
    "metadata": {},
    "outputs": [
     {
@@ -872,7 +890,7 @@
    "source": [
     "### Edge topological patterns\n",
     "\n",
-    "The second method provided by `KGTopologyToolbox` for topological analysis at the edge level is `edge_pattern_summary`, which extracts information on several significant edge topological patterns. In particular, it detects whether the edge (h,r,t) is a loop, is symmetric or has inverse, inference, composition (directed and undirected):\n",
+    "`KGTopologyToolbox` also allows us to perform a topological analysis at the edge level, using the method `edge_pattern_summary`, which extracts information on several significant edge topological patterns. In particular, it detects whether the edge (h,r,t) is a loop, is symmetric or has inverse, inference, composition (directed and undirected):\n",
     "\n",
     "![image info](../images/edge_patterns.png)\n",
     "\n",
@@ -881,7 +899,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 13,
+   "execution_count": 11,
    "metadata": {},
    "outputs": [
     {
@@ -1182,19 +1200,19 @@
        "[5088434 rows x 15 columns]"
       ]
      },
-     "execution_count": 13,
+     "execution_count": 11,
      "metadata": {},
      "output_type": "execute_result"
     }
    ],
    "source": [
-    "edge_eps = kgtt.edge_pattern_summary(biokg_df)\n",
+    "edge_eps = kgtt.edge_pattern_summary()\n",
     "edge_eps"
    ]
   },
   {
    "cell_type": "code",
-   "execution_count": 14,
+   "execution_count": 12,
    "metadata": {},
    "outputs": [
     {
@@ -1215,7 +1233,7 @@
        "dtype: float64"
       ]
      },
-     "execution_count": 14,
+     "execution_count": 12,
      "metadata": {},
      "output_type": "execute_result"
     }
@@ -1229,7 +1247,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 15,
+   "execution_count": 13,
    "metadata": {},
    "outputs": [
     {
@@ -1265,12 +1283,12 @@
    "source": [
     "## Relation-level analysis\n",
     "\n",
-    "The method `aggregate_by_relation` allows the user to aggregate at the relation-level the statistics outputted by the edge-level methods `edge_degree_cardinality_summary` and `edge_pattern_summary`. This converts DataFrames indexed on the KG edges to DataFrames indexed on the IDs of the unique relation types."
+    "All edge topological properties seen in the previous section can be aggregated over triples of the same relation type, to produce relation-level statistics. To do so, we can either set the option `aggregate_by_r = True` when calling the methods `edge_degree_cardinality_summary`, `edge_pattern_summary`, or - if edge topological metrics have already been precomputed - use the utility function `aggregate_by_relation`, which converts DataFrames indexed on the KG edges to DataFrames indexed on the IDs of the unique relation types."
    ]
   },
   {
    "cell_type": "code",
-   "execution_count": 16,
+   "execution_count": 15,
    "metadata": {},
    "outputs": [
     {
@@ -1298,12 +1316,12 @@
        "      <th>frac_triples</th>\n",
        "      <th>unique_h</th>\n",
        "      <th>unique_t</th>\n",
-       "      <th>h_unique_rel_mean</th>\n",
-       "      <th>h_unique_rel_std</th>\n",
-       "      <th>h_unique_rel_quartile1</th>\n",
-       "      <th>h_unique_rel_quartile2</th>\n",
-       "      <th>h_unique_rel_quartile3</th>\n",
        "      <th>h_degree_mean</th>\n",
+       "      <th>h_degree_std</th>\n",
+       "      <th>h_degree_quartile1</th>\n",
+       "      <th>h_degree_quartile2</th>\n",
+       "      <th>h_degree_quartile3</th>\n",
+       "      <th>h_unique_rel_mean</th>\n",
        "      <th>...</th>\n",
        "      <th>tot_degree_same_rel_quartile1</th>\n",
        "      <th>tot_degree_same_rel_quartile2</th>\n",
@@ -1348,12 +1366,12 @@
        "      <td>0.015931</td>\n",
        "      <td>9742</td>\n",
        "      <td>9337</td>\n",
-       "      <td>8.110293</td>\n",
-       "      <td>8.247277</td>\n",
-       "      <td>4.0</td>\n",
-       "      <td>5.0</td>\n",
-       "      <td>8.0</td>\n",
        "      <td>569.252202</td>\n",
+       "      <td>1083.315332</td>\n",
+       "      <td>111.0</td>\n",
+       "      <td>222.0</td>\n",
+       "      <td>521.0</td>\n",
+       "      <td>8.110293</td>\n",
        "      <td>...</td>\n",
        "      <td>45.0</td>\n",
        "      <td>112.0</td>\n",
@@ -1372,12 +1390,12 @@
        "      <td>0.001114</td>\n",
        "      <td>698</td>\n",
        "      <td>1536</td>\n",
-       "      <td>27.048157</td>\n",
-       "      <td>12.936410</td>\n",
-       "      <td>17.0</td>\n",
-       "      <td>31.0</td>\n",
-       "      <td>36.0</td>\n",
        "      <td>2518.765391</td>\n",
+       "      <td>2186.452620</td>\n",
+       "      <td>435.0</td>\n",
+       "      <td>2087.0</td>\n",
+       "      <td>4028.0</td>\n",
+       "      <td>27.048157</td>\n",
        "      <td>...</td>\n",
        "      <td>14.0</td>\n",
        "      <td>32.0</td>\n",
@@ -1396,12 +1414,12 @@
        "      <td>0.013158</td>\n",
        "      <td>612</td>\n",
        "      <td>612</td>\n",
-       "      <td>36.404307</td>\n",
-       "      <td>5.600706</td>\n",
-       "      <td>33.0</td>\n",
-       "      <td>36.0</td>\n",
-       "      <td>41.0</td>\n",
        "      <td>4129.511919</td>\n",
+       "      <td>1935.630599</td>\n",
+       "      <td>2548.0</td>\n",
+       "      <td>3968.0</td>\n",
+       "      <td>5649.0</td>\n",
+       "      <td>36.404307</td>\n",
        "      <td>...</td>\n",
        "      <td>332.0</td>\n",
        "      <td>404.0</td>\n",
@@ -1420,12 +1438,12 @@
        "      <td>0.003849</td>\n",
        "      <td>491</td>\n",
        "      <td>491</td>\n",
-       "      <td>37.095941</td>\n",
-       "      <td>5.547389</td>\n",
-       "      <td>33.0</td>\n",
-       "      <td>37.0</td>\n",
-       "      <td>41.0</td>\n",
        "      <td>4527.399592</td>\n",
+       "      <td>1943.714179</td>\n",
+       "      <td>2925.0</td>\n",
+       "      <td>4507.0</td>\n",
+       "      <td>6161.0</td>\n",
+       "      <td>37.095941</td>\n",
        "      <td>...</td>\n",
        "      <td>114.0</td>\n",
        "      <td>157.0</td>\n",
@@ -1444,12 +1462,12 @@
        "      <td>0.006295</td>\n",
        "      <td>526</td>\n",
        "      <td>525</td>\n",
-       "      <td>37.319567</td>\n",
-       "      <td>5.384523</td>\n",
-       "      <td>34.0</td>\n",
-       "      <td>38.0</td>\n",
-       "      <td>41.0</td>\n",
        "      <td>4511.067834</td>\n",
+       "      <td>1905.395180</td>\n",
+       "      <td>2931.0</td>\n",
+       "      <td>4507.0</td>\n",
+       "      <td>6148.0</td>\n",
+       "      <td>37.319567</td>\n",
        "      <td>...</td>\n",
        "      <td>188.0</td>\n",
        "      <td>243.0</td>\n",
@@ -1468,29 +1486,29 @@
        "</div>"
       ],
       "text/plain": [
-       "   num_triples  frac_triples  unique_h  unique_t  h_unique_rel_mean  \\\n",
-       "r                                                                     \n",
-       "0        81066      0.015931      9742      9337           8.110293   \n",
-       "1         5669      0.001114       698      1536          27.048157   \n",
-       "2        66954      0.013158       612       612          36.404307   \n",
-       "3        19585      0.003849       491       491          37.095941   \n",
-       "4        32034      0.006295       526       525          37.319567   \n",
+       "   num_triples  frac_triples  unique_h  unique_t  h_degree_mean  h_degree_std  \\\n",
+       "r                                                                               \n",
+       "0        81066      0.015931      9742      9337     569.252202   1083.315332   \n",
+       "1         5669      0.001114       698      1536    2518.765391   2186.452620   \n",
+       "2        66954      0.013158       612       612    4129.511919   1935.630599   \n",
+       "3        19585      0.003849       491       491    4527.399592   1943.714179   \n",
+       "4        32034      0.006295       526       525    4511.067834   1905.395180   \n",
        "\n",
-       "   h_unique_rel_std  h_unique_rel_quartile1  h_unique_rel_quartile2  \\\n",
-       "r                                                                     \n",
-       "0          8.247277                     4.0                     5.0   \n",
-       "1         12.936410                    17.0                    31.0   \n",
-       "2          5.600706                    33.0                    36.0   \n",
-       "3          5.547389                    33.0                    37.0   \n",
-       "4          5.384523                    34.0                    38.0   \n",
+       "   h_degree_quartile1  h_degree_quartile2  h_degree_quartile3  \\\n",
+       "r                                                               \n",
+       "0               111.0               222.0               521.0   \n",
+       "1               435.0              2087.0              4028.0   \n",
+       "2              2548.0              3968.0              5649.0   \n",
+       "3              2925.0              4507.0              6161.0   \n",
+       "4              2931.0              4507.0              6148.0   \n",
        "\n",
-       "   h_unique_rel_quartile3  h_degree_mean  ...  tot_degree_same_rel_quartile1  \\\n",
-       "r                                         ...                                  \n",
-       "0                     8.0     569.252202  ...                           45.0   \n",
-       "1                    36.0    2518.765391  ...                           14.0   \n",
-       "2                    41.0    4129.511919  ...                          332.0   \n",
-       "3                    41.0    4527.399592  ...                          114.0   \n",
-       "4                    41.0    4511.067834  ...                          188.0   \n",
+       "   h_unique_rel_mean  ...  tot_degree_same_rel_quartile1  \\\n",
+       "r                     ...                                  \n",
+       "0           8.110293  ...                           45.0   \n",
+       "1          27.048157  ...                           14.0   \n",
+       "2          36.404307  ...                          332.0   \n",
+       "3          37.095941  ...                          114.0   \n",
+       "4          37.319567  ...                          188.0   \n",
        "\n",
        "   tot_degree_same_rel_quartile2  tot_degree_same_rel_quartile3  \\\n",
        "r                                                                 \n",
@@ -1535,27 +1553,29 @@
        "[5 rows x 51 columns]"
       ]
      },
-     "execution_count": 16,
+     "execution_count": 15,
      "metadata": {},
      "output_type": "execute_result"
     }
    ],
    "source": [
-    "kgtt.aggregate_by_relation(edge_dcs).head()"
+    "from kg_topology_toolbox.utils import aggregate_by_relation\n",
+    "\n",
+    "aggregate_by_relation(edge_dcs).head()"
    ]
   },
   {
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "Notice on the left the columns `num_triples`, `frac_triples`, `unique_h`, `unique_t` giving additional statistics for relation types (number of edges and relative frequency, number of unique entities used as heads/tails by triples of the relation type).\n",
+    "Notice on the extra columns `num_triples`, `frac_triples`, `unique_h`, `unique_t` giving additional statistics for relation types (number of edges and relative frequency, number of unique entities used as heads/tails by triples of the relation type).\n",
     "\n",
     "Similarly, by aggregating the `edge_eps` DataFrame we can look at the distribution of edge topological patterns within each relation type."
    ]
   },
   {
    "cell_type": "code",
-   "execution_count": 17,
+   "execution_count": 16,
    "metadata": {},
    "outputs": [
     {
@@ -1812,25 +1832,25 @@
        "[5 rows x 32 columns]"
       ]
      },
-     "execution_count": 17,
+     "execution_count": 16,
      "metadata": {},
      "output_type": "execute_result"
     }
    ],
    "source": [
-    "kgtt.aggregate_by_relation(edge_eps).head()"
+    "aggregate_by_relation(edge_eps).head()"
    ]
   },
   {
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "Additional methods are provided for the analysis at the relation level: `jaccard_similarity_relation_sets` to compute the Jaccard similarity of the sets of head/tail entities used by each relation; `relational_affinity_ingram` to compute the InGram pairwise relation similarity (see [paper](https://arxiv.org/abs/2305.19987)). "
+    "Additional methods are provided in the `KGTopologyToolbox` class for analysis at the relation level: `jaccard_similarity_relation_sets` to compute the Jaccard similarity of the sets of head/tail entities used by each relation; `relational_affinity_ingram` to compute the InGram pairwise relation similarity (see [paper](https://arxiv.org/abs/2305.19987)). "
    ]
   },
   {
    "cell_type": "code",
-   "execution_count": 18,
+   "execution_count": 17,
    "metadata": {},
    "outputs": [
     {
@@ -2106,18 +2126,18 @@
        "[1275 rows x 14 columns]"
       ]
      },
-     "execution_count": 18,
+     "execution_count": 17,
      "metadata": {},
      "output_type": "execute_result"
     }
    ],
    "source": [
-    "kgtt.jaccard_similarity_relation_sets(biokg_df)"
+    "kgtt.jaccard_similarity_relation_sets()"
    ]
   },
   {
    "cell_type": "code",
-   "execution_count": 19,
+   "execution_count": 18,
    "metadata": {},
    "outputs": [
     {
@@ -2235,13 +2255,13 @@
        "[2550 rows x 3 columns]"
       ]
      },
-     "execution_count": 19,
+     "execution_count": 18,
      "metadata": {},
      "output_type": "execute_result"
     }
    ],
    "source": [
-    "kgtt.relational_affinity_ingram(biokg_df)"
+    "kgtt.relational_affinity_ingram()"
    ]
   }
  ],

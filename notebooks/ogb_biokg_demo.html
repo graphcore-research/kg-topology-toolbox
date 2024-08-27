@@ -8,7 +8,7 @@
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
-      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
 
   
   <!--[if lt IE 9]>
@@ -98,12 +98,12 @@
 <section id="Dependencies">
 <h2>Dependencies<a class="headerlink" href="#Dependencies" title="Link to this heading"></a></h2>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>import sys
 !{sys.executable} -m pip uninstall -y kg_topology_toolbox
-!pip install -q git+https://github.com/graphcore-research/kg-topology-toolbox.git
+!pip install -q git+https://github.com/graphcore-research/kg-topology-toolbox.git --no-cache-dir
 !pip install -q jupyter ipywidgets ogb seaborn
 </pre></div>
 </div>
@@ -119,7 +119,7 @@ Uninstalling kg-topology-toolbox-0.1.0:
 </pre></div></div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>import numpy as np
@@ -139,7 +139,7 @@ dataset_directory = &quot;../../../data/ogb-biokg/&quot;
 <h2>Data preparation<a class="headerlink" href="#Data-preparation" title="Link to this heading"></a></h2>
 <p>We load the OGBL-BioKG dataset using the <code class="docutils literal notranslate"><span class="pre">ogb.linkproppred.LinkPropPredDataset</span></code> class and store all (h, r, t) triples in a <code class="docutils literal notranslate"><span class="pre">pandas</span></code> DataFrame.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>dataset = ogb.linkproppred.LinkPropPredDataset(
@@ -149,13 +149,15 @@ dataset_directory = &quot;../../../data/ogb-biokg/&quot;
 all_triples = []
 for split in dataset.get_edge_split().values():
     all_triples.append(np.stack([split[&quot;head&quot;], split[&quot;relation&quot;], split[&quot;tail&quot;]]).T)
-biokg_df = pd.DataFrame(np.concatenate(all_triples), columns=[&quot;h&quot;, &quot;r&quot;, &quot;t&quot;])
+biokg_df = pd.DataFrame(
+    np.concatenate(all_triples).astype(np.int32), columns=[&quot;h&quot;, &quot;r&quot;, &quot;t&quot;]
+)
 biokg_df
 </pre></div>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -254,15 +256,25 @@ biokg_df
 <p>5088434 rows × 3 columns</p>
 </div></div>
 </div>
-<p>Based on this representation of the knowledge graph, we can proceed to compute its topological properties using the <code class="docutils literal notranslate"><span class="pre">KGTopologyToolbox</span></code> class.</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+<p>Based on this representation of the knowledge graph, we can proceed to instantiate the <code class="docutils literal notranslate"><span class="pre">KGTopologyToolbox</span></code> class to compute topological properties.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>kgtt = KGTopologyToolbox()
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>kgtt = KGTopologyToolbox(biokg_df)
 </pre></div>
 </div>
 </div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/nethome/albertoc/research/knowledge_graphs/kg-topology-toolbox/.venv/lib/python3.10/site-packages/kg_topology_toolbox/topology_toolbox.py:64: UserWarning: The Knowledge Graph contains duplicated edges -- some functionalities may produce incorrect results
+  warnings.warn(
+</pre></div></div>
+</div>
+<p>Notice the warning raised by the constructor, which detects duplicated edges in the <code class="docutils literal notranslate"><span class="pre">biokg_df</span></code> DataFrame: to ensure optimal functionalities, duplicated edges should be removed before instantiating the <code class="docutils literal notranslate"><span class="pre">KGTopologyToolbox</span></code> class.</p>
 </section>
 <section id="Node-level-analysis">
 <h2>Node-level analysis<a class="headerlink" href="#Node-level-analysis" title="Link to this heading"></a></h2>
@@ -275,16 +287,16 @@ biokg_df
 <li><p><code class="docutils literal notranslate"><span class="pre">n_loops</span></code> is the number of loop edges around the node.</p></li>
 </ul>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>node_ds = kgtt.node_degree_summary(biokg_df)
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>node_ds = kgtt.node_degree_summary()
 node_ds
 </pre></div>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -420,7 +432,7 @@ node_ds
 </div></div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>metrics = [
@@ -452,11 +464,11 @@ plt.tight_layout()
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_ogb_biokg_demo_9_1.png" src="../_images/notebooks_ogb_biokg_demo_9_1.png" />
+<img alt="../_images/notebooks_ogb_biokg_demo_10_1.png" src="../_images/notebooks_ogb_biokg_demo_10_1.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>metrics = [
@@ -479,7 +491,7 @@ plt.tight_layout()
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_ogb_biokg_demo_10_0.png" src="../_images/notebooks_ogb_biokg_demo_10_0.png" />
+<img alt="../_images/notebooks_ogb_biokg_demo_11_0.png" src="../_images/notebooks_ogb_biokg_demo_11_0.png" />
 </div>
 </div>
 </section>
@@ -504,16 +516,16 @@ plt.tight_layout()
 <li><p><code class="docutils literal notranslate"><span class="pre">triple_cardinality_same_rel</span></code> is defined as <code class="docutils literal notranslate"><span class="pre">triple_cardinality</span></code> but using <code class="docutils literal notranslate"><span class="pre">h_degree_same_rel</span></code>, <code class="docutils literal notranslate"><span class="pre">t_degree_same_rel</span></code>.</p></li>
 </ul>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>edge_dcs = kgtt.edge_degree_cardinality_summary(biokg_df)
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>edge_dcs = kgtt.edge_degree_cardinality_summary()
 edge_dcs
 </pre></div>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -538,11 +550,11 @@ edge_dcs
       <th>h</th>
       <th>r</th>
       <th>t</th>
-      <th>h_unique_rel</th>
       <th>h_degree</th>
+      <th>h_unique_rel</th>
       <th>h_degree_same_rel</th>
-      <th>t_unique_rel</th>
       <th>t_degree</th>
+      <th>t_unique_rel</th>
       <th>t_degree_same_rel</th>
       <th>tot_degree</th>
       <th>tot_degree_same_rel</th>
@@ -556,11 +568,11 @@ edge_dcs
       <td>1718</td>
       <td>0</td>
       <td>3207</td>
-      <td>5</td>
       <td>191</td>
+      <td>5</td>
       <td>116</td>
-      <td>6</td>
       <td>46</td>
+      <td>6</td>
       <td>14</td>
       <td>236</td>
       <td>129</td>
@@ -572,11 +584,11 @@ edge_dcs
       <td>4903</td>
       <td>0</td>
       <td>13662</td>
-      <td>8</td>
       <td>544</td>
+      <td>8</td>
       <td>33</td>
-      <td>9</td>
       <td>1975</td>
+      <td>9</td>
       <td>50</td>
       <td>2518</td>
       <td>82</td>
@@ -588,11 +600,11 @@ edge_dcs
       <td>5480</td>
       <td>0</td>
       <td>15999</td>
-      <td>3</td>
       <td>108</td>
+      <td>3</td>
       <td>5</td>
-      <td>4</td>
       <td>72</td>
+      <td>4</td>
       <td>22</td>
       <td>179</td>
       <td>26</td>
@@ -604,11 +616,11 @@ edge_dcs
       <td>3148</td>
       <td>0</td>
       <td>7247</td>
-      <td>4</td>
       <td>110</td>
+      <td>4</td>
       <td>99</td>
-      <td>11</td>
       <td>673</td>
+      <td>11</td>
       <td>271</td>
       <td>782</td>
       <td>369</td>
@@ -620,11 +632,11 @@ edge_dcs
       <td>10300</td>
       <td>0</td>
       <td>16202</td>
-      <td>4</td>
       <td>414</td>
+      <td>4</td>
       <td>315</td>
-      <td>6</td>
       <td>148</td>
+      <td>6</td>
       <td>31</td>
       <td>561</td>
       <td>345</td>
@@ -652,11 +664,11 @@ edge_dcs
       <td>2451</td>
       <td>50</td>
       <td>5097</td>
-      <td>5</td>
       <td>636</td>
+      <td>5</td>
       <td>272</td>
-      <td>10</td>
       <td>803</td>
+      <td>10</td>
       <td>272</td>
       <td>1437</td>
       <td>543</td>
@@ -668,11 +680,11 @@ edge_dcs
       <td>6456</td>
       <td>50</td>
       <td>8833</td>
-      <td>10</td>
       <td>743</td>
-      <td>259</td>
       <td>10</td>
+      <td>259</td>
       <td>371</td>
+      <td>10</td>
       <td>100</td>
       <td>1111</td>
       <td>358</td>
@@ -684,11 +696,11 @@ edge_dcs
       <td>9484</td>
       <td>50</td>
       <td>15873</td>
-      <td>8</td>
       <td>652</td>
+      <td>8</td>
       <td>213</td>
-      <td>6</td>
       <td>486</td>
+      <td>6</td>
       <td>163</td>
       <td>1135</td>
       <td>375</td>
@@ -700,11 +712,11 @@ edge_dcs
       <td>6365</td>
       <td>50</td>
       <td>496</td>
-      <td>9</td>
       <td>922</td>
+      <td>9</td>
       <td>277</td>
-      <td>19</td>
       <td>618</td>
+      <td>19</td>
       <td>173</td>
       <td>1537</td>
       <td>449</td>
@@ -716,11 +728,11 @@ edge_dcs
       <td>13860</td>
       <td>50</td>
       <td>6368</td>
-      <td>7</td>
       <td>485</td>
+      <td>7</td>
       <td>175</td>
-      <td>8</td>
       <td>455</td>
+      <td>8</td>
       <td>147</td>
       <td>939</td>
       <td>321</td>
@@ -734,7 +746,7 @@ edge_dcs
 </div>
 <p>The data on the distribution of degrees and cardinalities can be then easily visualized.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Edge frequency when binning by head and tail degree
@@ -788,11 +800,11 @@ plt.tight_layout()
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_ogb_biokg_demo_14_0.png" src="../_images/notebooks_ogb_biokg_demo_14_0.png" />
+<img alt="../_images/notebooks_ogb_biokg_demo_15_0.png" src="../_images/notebooks_ogb_biokg_demo_15_0.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>metrics = [&quot;triple_cardinality&quot;, &quot;triple_cardinality_same_rel&quot;]
@@ -814,26 +826,26 @@ plt.tight_layout()
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_ogb_biokg_demo_15_0.png" src="../_images/notebooks_ogb_biokg_demo_15_0.png" />
+<img alt="../_images/notebooks_ogb_biokg_demo_16_0.png" src="../_images/notebooks_ogb_biokg_demo_16_0.png" />
 </div>
 </div>
 </section>
 <section id="Edge-topological-patterns">
 <h3>Edge topological patterns<a class="headerlink" href="#Edge-topological-patterns" title="Link to this heading"></a></h3>
-<p>The second method provided by <code class="docutils literal notranslate"><span class="pre">KGTopologyToolbox</span></code> for topological analysis at the edge level is <code class="docutils literal notranslate"><span class="pre">edge_pattern_summary</span></code>, which extracts information on several significant edge topological patterns. In particular, it detects whether the edge (h,r,t) is a loop, is symmetric or has inverse, inference, composition (directed and undirected):</p>
+<p><code class="docutils literal notranslate"><span class="pre">KGTopologyToolbox</span></code> also allows us to perform a topological analysis at the edge level, using the method <code class="docutils literal notranslate"><span class="pre">edge_pattern_summary</span></code>, which extracts information on several significant edge topological patterns. In particular, it detects whether the edge (h,r,t) is a loop, is symmetric or has inverse, inference, composition (directed and undirected):</p>
 <p><img alt="image info" src="../_images/edge_patterns.png" /></p>
 <p>For inverse/inference, the method also provides the number and types of unique relations <code class="docutils literal notranslate"><span class="pre">r'</span></code> realizing the counterpart edges; for composition, the number of triangles supported by the edge is provided (the unique metapaths <code class="docutils literal notranslate"><span class="pre">[r_1,</span> <span class="pre">r_2]</span></code> can also be listed by setting <code class="docutils literal notranslate"><span class="pre">return_metapath_list=True</span></code> when calling the method).</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>edge_eps = kgtt.edge_pattern_summary(biokg_df)
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>edge_eps = kgtt.edge_pattern_summary()
 edge_eps
 </pre></div>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -1077,7 +1089,7 @@ edge_eps
 </div></div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>print(&quot;Fraction of triples with property:&quot;)
@@ -1096,7 +1108,7 @@ Fraction of triples with property:
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
 </div>
 <div class="output_area docutils container">
@@ -1110,7 +1122,7 @@ dtype: float64
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>metrics = [
@@ -1133,24 +1145,27 @@ plt.tight_layout()
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_ogb_biokg_demo_19_0.png" src="../_images/notebooks_ogb_biokg_demo_19_0.png" />
+<img alt="../_images/notebooks_ogb_biokg_demo_20_0.png" src="../_images/notebooks_ogb_biokg_demo_20_0.png" />
 </div>
 </div>
 </section>
 </section>
 <section id="Relation-level-analysis">
 <h2>Relation-level analysis<a class="headerlink" href="#Relation-level-analysis" title="Link to this heading"></a></h2>
-<p>The method <code class="docutils literal notranslate"><span class="pre">aggregate_by_relation</span></code> allows the user to aggregate at the relation-level the statistics outputted by the edge-level methods <code class="docutils literal notranslate"><span class="pre">edge_degree_cardinality_summary</span></code> and <code class="docutils literal notranslate"><span class="pre">edge_pattern_summary</span></code>. This converts DataFrames indexed on the KG edges to DataFrames indexed on the IDs of the unique relation types.</p>
+<p>All edge topological properties seen in the previous section can be aggregated over triples of the same relation type, to produce relation-level statistics. To do so, we can either set the option <code class="docutils literal notranslate"><span class="pre">aggregate_by_r</span> <span class="pre">=</span> <span class="pre">True</span></code> when calling the methods <code class="docutils literal notranslate"><span class="pre">edge_degree_cardinality_summary</span></code>, <code class="docutils literal notranslate"><span class="pre">edge_pattern_summary</span></code>, or - if edge topological metrics have already been precomputed - use the utility function <code class="docutils literal notranslate"><span class="pre">aggregate_by_relation</span></code>, which converts DataFrames indexed on the KG edges to DataFrames indexed
+on the IDs of the unique relation types.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>kgtt.aggregate_by_relation(edge_dcs).head()
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>from kg_topology_toolbox.utils import aggregate_by_relation
+
+aggregate_by_relation(edge_dcs).head()
 </pre></div>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -1176,12 +1191,12 @@ plt.tight_layout()
       <th>frac_triples</th>
       <th>unique_h</th>
       <th>unique_t</th>
-      <th>h_unique_rel_mean</th>
-      <th>h_unique_rel_std</th>
-      <th>h_unique_rel_quartile1</th>
-      <th>h_unique_rel_quartile2</th>
-      <th>h_unique_rel_quartile3</th>
       <th>h_degree_mean</th>
+      <th>h_degree_std</th>
+      <th>h_degree_quartile1</th>
+      <th>h_degree_quartile2</th>
+      <th>h_degree_quartile3</th>
+      <th>h_unique_rel_mean</th>
       <th>...</th>
       <th>tot_degree_same_rel_quartile1</th>
       <th>tot_degree_same_rel_quartile2</th>
@@ -1226,12 +1241,12 @@ plt.tight_layout()
       <td>0.015931</td>
       <td>9742</td>
       <td>9337</td>
-      <td>8.110293</td>
-      <td>8.247277</td>
-      <td>4.0</td>
-      <td>5.0</td>
-      <td>8.0</td>
       <td>569.252202</td>
+      <td>1083.315332</td>
+      <td>111.0</td>
+      <td>222.0</td>
+      <td>521.0</td>
+      <td>8.110293</td>
       <td>...</td>
       <td>45.0</td>
       <td>112.0</td>
@@ -1250,12 +1265,12 @@ plt.tight_layout()
       <td>0.001114</td>
       <td>698</td>
       <td>1536</td>
-      <td>27.048157</td>
-      <td>12.936410</td>
-      <td>17.0</td>
-      <td>31.0</td>
-      <td>36.0</td>
       <td>2518.765391</td>
+      <td>2186.452620</td>
+      <td>435.0</td>
+      <td>2087.0</td>
+      <td>4028.0</td>
+      <td>27.048157</td>
       <td>...</td>
       <td>14.0</td>
       <td>32.0</td>
@@ -1274,12 +1289,12 @@ plt.tight_layout()
       <td>0.013158</td>
       <td>612</td>
       <td>612</td>
-      <td>36.404307</td>
-      <td>5.600706</td>
-      <td>33.0</td>
-      <td>36.0</td>
-      <td>41.0</td>
       <td>4129.511919</td>
+      <td>1935.630599</td>
+      <td>2548.0</td>
+      <td>3968.0</td>
+      <td>5649.0</td>
+      <td>36.404307</td>
       <td>...</td>
       <td>332.0</td>
       <td>404.0</td>
@@ -1298,12 +1313,12 @@ plt.tight_layout()
       <td>0.003849</td>
       <td>491</td>
       <td>491</td>
-      <td>37.095941</td>
-      <td>5.547389</td>
-      <td>33.0</td>
-      <td>37.0</td>
-      <td>41.0</td>
       <td>4527.399592</td>
+      <td>1943.714179</td>
+      <td>2925.0</td>
+      <td>4507.0</td>
+      <td>6161.0</td>
+      <td>37.095941</td>
       <td>...</td>
       <td>114.0</td>
       <td>157.0</td>
@@ -1322,12 +1337,12 @@ plt.tight_layout()
       <td>0.006295</td>
       <td>526</td>
       <td>525</td>
-      <td>37.319567</td>
-      <td>5.384523</td>
-      <td>34.0</td>
-      <td>38.0</td>
-      <td>41.0</td>
       <td>4511.067834</td>
+      <td>1905.395180</td>
+      <td>2931.0</td>
+      <td>4507.0</td>
+      <td>6148.0</td>
+      <td>37.319567</td>
       <td>...</td>
       <td>188.0</td>
       <td>243.0</td>
@@ -1345,18 +1360,18 @@ plt.tight_layout()
 <p>5 rows × 51 columns</p>
 </div></div>
 </div>
-<p>Notice on the left the columns <code class="docutils literal notranslate"><span class="pre">num_triples</span></code>, <code class="docutils literal notranslate"><span class="pre">frac_triples</span></code>, <code class="docutils literal notranslate"><span class="pre">unique_h</span></code>, <code class="docutils literal notranslate"><span class="pre">unique_t</span></code> giving additional statistics for relation types (number of edges and relative frequency, number of unique entities used as heads/tails by triples of the relation type).</p>
+<p>Notice on the extra columns <code class="docutils literal notranslate"><span class="pre">num_triples</span></code>, <code class="docutils literal notranslate"><span class="pre">frac_triples</span></code>, <code class="docutils literal notranslate"><span class="pre">unique_h</span></code>, <code class="docutils literal notranslate"><span class="pre">unique_t</span></code> giving additional statistics for relation types (number of edges and relative frequency, number of unique entities used as heads/tails by triples of the relation type).</p>
 <p>Similarly, by aggregating the <code class="docutils literal notranslate"><span class="pre">edge_eps</span></code> DataFrame we can look at the distribution of edge topological patterns within each relation type.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>kgtt.aggregate_by_relation(edge_eps).head()
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>aggregate_by_relation(edge_eps).head()
 </pre></div>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -1551,17 +1566,17 @@ plt.tight_layout()
 <p>5 rows × 32 columns</p>
 </div></div>
 </div>
-<p>Additional methods are provided for the analysis at the relation level: <code class="docutils literal notranslate"><span class="pre">jaccard_similarity_relation_sets</span></code> to compute the Jaccard similarity of the sets of head/tail entities used by each relation; <code class="docutils literal notranslate"><span class="pre">relational_affinity_ingram</span></code> to compute the InGram pairwise relation similarity (see <a class="reference external" href="https://arxiv.org/abs/2305.19987">paper</a>).</p>
+<p>Additional methods are provided in the <code class="docutils literal notranslate"><span class="pre">KGTopologyToolbox</span></code> class for analysis at the relation level: <code class="docutils literal notranslate"><span class="pre">jaccard_similarity_relation_sets</span></code> to compute the Jaccard similarity of the sets of head/tail entities used by each relation; <code class="docutils literal notranslate"><span class="pre">relational_affinity_ingram</span></code> to compute the InGram pairwise relation similarity (see <a class="reference external" href="https://arxiv.org/abs/2305.19987">paper</a>).</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>kgtt.jaccard_similarity_relation_sets(biokg_df)
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>kgtt.jaccard_similarity_relation_sets()
 </pre></div>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -1793,15 +1808,15 @@ plt.tight_layout()
 </div></div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>kgtt.relational_affinity_ingram(biokg_df)
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>kgtt.relational_affinity_ingram()
 </pre></div>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">

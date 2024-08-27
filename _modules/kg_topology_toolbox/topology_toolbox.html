@@ -82,41 +82,156 @@
 <span class="sd">Topology toolbox main functionalities</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Iterable</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">cache</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">from</span> <span class="nn">scipy.sparse</span> <span class="kn">import</span> <span class="n">coo_array</span>
 
-<span class="kn">from</span> <span class="nn">kg_topology_toolbox.utils</span> <span class="kn">import</span> <span class="n">composition_count</span><span class="p">,</span> <span class="n">jaccard_similarity</span>
+<span class="kn">from</span> <span class="nn">kg_topology_toolbox.utils</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">aggregate_by_relation</span><span class="p">,</span>
+    <span class="n">check_kg_df_structure</span><span class="p">,</span>
+    <span class="n">composition_count</span><span class="p">,</span>
+    <span class="n">jaccard_similarity</span><span class="p">,</span>
+    <span class="n">node_degrees_and_rels</span><span class="p">,</span>
+<span class="p">)</span>
 
 
 <div class="viewcode-block" id="KGTopologyToolbox">
 <a class="viewcode-back" href="../../generated/kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.html#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox">[docs]</a>
 <span class="k">class</span> <span class="nc">KGTopologyToolbox</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Toolbox class to compute various Knowledge Graph topology statistics.</span>
+<span class="sd">    Toolbox class to compute Knowledge Graph topology statistics.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">kg_df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+        <span class="n">head_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;h&quot;</span><span class="p">,</span>
+        <span class="n">relation_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span>
+        <span class="n">tail_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;t&quot;</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Instantiate the Topology Toolbox for a Knowledge Graph defined</span>
+<span class="sd">        by the list of its edges (h,r,t).</span>
+
+<span class="sd">        :param kg_df:</span>
+<span class="sd">            A Knowledge Graph represented as a pd.DataFrame.</span>
+<span class="sd">            Must contain at least three columns, which specify the IDs of</span>
+<span class="sd">            head entity, relation type and tail entity for each edge.</span>
+<span class="sd">        :param head_column:</span>
+<span class="sd">            The name of the column with the IDs of head entities. Default: &quot;h&quot;.</span>
+<span class="sd">        :param head_column:</span>
+<span class="sd">            The name of the column with the IDs of relation types. Default: &quot;r&quot;.</span>
+<span class="sd">        :param head_column:</span>
+<span class="sd">            The name of the column with the IDs of tail entities. Default: &quot;t&quot;.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">check_kg_df_structure</span><span class="p">(</span><span class="n">kg_df</span><span class="p">,</span> <span class="n">head_column</span><span class="p">,</span> <span class="n">relation_column</span><span class="p">,</span> <span class="n">tail_column</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">kg_df</span><span class="p">[[</span><span class="n">head_column</span><span class="p">,</span> <span class="n">relation_column</span><span class="p">,</span> <span class="n">tail_column</span><span class="p">]]</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
+            <span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="n">head_column</span><span class="p">:</span> <span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="n">relation_column</span><span class="p">:</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">tail_column</span><span class="p">:</span> <span class="s2">&quot;t&quot;</span><span class="p">}</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_entity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[[</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_rel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">r</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span>
+
+<div class="viewcode-block" id="KGTopologyToolbox.loop_count">
+<a class="viewcode-back" href="../../generated/kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.html#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.loop_count">[docs]</a>
+    <span class="k">def</span> <span class="nf">loop_count</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        For each entity in the KG, compute the number of loops around the entity</span>
+<span class="sd">        (i.e., the number of edges having the entity as both head and tail).</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">            Loop count DataFrame, indexed on the IDs of the graph entities.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">n_loops</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">h</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">t</span><span class="p">]</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;h&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">n_loops</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">))</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">n_loops</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_entity</span><span class="p">))</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="KGTopologyToolbox.node_head_degree">
+<a class="viewcode-back" href="../../generated/kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.html#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.node_head_degree">[docs]</a>
+    <span class="nd">@cache</span>
+    <span class="k">def</span> <span class="nf">node_head_degree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">return_relation_list</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        For each entity in the KG, compute the number of edges having it as head</span>
+<span class="sd">        (head-degree, or out-degree of the head node).</span>
+<span class="sd">        The relation types going out of the head node are also identified.</span>
+
+<span class="sd">        :param return_relation_list:</span>
+<span class="sd">            If True, return the list of unique relations going</span>
+<span class="sd">            out of the head node. WARNING: expensive for large graphs.</span>
+<span class="sd">            Default: False.</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">            The result DataFrame, indexed on the IDs `e` of the graph entities,</span>
+<span class="sd">            with columns:</span>
+
+<span class="sd">            - **h_degree** (int): Number of triples with head entity `e`.</span>
+<span class="sd">            - **h_unique_rel** (int): Number of distinct relation types</span>
+<span class="sd">              among edges with head entity `e`.</span>
+<span class="sd">            - **h_rel_list** (Optional[list]): List of unique relation types</span>
+<span class="sd">              among edges with head entity `e`.</span>
+<span class="sd">              Only returned if `return_relation_list = True`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">node_df</span> <span class="o">=</span> <span class="n">node_degrees_and_rels</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">,</span> <span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_entity</span><span class="p">,</span> <span class="n">return_relation_list</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">node_df</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="n">n</span><span class="p">:</span> <span class="s2">&quot;h_&quot;</span> <span class="o">+</span> <span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">node_df</span><span class="o">.</span><span class="n">columns</span><span class="p">})</span></div>
+
+
+<div class="viewcode-block" id="KGTopologyToolbox.node_tail_degree">
+<a class="viewcode-back" href="../../generated/kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.html#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.node_tail_degree">[docs]</a>
+    <span class="nd">@cache</span>
+    <span class="k">def</span> <span class="nf">node_tail_degree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">return_relation_list</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        For each entity in the KG, compute the number of edges having it as tail</span>
+<span class="sd">        (tail-degree, or in-degree of the tail node).</span>
+<span class="sd">        The relation types going into the tail node are also identified.</span>
+
+<span class="sd">        :param return_relation_list:</span>
+<span class="sd">            If True, return the list of unique relation types going</span>
+<span class="sd">            into the tail node. WARNING: expensive for large graphs.</span>
+<span class="sd">            Default: False.</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">            The result DataFrame, indexed on the IDs `e` of the graph entities,</span>
+<span class="sd">            with columns:</span>
+
+<span class="sd">            - **t_degree** (int): Number of triples with tail entity `e`.</span>
+<span class="sd">            - **t_unique_rel** (int): Number of distinct relation types</span>
+<span class="sd">              among edges with tail entity `e`.</span>
+<span class="sd">            - **t_rel_list** (Optional[list]): List of unique relation types</span>
+<span class="sd">              among edges with tail entity `e`.</span>
+<span class="sd">              Only returned if `return_relation_list = True`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">node_df</span> <span class="o">=</span> <span class="n">node_degrees_and_rels</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_entity</span><span class="p">,</span> <span class="n">return_relation_list</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">node_df</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="n">n</span><span class="p">:</span> <span class="s2">&quot;t_&quot;</span> <span class="o">+</span> <span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">node_df</span><span class="o">.</span><span class="n">columns</span><span class="p">})</span></div>
+
 
 <div class="viewcode-block" id="KGTopologyToolbox.node_degree_summary">
 <a class="viewcode-back" href="../../generated/kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.html#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.node_degree_summary">[docs]</a>
-    <span class="k">def</span> <span class="nf">node_degree_summary</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">return_relation_list</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">node_degree_summary</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">return_relation_list</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        For each entity, this function computes the number of edges having it as a head</span>
+<span class="sd">        For each entity in the KG, compute the number of edges having it as a head</span>
 <span class="sd">        (head-degree, or out-degree), as a tail (tail-degree, or in-degree)</span>
-<span class="sd">        or one of the two (total-degree) in the Knowledge Graph.</span>
+<span class="sd">        or one of the two (total-degree).</span>
 <span class="sd">        The in-going and out-going relation types are also identified.</span>
 
 <span class="sd">        The output dataframe is indexed on the IDs of the graph entities.</span>
 
-<span class="sd">        :param df: A graph represented as a pd.DataFrame.</span>
-<span class="sd">            Must contain at least three columns `h`, `r`, `t`.</span>
-<span class="sd">        :param return_relation_list: If True, return the list of unique relations going</span>
+<span class="sd">        :param return_relation_list:</span>
+<span class="sd">            If True, return the list of unique relations going</span>
 <span class="sd">            in/out of an entity. WARNING: expensive for large graphs.</span>
 
-<span class="sd">        :return: The results dataframe, indexed over the same entity ID `e` used in df,</span>
+<span class="sd">        :return:</span>
+<span class="sd">            The results dataframe, indexed on the IDs `e` of the graph entities,</span>
 <span class="sd">            with columns:</span>
 
 <span class="sd">            - **h_degree** (int): Number of triples with head entity `e`.</span>
@@ -124,45 +239,33 @@
 <span class="sd">            - **tot_degree** (int): Number of triples with head entity `e` or tail entity `e`.</span>
 <span class="sd">            - **h_unique_rel** (int): Number of distinct relation types</span>
 <span class="sd">              among edges with head entity `e`.</span>
-<span class="sd">            - **h_rel_list** (list): List of unique relation types among edges</span>
+<span class="sd">            - **h_rel_list** (Optional[list]): List of unique relation types among edges</span>
 <span class="sd">              with head entity `e`.</span>
+<span class="sd">              Only returned if `return_relation_list = True`.</span>
 <span class="sd">            - **t_unique_rel** (int): Number of distinct relation types</span>
 <span class="sd">              among edges with tail entity `e`.</span>
-<span class="sd">            - **t_rel_list** (list): List of unique relation types among edges</span>
+<span class="sd">            - **t_rel_list** (Optional[list]): List of unique relation types among edges</span>
 <span class="sd">              with tail entity `e`.</span>
+<span class="sd">              Only returned if `return_relation_list = True`.</span>
 <span class="sd">            - **n_loops** (int): number of loops around entity `e`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">n_entity</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span>
-        <span class="n">h_rel_list</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;h_rel_list&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="s2">&quot;unique&quot;</span><span class="p">)}</span> <span class="k">if</span> <span class="n">return_relation_list</span> <span class="k">else</span> <span class="p">{}</span>
-        <span class="n">t_rel_list</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;t_rel_list&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="s2">&quot;unique&quot;</span><span class="p">)}</span> <span class="k">if</span> <span class="n">return_relation_list</span> <span class="k">else</span> <span class="p">{}</span>
-        <span class="n">nodes</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
-            <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;h&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span>
-                <span class="n">h_degree</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">),</span> <span class="n">h_unique_rel</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="s2">&quot;nunique&quot;</span><span class="p">),</span> <span class="o">**</span><span class="n">h_rel_list</span>  <span class="c1"># type: ignore</span>
-            <span class="p">),</span>
-            <span class="n">index</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_entity</span><span class="p">),</span>
-        <span class="p">)</span>
-        <span class="n">nodes</span> <span class="o">=</span> <span class="n">nodes</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
-            <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;t&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span>
-                <span class="n">t_degree</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">),</span> <span class="n">t_unique_rel</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="s2">&quot;nunique&quot;</span><span class="p">),</span> <span class="o">**</span><span class="n">t_rel_list</span>  <span class="c1"># type: ignore</span>
-            <span class="p">),</span>
+        <span class="n">nodes_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">node_head_degree</span><span class="p">(</span><span class="n">return_relation_list</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">node_tail_degree</span><span class="p">(</span><span class="n">return_relation_list</span><span class="p">),</span>
             <span class="n">left_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="n">right_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-            <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">nodes</span> <span class="o">=</span> <span class="n">nodes</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
-            <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">h</span> <span class="o">==</span> <span class="n">df</span><span class="o">.</span><span class="n">t</span><span class="p">]</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;h&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">n_loops</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">)),</span>
+        <span class="n">nodes_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
+            <span class="n">nodes_df</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">loop_count</span><span class="p">(),</span>
             <span class="n">left_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="n">right_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-            <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">nodes</span><span class="p">[[</span><span class="s2">&quot;h_degree&quot;</span><span class="p">,</span> <span class="s2">&quot;h_unique_rel&quot;</span><span class="p">,</span> <span class="s2">&quot;t_degree&quot;</span><span class="p">,</span> <span class="s2">&quot;t_unique_rel&quot;</span><span class="p">,</span> <span class="s2">&quot;n_loops&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">nodes</span><span class="p">[[</span><span class="s2">&quot;h_degree&quot;</span><span class="p">,</span> <span class="s2">&quot;h_unique_rel&quot;</span><span class="p">,</span> <span class="s2">&quot;t_degree&quot;</span><span class="p">,</span> <span class="s2">&quot;t_unique_rel&quot;</span><span class="p">,</span> <span class="s2">&quot;n_loops&quot;</span><span class="p">]]</span>
-            <span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-            <span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="n">nodes_df</span><span class="p">[</span><span class="s2">&quot;tot_degree&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">nodes_df</span><span class="p">[</span><span class="s2">&quot;h_degree&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">nodes_df</span><span class="p">[</span><span class="s2">&quot;t_degree&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">nodes_df</span><span class="p">[</span><span class="s2">&quot;n_loops&quot;</span><span class="p">]</span>
         <span class="p">)</span>
-        <span class="n">nodes</span><span class="p">[</span><span class="s2">&quot;tot_degree&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">nodes</span><span class="p">[</span><span class="s2">&quot;h_degree&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">nodes</span><span class="p">[</span><span class="s2">&quot;t_degree&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">nodes</span><span class="p">[</span><span class="s2">&quot;n_loops&quot;</span><span class="p">]</span>
 
-        <span class="k">return</span> <span class="n">nodes</span><span class="p">[</span>
+        <span class="k">return</span> <span class="n">nodes_df</span><span class="p">[</span>
             <span class="p">[</span><span class="s2">&quot;h_degree&quot;</span><span class="p">,</span> <span class="s2">&quot;t_degree&quot;</span><span class="p">,</span> <span class="s2">&quot;tot_degree&quot;</span><span class="p">,</span> <span class="s2">&quot;h_unique_rel&quot;</span><span class="p">]</span>
             <span class="o">+</span> <span class="p">([</span><span class="s2">&quot;h_rel_list&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="n">return_relation_list</span> <span class="k">else</span> <span class="p">[])</span>
             <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;t_unique_rel&quot;</span><span class="p">]</span>
@@ -171,26 +274,126 @@
         <span class="p">]</span></div>
 
 
+<div class="viewcode-block" id="KGTopologyToolbox.edge_head_degree">
+<a class="viewcode-back" href="../../generated/kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.html#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.edge_head_degree">[docs]</a>
+    <span class="nd">@cache</span>
+    <span class="k">def</span> <span class="nf">edge_head_degree</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        For each edge in the KG, compute the number of edges</span>
+<span class="sd">        (in total or of the same relation type) with the same head node.</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">            The result DataFrame, with the same indexing and ordering of</span>
+<span class="sd">            triples as the original KG DataFrame, with columns</span>
+<span class="sd">            (in addition to `h`, `r`, `t`):</span>
+
+<span class="sd">            - **h_unique_rel** (int): Number of distinct relation types</span>
+<span class="sd">              among edges with head entity `h`.</span>
+<span class="sd">            - **h_degree** (int): Number of triples with head entity `h`.</span>
+<span class="sd">            - **h_degree_same_rel** (int): Number of triples with head entity `h`</span>
+<span class="sd">              and relation type `r`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">edge_by_hr_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">],</span> <span class="n">as_index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span>
+            <span class="n">h_degree_same_rel</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">df_res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">node_head_degree</span><span class="p">(),</span> <span class="n">left_on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;h&quot;</span><span class="p">],</span> <span class="n">right_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">df_res</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">edge_by_hr_count</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">],</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="KGTopologyToolbox.edge_tail_degree">
+<a class="viewcode-back" href="../../generated/kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.html#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.edge_tail_degree">[docs]</a>
+    <span class="nd">@cache</span>
+    <span class="k">def</span> <span class="nf">edge_tail_degree</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        For each edge in the KG, compute the number of edges</span>
+<span class="sd">        (in total or of the same relation type) with the same tail node.</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">            The result DataFrame, with the same indexing and ordering of</span>
+<span class="sd">            triples as the original KG DataFrame, with columns</span>
+<span class="sd">            (in addition to `h`, `r`, `t`):</span>
+
+<span class="sd">            - **t_unique_rel** (int): Number of distinct relation types</span>
+<span class="sd">              among edges with tail entity `t`.</span>
+<span class="sd">            - **t_degree** (int): Number of triples with tail entity `t`.</span>
+<span class="sd">            - **t_degree_same_rel** (int): Number of triples with tail entity `t`</span>
+<span class="sd">              and relation type `r`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">edge_by_rt_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">],</span> <span class="n">as_index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span>
+            <span class="n">t_degree_same_rel</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">df_res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">node_tail_degree</span><span class="p">(),</span> <span class="n">left_on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;t&quot;</span><span class="p">],</span> <span class="n">right_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">df_res</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">edge_by_rt_count</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">],</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="KGTopologyToolbox.edge_cardinality">
+<a class="viewcode-back" href="../../generated/kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.html#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.edge_cardinality">[docs]</a>
+    <span class="k">def</span> <span class="nf">edge_cardinality</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Classify the cardinality of each edge in the KG: one-to-one</span>
+<span class="sd">        (out-degree=in-degree=1), one-to-many (out-degree&gt;1, in-degree=1),</span>
+<span class="sd">        many-to-one(out-degree=1, in-degree&gt;1) or many-to-many</span>
+<span class="sd">        (in-degree&gt;1, out-degree&gt;1).</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">            The result DataFrame, with the same indexing and ordering of</span>
+<span class="sd">            triples as the original KG DataFrame, with columns</span>
+<span class="sd">            (in addition to `h`, `r`, `t`):</span>
+
+<span class="sd">            - **triple_cardinality** (int): cardinality type of the edge.</span>
+<span class="sd">            - **triple_cardinality_same_rel** (int): cardinality type of the edge in</span>
+<span class="sd">              the subgraph of edges with relation type `r`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">head_degree</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">edge_head_degree</span><span class="p">()</span>
+        <span class="n">tail_degree</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">edge_tail_degree</span><span class="p">()</span>
+        <span class="n">df_res</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+            <span class="p">{</span><span class="s2">&quot;h&quot;</span><span class="p">:</span> <span class="n">head_degree</span><span class="o">.</span><span class="n">h</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">:</span> <span class="n">head_degree</span><span class="o">.</span><span class="n">r</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">:</span> <span class="n">head_degree</span><span class="o">.</span><span class="n">t</span><span class="p">}</span>
+        <span class="p">)</span>
+        <span class="c1"># check if the values in the pair (h_degree, t_degree) are =1 or &gt;1</span>
+        <span class="c1"># to determine the edge cardinality</span>
+        <span class="k">for</span> <span class="n">suffix</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;_same_rel&quot;</span><span class="p">]:</span>
+            <span class="c1"># check if the values in the pair (h_degree, t_degree) are =1 or &gt;1</span>
+            <span class="c1"># to determine the edge cardinality</span>
+            <span class="n">edge_type</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">head_degree</span><span class="p">[</span><span class="s2">&quot;h_degree&quot;</span> <span class="o">+</span> <span class="n">suffix</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span>
+                <span class="n">tail_degree</span><span class="p">[</span><span class="s2">&quot;t_degree&quot;</span> <span class="o">+</span> <span class="n">suffix</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span>
+            <span class="p">)</span>
+            <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;triple_cardinality&quot;</span> <span class="o">+</span> <span class="n">suffix</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">cut</span><span class="p">(</span>
+                <span class="n">edge_type</span><span class="p">,</span>
+                <span class="n">bins</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
+                <span class="n">right</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;M:M&quot;</span><span class="p">,</span> <span class="s2">&quot;1:M&quot;</span><span class="p">,</span> <span class="s2">&quot;M:1&quot;</span><span class="p">,</span> <span class="s2">&quot;1:1&quot;</span><span class="p">],</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">df_res</span></div>
+
+
 <div class="viewcode-block" id="KGTopologyToolbox.edge_degree_cardinality_summary">
 <a class="viewcode-back" href="../../generated/kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.html#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.edge_degree_cardinality_summary">[docs]</a>
-    <span class="k">def</span> <span class="nf">edge_degree_cardinality_summary</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">edge_degree_cardinality_summary</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">aggregate_by_r</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        For each triple, this function computes the number of edges with the same head</span>
+<span class="sd">        For each edge in the KG, compute the number of edges with the same head</span>
 <span class="sd">        (head-degree, or out-degree), the same tail (tail-degree, or in-degree)</span>
-<span class="sd">        or one of the two (total-degree) in the Knowledge Graph.</span>
+<span class="sd">        or one of the two (total-degree).</span>
 <span class="sd">        Based on entity degrees, each triple is classified as either one-to-one</span>
 <span class="sd">        (out-degree=in-degree=1), one-to-many (out-degree&gt;1, in-degree=1),</span>
 <span class="sd">        many-to-one(out-degree=1, in-degree&gt;1) or many-to-many</span>
 <span class="sd">        (in-degree&gt;1, out-degree&gt;1).</span>
 
 <span class="sd">        The output dataframe maintains the same indexing and ordering of triples</span>
-<span class="sd">        as the input one.</span>
+<span class="sd">        as the original Knowledge Graph dataframe.</span>
 
-<span class="sd">        :param df: A graph represented as a pd.DataFrame.</span>
-<span class="sd">            Must contain at least three columns `h`, `r`, `t`.</span>
+<span class="sd">        :param aggregate_by_r:</span>
+<span class="sd">            If True, return metrics aggregated by relation type</span>
+<span class="sd">            (the output DataFrame will be indexed over relation IDs).</span>
 
-<span class="sd">        :return: The results dataframe. Contains the following columns</span>
-<span class="sd">            (in addition to `h`, `r`, `t` in ``df``):</span>
+<span class="sd">        :return:</span>
+<span class="sd">            The results dataframe. Contains the following columns</span>
+<span class="sd">            (in addition to `h`, `r`, `t`):</span>
 
 <span class="sd">            - **h_unique_rel** (int): Number of distinct relation types</span>
 <span class="sd">              among edges with head entity h.</span>
@@ -210,33 +413,18 @@
 <span class="sd">            - **triple_cardinality_same_rel** (int): cardinality type of the edge in</span>
 <span class="sd">              the subgraph of edges with relation type r.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">gr_by_h_count</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="n">as_index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span>
-            <span class="n">h_unique_rel</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="s2">&quot;nunique&quot;</span><span class="p">),</span> <span class="n">h_degree</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">)</span>
-        <span class="p">)</span>
-        <span class="n">gr_by_hr_count</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">],</span> <span class="n">as_index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span>
-            <span class="n">h_degree_same_rel</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">)</span>
-        <span class="p">)</span>
-        <span class="n">gr_by_t_count</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="n">as_index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span>
-            <span class="n">t_unique_rel</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="s2">&quot;nunique&quot;</span><span class="p">),</span> <span class="n">t_degree</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">)</span>
-        <span class="p">)</span>
-        <span class="n">gr_by_rt_count</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">],</span> <span class="n">as_index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span>
-            <span class="n">t_degree_same_rel</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">)</span>
-        <span class="p">)</span>
-
-        <span class="n">df_res</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">gr_by_h_count</span><span class="p">,</span> <span class="n">left_on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;h&quot;</span><span class="p">],</span> <span class="n">right_on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;h&quot;</span><span class="p">],</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">)</span>
-        <span class="n">df_res</span> <span class="o">=</span> <span class="n">df_res</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
-            <span class="n">gr_by_hr_count</span><span class="p">,</span> <span class="n">left_on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">],</span> <span class="n">right_on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">],</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span>
-        <span class="p">)</span>
-        <span class="n">df_res</span> <span class="o">=</span> <span class="n">df_res</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">gr_by_t_count</span><span class="p">,</span> <span class="n">left_on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;t&quot;</span><span class="p">],</span> <span class="n">right_on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;t&quot;</span><span class="p">],</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">)</span>
-        <span class="n">df_res</span> <span class="o">=</span> <span class="n">df_res</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
-            <span class="n">gr_by_rt_count</span><span class="p">,</span> <span class="n">left_on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">],</span> <span class="n">right_on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">],</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span>
+        <span class="n">df_res</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">edge_head_degree</span><span class="p">(),</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">edge_tail_degree</span><span class="p">()</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">]),</span>
+            <span class="p">],</span>
+            <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="c1"># compute number of parallel edges to avoid double-counting them</span>
         <span class="c1"># in total degree</span>
         <span class="n">num_parallel</span> <span class="o">=</span> <span class="n">df_res</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
-            <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">],</span> <span class="n">as_index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">n_parallel</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">)),</span>
-            <span class="n">left_on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">],</span>
-            <span class="n">right_on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">],</span> <span class="n">as_index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">n_parallel</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">)),</span>
+            <span class="n">on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">],</span>
             <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;tot_degree&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
@@ -248,49 +436,46 @@
             <span class="n">df_res</span><span class="o">.</span><span class="n">h_degree_same_rel</span> <span class="o">+</span> <span class="n">df_res</span><span class="o">.</span><span class="n">t_degree_same_rel</span> <span class="o">-</span> <span class="mi">1</span>
         <span class="p">)</span>
 
-        <span class="c1"># check if the values in the pair (h_degree, t_degree) are =1 or &gt;1</span>
-        <span class="c1"># to determine the edge cardinality</span>
-        <span class="n">legend</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="mi">0</span><span class="p">:</span> <span class="s2">&quot;M:M&quot;</span><span class="p">,</span>
-            <span class="mi">1</span><span class="p">:</span> <span class="s2">&quot;1:M&quot;</span><span class="p">,</span>
-            <span class="mi">2</span><span class="p">:</span> <span class="s2">&quot;M:1&quot;</span><span class="p">,</span>
-            <span class="mi">3</span><span class="p">:</span> <span class="s2">&quot;1:1&quot;</span><span class="p">,</span>
-        <span class="p">}</span>
-        <span class="k">for</span> <span class="n">suffix</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;_same_rel&quot;</span><span class="p">]:</span>
-            <span class="n">edge_type</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;h_degree&quot;</span> <span class="o">+</span> <span class="n">suffix</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span>
-                <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;t_degree&quot;</span> <span class="o">+</span> <span class="n">suffix</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span>
-            <span class="p">)</span>
-            <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;triple_cardinality&quot;</span> <span class="o">+</span> <span class="n">suffix</span><span class="p">]</span> <span class="o">=</span> <span class="n">edge_type</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">legend</span><span class="p">[</span><span class="n">x</span><span class="p">])</span>
-        <span class="k">return</span> <span class="n">df_res</span></div>
+        <span class="n">edge_cardinality</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">edge_cardinality</span><span class="p">()</span>
+        <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;triple_cardinality&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">edge_cardinality</span><span class="p">[</span><span class="s2">&quot;triple_cardinality&quot;</span><span class="p">]</span>
+        <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;triple_cardinality_same_rel&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">edge_cardinality</span><span class="p">[</span>
+            <span class="s2">&quot;triple_cardinality_same_rel&quot;</span>
+        <span class="p">]</span>
+        <span class="k">return</span> <span class="n">aggregate_by_relation</span><span class="p">(</span><span class="n">df_res</span><span class="p">)</span> <span class="k">if</span> <span class="n">aggregate_by_r</span> <span class="k">else</span> <span class="n">df_res</span></div>
 
 
 <div class="viewcode-block" id="KGTopologyToolbox.edge_pattern_summary">
 <a class="viewcode-back" href="../../generated/kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.html#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.edge_pattern_summary">[docs]</a>
     <span class="k">def</span> <span class="nf">edge_pattern_summary</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
         <span class="n">return_metapath_list</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">composition_chunk_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="o">**</span><span class="mi">8</span><span class="p">,</span>
         <span class="n">composition_workers</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">32</span><span class="p">,</span>
+        <span class="n">aggregate_by_r</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        This function analyses the structural properties of each edge in the graph:</span>
+<span class="sd">        Analyse structural properties of each edge in the KG:</span>
 <span class="sd">        symmetry, presence of inverse/inference(=parallel) edges and</span>
 <span class="sd">        triangles supported on the edge.</span>
 
 <span class="sd">        The output dataframe maintains the same indexing and ordering of triples</span>
-<span class="sd">        as the input one.</span>
+<span class="sd">        as the original Knowledge Graph dataframe.</span>
 
-<span class="sd">        :param df: A graph represented as a pd.DataFrame.</span>
-<span class="sd">            Must contain at least three columns `h`, `r`, `t`.</span>
-<span class="sd">        :param return_metapath_list: If True, return the list of unique metapaths for all</span>
+<span class="sd">        :param return_metapath_list:</span>
+<span class="sd">            If True, return the list of unique metapaths for all</span>
 <span class="sd">            triangles supported over one edge. WARNING: very expensive for large graphs.</span>
-<span class="sd">        :param composition_chunk_size: Size of column chunks of sparse adjacency matrix</span>
+<span class="sd">        :param composition_chunk_size:</span>
+<span class="sd">            Size of column chunks of sparse adjacency matrix</span>
 <span class="sd">            to compute the triangle count.</span>
-<span class="sd">        :param composition_workers: Number of workers to compute the triangle count.</span>
+<span class="sd">        :param composition_workers:</span>
+<span class="sd">            Number of workers to compute the triangle count.</span>
+<span class="sd">        :param aggregate_by_r:</span>
+<span class="sd">            If True, return metrics aggregated by relation type</span>
+<span class="sd">            (the output DataFrame will be indexed over relation IDs).</span>
 
-<span class="sd">        :return: The results dataframe. Contains the following columns</span>
-<span class="sd">            (in addition to `h`, `r`, `t` in ``df``):</span>
+<span class="sd">        :return:</span>
+<span class="sd">            The results dataframe. Contains the following columns</span>
+<span class="sd">            (in addition to `h`, `r`, `t`):</span>
 
 <span class="sd">            - **is_loop** (bool): True if the triple is a loop (``h == t``).</span>
 <span class="sd">            - **is_symmetric** (bool): True if the triple (t, r, h) is also contained</span>
@@ -317,12 +502,14 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># symmetry-asymmetry</span>
         <span class="c1"># edges with h/t switched</span>
-        <span class="n">df_inv</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="s2">&quot;h&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
+        <span class="n">df_inv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="s2">&quot;h&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
             <span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;t&quot;</span><span class="p">:</span> <span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">:</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="s2">&quot;h&quot;</span><span class="p">:</span> <span class="s2">&quot;t&quot;</span><span class="p">}</span>
         <span class="p">)</span>
-        <span class="n">df_res</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;h&quot;</span><span class="p">:</span> <span class="n">df</span><span class="o">.</span><span class="n">h</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">:</span> <span class="n">df</span><span class="o">.</span><span class="n">r</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">:</span> <span class="n">df</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="s2">&quot;is_symmetric&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">})</span>
+        <span class="n">df_res</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+            <span class="p">{</span><span class="s2">&quot;h&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">h</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">r</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="s2">&quot;is_symmetric&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
+        <span class="p">)</span>
         <span class="n">df_res</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span>
-            <span class="n">df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">df_inv</span><span class="p">)[</span><span class="s2">&quot;index&quot;</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">df_inv</span><span class="p">)[</span><span class="s2">&quot;index&quot;</span><span class="p">],</span>
             <span class="s2">&quot;is_symmetric&quot;</span><span class="p">,</span>
         <span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="c1"># loops are treated separately</span>
@@ -364,7 +551,7 @@
 
         <span class="c1"># composition &amp; metapaths</span>
         <span class="c1"># discard loops as edges of a triangle</span>
-        <span class="n">df_wo_loops</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">h</span> <span class="o">!=</span> <span class="n">df</span><span class="o">.</span><span class="n">t</span><span class="p">]</span>
+        <span class="n">df_wo_loops</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">h</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">t</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">return_metapath_list</span><span class="p">:</span>
             <span class="c1"># 2-hop paths</span>
             <span class="n">df_bridges</span> <span class="o">=</span> <span class="n">df_wo_loops</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span>
@@ -423,7 +610,7 @@
         <span class="p">)</span>
         <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;has_undirected_composition&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;n_undirected_triangles&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span>
 
-        <span class="k">return</span> <span class="n">df_res</span><span class="p">[</span>
+        <span class="n">df_res</span> <span class="o">=</span> <span class="n">df_res</span><span class="p">[</span>
             <span class="p">[</span>
                 <span class="s2">&quot;h&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;r&quot;</span><span class="p">,</span>
@@ -442,103 +629,21 @@
                 <span class="s2">&quot;n_undirected_triangles&quot;</span><span class="p">,</span>
             <span class="p">]</span>
             <span class="o">+</span> <span class="p">([</span><span class="s2">&quot;metapath_list&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="n">return_metapath_list</span> <span class="k">else</span> <span class="p">[])</span>
-        <span class="p">]</span></div>
+        <span class="p">]</span>
 
-
-<div class="viewcode-block" id="KGTopologyToolbox.aggregate_by_relation">
-<a class="viewcode-back" href="../../generated/kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.html#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.aggregate_by_relation">[docs]</a>
-    <span class="k">def</span> <span class="nf">aggregate_by_relation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">edge_topology_df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Aggregate topology metrics of all triples of the same relation type.</span>
-<span class="sd">        To be applied to the output dataframe of either</span>
-<span class="sd">        :meth:`KGTopologyToolbox.edge_degree_cardinality_summary` or</span>
-<span class="sd">        :meth:`KGTopologyToolbox.edge_pattern_summary`.</span>
-
-<span class="sd">        The returned dataframe is indexed over relation type IDs, with columns</span>
-<span class="sd">        giving the aggregated statistics of triples of the correspondig relation.</span>
-<span class="sd">        The name of the columns is of the form ``column_name_in_input_df + suffix``.</span>
-<span class="sd">        The aggregation is perfomed by returning:</span>
-
-<span class="sd">        - for numerical metrics: mean, standard deviation and quartiles</span>
-<span class="sd">          (``suffix`` = &quot;_mean&quot;, &quot;_std&quot;, &quot;_quartile1&quot;, &quot;_quartile2&quot;, &quot;_quartile3&quot;);</span>
-<span class="sd">        - for boolean metrics: the fraction of triples of the relation type</span>
-<span class="sd">          with metric = True (``suffix`` = &quot;_frac&quot;);</span>
-<span class="sd">        - for string metrics: for each possible label, the fraction of triples</span>
-<span class="sd">          of the relation type with that metric value (``suffix`` = &quot;_{label}_frac&quot;)</span>
-<span class="sd">        - for list metrics: the unique metric values across triples of the relation</span>
-<span class="sd">          type (``suffix`` = &quot;_unique&quot;).</span>
-
-<span class="sd">        :param edge_topology_df: pd.DataFrame of edge topology metrics.</span>
-<span class="sd">            Must contain at least three columns `h`, `r`, `t`.</span>
-
-<span class="sd">        :return: The results dataframe. In addition to the columns with the aggregated</span>
-<span class="sd">            metrics by relation type, it also contains columns:</span>
-
-<span class="sd">            - **num_triples** (int): Number of triples for each relation type.</span>
-<span class="sd">            - **frac_triples** (float): Fraction of overall triples represented by each</span>
-<span class="sd">              relation type.</span>
-<span class="sd">            - **unique_h** (int): Number of unique head entities used by triples of each</span>
-<span class="sd">              relation type.</span>
-<span class="sd">            - **unique_t** (int): Number of unique tail entities used by triples of each</span>
-<span class="sd">              relation type.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">df_by_r</span> <span class="o">=</span> <span class="n">edge_topology_df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;r&quot;</span><span class="p">)</span>
-        <span class="n">df_res</span> <span class="o">=</span> <span class="n">df_by_r</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">num_triples</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">))</span>
-        <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;frac_triples&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;num_triples&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="n">edge_topology_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">col</span><span class="p">:</span> <span class="nb">str</span>
-        <span class="k">for</span> <span class="n">col</span><span class="p">,</span> <span class="n">col_dtype</span> <span class="ow">in</span> <span class="n">edge_topology_df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;r&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">dtypes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>  <span class="c1"># type: ignore</span>
-            <span class="k">if</span> <span class="n">col</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">]:</span>
-                <span class="n">df_res</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;unique_</span><span class="si">{</span><span class="n">col</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_by_r</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">nunique</span><span class="p">()</span>
-            <span class="k">elif</span> <span class="n">col_dtype</span> <span class="o">==</span> <span class="nb">object</span><span class="p">:</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">edge_topology_df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">str</span><span class="p">):</span>
-                    <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">edge_topology_df</span><span class="p">[</span><span class="n">col</span><span class="p">]):</span>
-                        <span class="n">df_res</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">col</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">_frac&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-                            <span class="n">edge_topology_df</span><span class="p">[</span><span class="n">edge_topology_df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">==</span> <span class="n">label</span><span class="p">]</span>
-                            <span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;r&quot;</span><span class="p">)[</span><span class="n">col</span><span class="p">]</span>
-                            <span class="o">.</span><span class="n">count</span><span class="p">()</span>
-                            <span class="o">/</span> <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;num_triples&quot;</span><span class="p">]</span>
-                        <span class="p">)</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">edge_topology_df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Iterable</span><span class="p">):</span>
-                    <span class="n">df_res</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">col</span><span class="si">}</span><span class="s2">_unique&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-                        <span class="n">df_by_r</span><span class="p">[</span><span class="n">col</span><span class="p">]</span>
-                        <span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">)</span>
-                        <span class="o">.</span><span class="n">apply</span><span class="p">(</span>
-                            <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span>
-                                <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span>
-                                    <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
-                                        <span class="p">[</span><span class="n">lst</span> <span class="k">for</span> <span class="n">lst</span> <span class="ow">in</span> <span class="n">x</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="p">[[]]</span>
-                                    <span class="p">)</span>
-                                <span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
-                            <span class="p">)</span>
-                        <span class="p">)</span>
-                    <span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Skipping column </span><span class="si">{</span><span class="n">col</span><span class="si">}</span><span class="s2">: no known aggregation mode&quot;</span><span class="p">)</span>
-                    <span class="k">continue</span>
-            <span class="k">elif</span> <span class="n">col_dtype</span> <span class="o">==</span> <span class="nb">int</span> <span class="ow">or</span> <span class="n">col_dtype</span> <span class="o">==</span> <span class="nb">float</span><span class="p">:</span>
-                <span class="n">df_res</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">col</span><span class="si">}</span><span class="s2">_mean&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_by_r</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
-                <span class="n">df_res</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">col</span><span class="si">}</span><span class="s2">_std&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_by_r</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
-                <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">):</span>
-                    <span class="n">df_res</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">col</span><span class="si">}</span><span class="s2">_quartile</span><span class="si">{</span><span class="n">q</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_by_r</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span>
-                        <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mf">0.25</span> <span class="o">*</span> <span class="n">q</span><span class="p">)</span>
-                    <span class="p">)</span>
-            <span class="k">elif</span> <span class="n">col_dtype</span> <span class="o">==</span> <span class="nb">bool</span><span class="p">:</span>
-                <span class="n">df_res</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">col</span><span class="si">}</span><span class="s2">_frac&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_by_r</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">df_res</span></div>
+        <span class="k">return</span> <span class="n">aggregate_by_relation</span><span class="p">(</span><span class="n">df_res</span><span class="p">)</span> <span class="k">if</span> <span class="n">aggregate_by_r</span> <span class="k">else</span> <span class="n">df_res</span></div>
 
 
 <div class="viewcode-block" id="KGTopologyToolbox.jaccard_similarity_relation_sets">
 <a class="viewcode-back" href="../../generated/kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.html#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.jaccard_similarity_relation_sets">[docs]</a>
-    <span class="k">def</span> <span class="nf">jaccard_similarity_relation_sets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">jaccard_similarity_relation_sets</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the similarity between relations defined as the Jaccard Similarity</span>
 <span class="sd">        between sets of entities (heads and tails) for all pairs</span>
 <span class="sd">        of relations in the graph.</span>
 
-<span class="sd">        :param df: A graph represented as a pd.DataFrame.</span>
-<span class="sd">            Must contain at least three columns `h`, `r`, `t`.</span>
-
-<span class="sd">        :return: The results dataframe. Contains the following columns:</span>
+<span class="sd">        :return:</span>
+<span class="sd">            The results dataframe. Contains the following columns:</span>
 
 <span class="sd">            - **r1** (int): Index of the first relation.</span>
 <span class="sd">            - **r2** (int): Index of the second relation.</span>
@@ -561,7 +666,7 @@
 <span class="sd">            - **jaccard_both** (float): Jaccard similarity between the full entity set</span>
 <span class="sd">              of r1 and r2.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">ent_unique</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">as_index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span>
+        <span class="n">ent_unique</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">as_index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span>
             <span class="n">num_triples</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">),</span> <span class="n">head</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;unique&quot;</span><span class="p">),</span> <span class="n">tail</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="s2">&quot;unique&quot;</span><span class="p">)</span>
         <span class="p">)</span>
         <span class="n">ent_unique</span><span class="p">[</span><span class="s2">&quot;both&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ent_unique</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
@@ -580,7 +685,7 @@
         <span class="n">df_res</span> <span class="o">=</span> <span class="n">df_res</span><span class="p">[</span><span class="n">df_res</span><span class="o">.</span><span class="n">r1</span> <span class="o">&lt;</span> <span class="n">df_res</span><span class="o">.</span><span class="n">r2</span><span class="p">]</span>
 
         <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;num_triples_both&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;num_triples_r1&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;num_triples_r2&quot;</span><span class="p">]</span>
-        <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;frac_triples_both&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;num_triples_both&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;frac_triples_both&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;num_triples_both&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">df_res</span><span class="p">[</span><span class="s2">&quot;num_entities_both&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_res</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
             <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span>
                 <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span>
@@ -627,9 +732,7 @@
 
 <div class="viewcode-block" id="KGTopologyToolbox.relational_affinity_ingram">
 <a class="viewcode-back" href="../../generated/kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.html#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.relational_affinity_ingram">[docs]</a>
-    <span class="k">def</span> <span class="nf">relational_affinity_ingram</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">min_max_norm</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">relational_affinity_ingram</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min_max_norm</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the similarity between relations based on the approach proposed in</span>
 <span class="sd">        InGram: Inductive Knowledge Graph Embedding via Relation Graphs,</span>
@@ -638,34 +741,31 @@
 <span class="sd">        Only the pairs of relations witn ``affinity &gt; 0`` are shown in the</span>
 <span class="sd">        returned dataframe.</span>
 
-<span class="sd">        :param df: A graph represented as a pd.DataFrame.</span>
-<span class="sd">            Must contain at least three columns `h`, `r`, `t`.</span>
-<span class="sd">        :param min_max_norm: min-max normalization of edge weights. Defaults to False.</span>
+<span class="sd">        :param min_max_norm:</span>
+<span class="sd">            min-max normalization of edge weights. Defaults to False.</span>
 
-<span class="sd">        :return: The results dataframe. Contains the following columns:</span>
+<span class="sd">        :return:</span>
+<span class="sd">            The results dataframe. Contains the following columns:</span>
 
 <span class="sd">            - **h_relation** (int): Index of the head relation.</span>
 <span class="sd">            - **t_relation** (int): Index of the tail relation.</span>
 <span class="sd">            - **edge_weight** (float): Weight for the affinity between</span>
 <span class="sd">              the head and the tail relation.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">n_entities</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;t&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span>
-        <span class="n">n_rels</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">r</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span>
-
-        <span class="n">hr_freqs</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">],</span> <span class="n">as_index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+        <span class="n">hr_freqs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;h&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">],</span> <span class="n">as_index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
         <span class="c1"># normalize by global h frequency</span>
         <span class="n">hr_freqs</span><span class="p">[</span><span class="s2">&quot;t&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">hr_freqs</span><span class="p">[</span><span class="s2">&quot;t&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="n">hr_freqs</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;h&quot;</span><span class="p">)[</span><span class="s2">&quot;t&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="s2">&quot;sum&quot;</span><span class="p">)</span>
-        <span class="n">rt_freqs</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">],</span> <span class="n">as_index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+        <span class="n">rt_freqs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">],</span> <span class="n">as_index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
         <span class="c1"># normalize by global t frequency</span>
         <span class="n">rt_freqs</span><span class="p">[</span><span class="s2">&quot;h&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rt_freqs</span><span class="p">[</span><span class="s2">&quot;h&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="n">rt_freqs</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;t&quot;</span><span class="p">)[</span><span class="s2">&quot;h&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="s2">&quot;sum&quot;</span><span class="p">)</span>
 
         <span class="n">E_h</span> <span class="o">=</span> <span class="n">coo_array</span><span class="p">(</span>
             <span class="p">(</span><span class="n">hr_freqs</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="p">(</span><span class="n">hr_freqs</span><span class="o">.</span><span class="n">h</span><span class="p">,</span> <span class="n">hr_freqs</span><span class="o">.</span><span class="n">r</span><span class="p">)),</span>
-            <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">n_entities</span><span class="p">,</span> <span class="n">n_rels</span><span class="p">],</span>
+            <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">n_entity</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_rel</span><span class="p">],</span>
         <span class="p">)</span>
         <span class="n">E_t</span> <span class="o">=</span> <span class="n">coo_array</span><span class="p">(</span>
             <span class="p">(</span><span class="n">rt_freqs</span><span class="o">.</span><span class="n">h</span><span class="p">,</span> <span class="p">(</span><span class="n">rt_freqs</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">rt_freqs</span><span class="o">.</span><span class="n">r</span><span class="p">)),</span>
-            <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">n_entities</span><span class="p">,</span> <span class="n">n_rels</span><span class="p">],</span>
+            <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">n_entity</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_rel</span><span class="p">],</span>
         <span class="p">)</span>
 
         <span class="n">A</span> <span class="o">=</span> <span class="p">(</span><span class="n">E_h</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">E_h</span><span class="p">)</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span> <span class="o">+</span> <span class="p">(</span><span class="n">E_t</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">E_t</span><span class="p">)</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span>

@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>kg_topology_toolbox.utils.composition_count &mdash; KG Topology Toolbox  documentation</title>
+  <title>kg_topology_toolbox.utils.check_kg_df_structure &mdash; KG Topology Toolbox  documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
@@ -23,8 +23,8 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="kg_topology_toolbox.utils.jaccard_similarity" href="kg_topology_toolbox.utils.jaccard_similarity.html" />
-    <link rel="prev" title="kg_topology_toolbox.utils.check_kg_df_structure" href="kg_topology_toolbox.utils.check_kg_df_structure.html" /> 
+    <link rel="next" title="kg_topology_toolbox.utils.composition_count" href="kg_topology_toolbox.utils.composition_count.html" />
+    <link rel="prev" title="kg_topology_toolbox.utils.aggregate_by_relation" href="kg_topology_toolbox.utils.aggregate_by_relation.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -54,11 +54,11 @@
 <li class="toctree-l2"><a class="reference internal" href="kg_topology_toolbox.topology_toolbox.html">kg_topology_toolbox.topology_toolbox</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="kg_topology_toolbox.utils.html">kg_topology_toolbox.utils</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="kg_topology_toolbox.utils.aggregate_by_relation.html">kg_topology_toolbox.utils.aggregate_by_relation</a></li>
-<li class="toctree-l3"><a class="reference internal" href="kg_topology_toolbox.utils.check_kg_df_structure.html">kg_topology_toolbox.utils.check_kg_df_structure</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">kg_topology_toolbox.utils.composition_count</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#kg_topology_toolbox.utils.composition_count"><code class="docutils literal notranslate"><span class="pre">composition_count()</span></code></a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">kg_topology_toolbox.utils.check_kg_df_structure</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#kg_topology_toolbox.utils.check_kg_df_structure"><code class="docutils literal notranslate"><span class="pre">check_kg_df_structure()</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="kg_topology_toolbox.utils.composition_count.html">kg_topology_toolbox.utils.composition_count</a></li>
 <li class="toctree-l3"><a class="reference internal" href="kg_topology_toolbox.utils.jaccard_similarity.html">kg_topology_toolbox.utils.jaccard_similarity</a></li>
 <li class="toctree-l3"><a class="reference internal" href="kg_topology_toolbox.utils.node_degrees_and_rels.html">kg_topology_toolbox.utils.node_degrees_and_rels</a></li>
 </ul>
@@ -83,9 +83,9 @@
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../API_reference.html">API Reference</a></li>
           <li class="breadcrumb-item"><a href="kg_topology_toolbox.utils.html">kg_topology_toolbox.utils</a></li>
-      <li class="breadcrumb-item active">kg_topology_toolbox.utils.composition_count</li>
+      <li class="breadcrumb-item active">kg_topology_toolbox.utils.check_kg_df_structure</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../_sources/generated/kg_topology_toolbox.utils.composition_count.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/generated/kg_topology_toolbox.utils.check_kg_df_structure.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -93,32 +93,24 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="kg-topology-toolbox-utils-composition-count">
-<h1>kg_topology_toolbox.utils.composition_count<a class="headerlink" href="#kg-topology-toolbox-utils-composition-count" title="Link to this heading"></a></h1>
+  <section id="kg-topology-toolbox-utils-check-kg-df-structure">
+<h1>kg_topology_toolbox.utils.check_kg_df_structure<a class="headerlink" href="#kg-topology-toolbox-utils-check-kg-df-structure" title="Link to this heading"></a></h1>
 <dl class="py function">
-<dt class="sig sig-object py" id="kg_topology_toolbox.utils.composition_count">
-<span class="sig-prename descclassname"><span class="pre">kg_topology_toolbox.utils.</span></span><span class="sig-name descname"><span class="pre">composition_count</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunk_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">workers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kg_topology_toolbox/utils.html#composition_count"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.utils.composition_count" title="Link to this definition"></a></dt>
-<dd><p>A helper function to compute the composition count of a graph.</p>
+<dt class="sig sig-object py" id="kg_topology_toolbox.utils.check_kg_df_structure">
+<span class="sig-prename descclassname"><span class="pre">kg_topology_toolbox.utils.</span></span><span class="sig-name descname"><span class="pre">check_kg_df_structure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kg_df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kg_topology_toolbox/utils.html#check_kg_df_structure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.utils.check_kg_df_structure" title="Link to this definition"></a></dt>
+<dd><p>Utility to perform sanity checks on the structure of the provided DataFrame,
+to ensure that it encodes a Knowledge Graph in a compatible way.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>df</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></span>) – A graph represented as a pd.DataFrame. Must contain the columns
-<cite>h</cite> and <cite>t</cite>. No self-loops should be present in the graph.</p></li>
-<li><p><strong>chunk_size</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – Size of chunks of columns of the adjacency matrix to be
-processed together.</p></li>
-<li><p><strong>workers</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – Number of workers processing chunks concurrently</p></li>
-<li><p><strong>directed</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – Boolean flag. If false, bidirectional edges are considered for
-triangles by adding the adjacency matrix and its transposed. Default: True.</p></li>
+<li><p><strong>kg_df</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></span>) – The Knowledge Graph DataFrame.</p></li>
+<li><p><strong>h</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – The name of the column with the IDs of head entities.</p></li>
+<li><p><strong>r</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – The name of the column with the IDs of relation types.</p></li>
+<li><p><strong>t</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – The name of the column with the IDs of tail entities.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></span></p>
-</dd>
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The results dataframe. Contains the following columns:
-- <strong>h</strong> (int): Index of the head entity.
-- <strong>t</strong> (int): Index of the tail entity.
-- <strong>n_triangles</strong> (int): Number of compositions for the (h, t) edge.</p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -129,8 +121,8 @@ triangles by adding the adjacency matrix and its transposed. Default: True.</p><
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="kg_topology_toolbox.utils.check_kg_df_structure.html" class="btn btn-neutral float-left" title="kg_topology_toolbox.utils.check_kg_df_structure" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="kg_topology_toolbox.utils.jaccard_similarity.html" class="btn btn-neutral float-right" title="kg_topology_toolbox.utils.jaccard_similarity" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="kg_topology_toolbox.utils.aggregate_by_relation.html" class="btn btn-neutral float-left" title="kg_topology_toolbox.utils.aggregate_by_relation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="kg_topology_toolbox.utils.composition_count.html" class="btn btn-neutral float-right" title="kg_topology_toolbox.utils.composition_count" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

@@ -1,0 +1,6 @@
+kg\_topology\_toolbox.utils.aggregate\_by\_relation
+===================================================
+
+.. currentmodule:: kg_topology_toolbox.utils
+
+.. autofunction:: aggregate_by_relation

@@ -18,8 +18,11 @@ kg\_topology\_toolbox.utils
    .. autosummary::
       :toctree:
    
+      aggregate_by_relation
+      check_kg_df_structure
       composition_count
       jaccard_similarity
+      node_degrees_and_rels
    
    
 
