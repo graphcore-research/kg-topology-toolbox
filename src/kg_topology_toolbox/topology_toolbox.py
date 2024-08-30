@@ -42,9 +42,9 @@ class KGTopologyToolbox:
             head entity, relation type and tail entity for each edge.
         :param head_column:
             The name of the column with the IDs of head entities. Default: "h".
-        :param head_column:
+        :param relation_column:
             The name of the column with the IDs of relation types. Default: "r".
-        :param head_column:
+        :param tail_column:
             The name of the column with the IDs of tail entities. Default: "t".
 
         """
