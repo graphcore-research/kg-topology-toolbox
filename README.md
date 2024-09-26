@@ -9,7 +9,7 @@ For a walkthrough of the main functionalities, we provide an introductory [Jupyt
 
 ## Usage
 
-Tested on Ubuntu 20.04, Python >=3.8
+Tested on Ubuntu 20.04, Python >=3.9
 
 To install the `kg-topology-toolbox` library, run
 

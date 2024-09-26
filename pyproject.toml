@@ -14,7 +14,7 @@ authors = [
 description = "A Python toolbox for Knowledge Graph topology metrics."
 readme = "README.md"
 license = {text = "MIT License"}
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 dependencies = [
     'numpy >= 1.24.4',
     'pandas >= 2.0.3',
