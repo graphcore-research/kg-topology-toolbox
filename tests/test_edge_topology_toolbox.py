@@ -1,5 +1,6 @@
 # Copyright (c) 2023 Graphcore Ltd. All rights reserved.
 
+from functools import partial
 import numpy as np
 import pandas as pd
 import pytest
@@ -85,3 +86,22 @@ def test_small_graph_metrics(return_metapath_list: bool) -> None:
     assert np.allclose(res["n_undirected_triangles"], [3, 3, 2, 6, 2, 2, 0, 0])
     if return_metapath_list:
         assert res["metapath_list"][2] == ["0-1", "1-1"]
+
+
+def test_filter_relations() -> None:
+    for rels in [[0], [1], [0, 1]]:
+        for method in [
+            kgtt.edge_degree_cardinality_summary,
+            partial(kgtt.edge_pattern_summary, return_metapath_list=True),
+        ]:
+            # compare outputs of standard method call and filtered call
+            res_all = method()
+            res_all = res_all[res_all.r.isin(rels)]
+            res_filtered = method(filter_relations=rels)
+            assert np.all(res_all.index.values == res_filtered.index.values)
+            for c in res_all.columns:
+                if c == "metapath_list":
+                    for a, b in zip(res_all[c].values, res_filtered[c].values):
+                        assert a == b
+                else:
+                    assert np.all(res_all[c].values == res_filtered[c].values)
