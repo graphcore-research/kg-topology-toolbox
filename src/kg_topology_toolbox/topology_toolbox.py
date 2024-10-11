@@ -6,7 +6,7 @@ Topology toolbox main functionalities
 """
 
 from functools import cache
-
+import multiprocessing as mp
 import numpy as np
 import pandas as pd
 from scipy.sparse import coo_array
@@ -271,7 +271,7 @@ class KGTopologyToolbox:
         return df_res
 
     def edge_degree_cardinality_summary(
-        self, aggregate_by_r: bool = False
+        self, filter_relations: list = [], aggregate_by_r: bool = False
     ) -> pd.DataFrame:
         """
         For each edge in the KG, compute the number of edges with the same head
@@ -285,6 +285,9 @@ class KGTopologyToolbox:
         The output dataframe maintains the same indexing and ordering of triples
         as the original Knowledge Graph dataframe.
 
+        :param filter_relations:
+            Compute the output only for the edges with relation in this list
+            of relation IDs.
         :param aggregate_by_r:
             If True, return metrics aggregated by relation type
             (the output DataFrame will be indexed over relation IDs).
@@ -318,6 +321,8 @@ class KGTopologyToolbox:
             ],
             axis=1,
         )
+        if len(filter_relations) > 0:
+            df_res = df_res[df_res.r.isin(filter_relations)]
         # compute number of parallel edges to avoid double-counting them
         # in total degree
         num_parallel = df_res.merge(
@@ -326,7 +331,9 @@ class KGTopologyToolbox:
             how="left",
         )
         df_res["tot_degree"] = (
-            df_res.h_degree + df_res.t_degree - num_parallel.n_parallel
+            df_res.h_degree.values
+            + df_res.t_degree.values
+            - num_parallel.n_parallel.values
         )
         # when restricting to the relation type, there is only one edge
         # (the edge itself) that is double-counted
@@ -344,9 +351,10 @@ class KGTopologyToolbox:
     def edge_pattern_summary(
         self,
         return_metapath_list: bool = False,
-        composition_chunk_size: int = 2**8,
-        composition_workers: int = 32,
+        filter_relations: list = [],
         aggregate_by_r: bool = False,
+        composition_chunk_size: int = 2**8,
+        composition_workers: int = min(32, mp.cpu_count() - 1 or 1),
     ) -> pd.DataFrame:
         """
         Analyse structural properties of each edge in the KG:
@@ -359,14 +367,18 @@ class KGTopologyToolbox:
         :param return_metapath_list:
             If True, return the list of unique metapaths for all
             triangles supported over one edge. WARNING: very expensive for large graphs.
-        :param composition_chunk_size:
-            Size of column chunks of sparse adjacency matrix
-            to compute the triangle count.
-        :param composition_workers:
-            Number of workers to compute the triangle count.
+        :param filter_relations:
+            Compute the output only for the edges with relation in this list
+            of relation IDs.
         :param aggregate_by_r:
             If True, return metrics aggregated by relation type
             (the output DataFrame will be indexed over relation IDs).
+        :param composition_chunk_size:
+            Size of column chunks of sparse adjacency matrix
+            to compute the triangle count. Default: 2**8.
+        :param composition_workers:
+            Number of workers to compute the triangle count. By default, assigned based
+            on number of available threads (max: 32).
 
         :return:
             The results dataframe. Contains the following columns
@@ -407,6 +419,8 @@ class KGTopologyToolbox:
             self.df.reset_index().merge(df_inv)["index"],
             "is_symmetric",
         ] = True
+        if len(filter_relations) > 0:
+            df_res = df_res[df_res.r.isin(filter_relations)]
         # loops are treated separately
         df_res["is_loop"] = df_res.h == df_res.t
         df_res.loc[df_res.h == df_res.t, "is_symmetric"] = False
@@ -631,7 +645,7 @@ class KGTopologyToolbox:
         returned dataframe.
 
         :param min_max_norm:
-            min-max normalization of edge weights. Defaults to False.
+            min-max normalization of edge weights. Default: False.
 
         :return:
             The results dataframe. Contains the following columns:
