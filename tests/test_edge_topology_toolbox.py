@@ -1,6 +1,7 @@
 # Copyright (c) 2023 Graphcore Ltd. All rights reserved.
 
 from functools import partial
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -95,9 +96,9 @@ def test_filter_relations() -> None:
             partial(kgtt.edge_pattern_summary, return_metapath_list=True),
         ]:
             # compare outputs of standard method call and filtered call
-            res_all = method()
+            res_all = method()  # type: ignore
             res_all = res_all[res_all.r.isin(rels)]
-            res_filtered = method(filter_relations=rels)
+            res_filtered = method(filter_relations=rels)  # type: ignore
             assert np.all(res_all.index.values == res_filtered.index.values)
             for c in res_all.columns:
                 if c == "metapath_list":

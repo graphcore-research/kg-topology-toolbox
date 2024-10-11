@@ -5,8 +5,9 @@
 Topology toolbox main functionalities
 """
 
-from functools import cache
 import multiprocessing as mp
+from functools import cache
+
 import numpy as np
 import pandas as pd
 from scipy.sparse import coo_array
@@ -271,7 +272,7 @@ class KGTopologyToolbox:
         return df_res
 
     def edge_degree_cardinality_summary(
-        self, filter_relations: list = [], aggregate_by_r: bool = False
+        self, filter_relations: list[int] = [], aggregate_by_r: bool = False
     ) -> pd.DataFrame:
         """
         For each edge in the KG, compute the number of edges with the same head
@@ -286,8 +287,8 @@ class KGTopologyToolbox:
         as the original Knowledge Graph dataframe.
 
         :param filter_relations:
-            Compute the output only for the edges with relation in this list
-            of relation IDs.
+            If not empty, compute the output only for the edges with relation
+            in this list of relation IDs.
         :param aggregate_by_r:
             If True, return metrics aggregated by relation type
             (the output DataFrame will be indexed over relation IDs).
@@ -331,9 +332,7 @@ class KGTopologyToolbox:
             how="left",
         )
         df_res["tot_degree"] = (
-            df_res.h_degree.values
-            + df_res.t_degree.values
-            - num_parallel.n_parallel.values
+            df_res.h_degree + df_res.t_degree - num_parallel.n_parallel.values
         )
         # when restricting to the relation type, there is only one edge
         # (the edge itself) that is double-counted
@@ -351,7 +350,7 @@ class KGTopologyToolbox:
     def edge_pattern_summary(
         self,
         return_metapath_list: bool = False,
-        filter_relations: list = [],
+        filter_relations: list[int] = [],
         aggregate_by_r: bool = False,
         composition_chunk_size: int = 2**8,
         composition_workers: int = min(32, mp.cpu_count() - 1 or 1),
@@ -366,10 +365,10 @@ class KGTopologyToolbox:
 
         :param return_metapath_list:
             If True, return the list of unique metapaths for all
-            triangles supported over one edge. WARNING: very expensive for large graphs.
+            triangles supported over each edge. WARNING: very expensive for large graphs.
         :param filter_relations:
-            Compute the output only for the edges with relation in this list
-            of relation IDs.
+            If not empty, compute the output only for the edges with relation
+            in this list of relation IDs.
         :param aggregate_by_r:
             If True, return metrics aggregated by relation type
             (the output DataFrame will be indexed over relation IDs).
