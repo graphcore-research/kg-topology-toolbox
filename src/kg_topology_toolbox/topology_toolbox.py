@@ -407,6 +407,8 @@ class KGTopologyToolbox:
               for the directed triangles.
         """
 
+        # discard loops as edges of a triangle
+        df_wo_loops = self.df[self.df.h != self.df.t]
         if len(filter_relations) > 0:
             rel_df = self.df[self.df.r.isin(filter_relations)]
             filter_heads = rel_df.h.unique()
@@ -423,24 +425,24 @@ class KGTopologyToolbox:
                     self.df.h.isin(filter_tails), self.df.t.isin(filter_heads)
                 )
             ]
-            df_triangles = self.df[
+            df_triangles_out = df_wo_loops[df_wo_loops.h.isin(filter_heads)]
+            df_triangles_in = df_wo_loops[df_wo_loops.t.isin(filter_tails)]
+            df_triangles = df_wo_loops[
                 np.logical_or(
-                    self.df.h.isin(filter_heads), self.df.t.isin(filter_tails)
+                    df_wo_loops.h.isin(filter_heads), df_wo_loops.t.isin(filter_tails)
                 )
             ]
-            df_triangles_und = self.df[
+            df_triangles_und = df_wo_loops[
                 np.logical_or(
-                    self.df.h.isin(filter_entities), self.df.t.isin(filter_entities)
+                    df_wo_loops.h.isin(filter_entities),
+                    df_wo_loops.t.isin(filter_entities),
                 )
-            ]
-            # discard loops as edges of a triangle
-            df_triangles = df_triangles[df_triangles.h != df_triangles.t]
-            df_triangles_und = df_triangles_und[
-                df_triangles_und.h != df_triangles_und.t
             ]
         else:
             rel_df = inference_df = inverse_df = self.df
-            df_triangles = df_triangles_und = self.df[self.df.h != self.df.t]
+            df_triangles = df_triangles_und = df_triangles_out = df_triangles_in = (
+                df_wo_loops
+            )
         df_res = df_res = pd.DataFrame(
             {"h": rel_df.h, "r": rel_df.r, "t": rel_df.t, "is_symmetric": False}
         )
@@ -500,16 +502,18 @@ class KGTopologyToolbox:
         # composition & metapaths
         if return_metapath_list:
             # 2-hop paths
-            df_bridges = df_triangles.merge(
-                df_triangles, left_on="t", right_on="h", how="inner"
+            df_bridges = df_triangles_out.merge(
+                df_triangles_in, left_on="t", right_on="h", how="inner"
             )
-            df_triangles = df_triangles.merge(
+            df_res_triangles = df_res[df_res.h != df_res.t].merge(
                 df_bridges, left_on=["h", "t"], right_on=["h_x", "t_y"], how="inner"
             )
-            df_triangles["metapath"] = (
-                df_triangles["r_x"].astype(str) + "-" + df_triangles["r_y"].astype(str)
+            df_res_triangles["metapath"] = (
+                df_res_triangles["r_x"].astype(str)
+                + "-"
+                + df_res_triangles["r_y"].astype(str)
             )
-            grouped_triangles = df_triangles.groupby(
+            grouped_triangles = df_res_triangles.groupby(
                 ["h", "r", "t"], as_index=False
             ).agg(
                 n_triangles=("metapath", "count"), metapath_list=("metapath", "unique")
