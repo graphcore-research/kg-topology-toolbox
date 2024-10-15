@@ -188,22 +188,40 @@ def jaccard_similarity(
 
 
 def _composition_count_worker(
-    adj_csr: csr_array, adj_csc: csc_array, tail_shift: int = 0
+    adj_csr: csr_array, adj_csc: csc_array, adj_mask: csc_array, tail_shift: int = 0
 ) -> pd.DataFrame:
+    n_nodes = adj_csr.shape[1]
+    n_rels = adj_csr.shape[0] // n_nodes
     adj_2hop = adj_csr @ adj_csc
-    adj_composition = (adj_2hop.tocsc() * (adj_csc > 0)).tocoo()
-    df_composition = pd.DataFrame(
-        dict(
-            h=adj_composition.row,
-            t=adj_composition.col + tail_shift,
-            n_triangles=adj_composition.data,
+    adj_composition = (adj_2hop.tocsc() * (adj_mask > 0)).tocoo()
+    col_shift = adj_composition.col + tail_shift
+    if n_rels > 1:
+        df_composition = pd.DataFrame(
+            dict(
+                h=adj_composition.row // n_rels,
+                t=col_shift % n_nodes,
+                r1=adj_composition.row % n_rels,
+                r2=col_shift // n_nodes,
+                n_triangles=adj_composition.data,
+            )
         )
-    )
+    else:
+        df_composition = pd.DataFrame(
+            dict(
+                h=adj_composition.row,
+                t=col_shift,
+                n_triangles=adj_composition.data,
+            )
+        )
     return df_composition
 
 
 def composition_count(
-    df: pd.DataFrame, chunk_size: int, workers: int, directed: bool = True
+    df: pd.DataFrame,
+    chunk_size: int,
+    workers: int,
+    metapaths: bool = False,
+    directed: bool = True,
 ) -> pd.DataFrame:
     """A helper function to compute the composition count of a graph.
 
@@ -227,15 +245,48 @@ def composition_count(
     """
 
     n_nodes = df[["h", "t"]].max().max() + 1
-    adj = coo_array(
-        (np.ones(len(df)), (df.h, df.t)),
-        shape=[n_nodes, n_nodes],
-    ).astype(np.uint16)
-    if not directed:
-        adj = adj + adj.T
-    n_cols = adj.shape[1]
-    adj_csr = adj.tocsr()
-    adj_csc = adj.tocsc()
+    n_rels = df["r"].max() + 1
+    if metapaths:
+        adj_repeated = csc_array(
+            (
+                np.ones(n_rels * n_rels * len(df)),
+                (
+                    (n_rels * df.h.values[:, None] + np.arange(n_rels)).repeat(n_rels),
+                    np.tile(
+                        df.t.values[:, None] + n_nodes * np.arange(n_rels), n_rels
+                    ).flatten(),
+                ),
+            ),
+            shape=[n_nodes * n_rels, n_nodes * n_rels],
+        ).astype(np.uint16)
+        adj_csr = csr_array(
+            (np.ones(len(df)), (df.h * n_rels + df.r, df.t)),
+            shape=[n_nodes * n_rels, n_nodes],
+        ).astype(np.uint16)
+        adj_csc = csc_array(
+            (np.ones(len(df)), (df.h, df.r * n_nodes + df.t)),
+            shape=[n_nodes, n_nodes * n_rels],
+        ).astype(np.uint16)
+        n_cols = adj_csc.shape[1]
+        adj_repeated_slices = {
+            i: adj_repeated[:, i * chunk_size : min((i + 1) * chunk_size, n_cols)]
+            for i in range(int(np.ceil(n_cols / chunk_size)))
+        }
+        if not directed:
+            raise NotImplementedError(
+                "Metapath counting only implemented for directed triangles"
+            )
+    else:
+        adj = coo_array(
+            (np.ones(len(df)), (df.h, df.t)),
+            shape=[n_nodes, n_nodes],
+        ).astype(np.uint16)
+        if not directed:
+            adj = adj + adj.T
+        adj_csr = adj.tocsr()
+        adj_csc = adj.tocsc()
+        n_cols = adj_csc.shape[1]
+
     adj_csc_slices = {
         i: adj_csc[:, i * chunk_size : min((i + 1) * chunk_size, n_cols)]
         for i in range(int(np.ceil(n_cols / chunk_size)))
@@ -246,13 +297,23 @@ def composition_count(
             df_composition_list = pool.starmap(
                 _composition_count_worker,
                 (
-                    (adj_csr, adj_csc_slice, i * chunk_size)
+                    (
+                        adj_csr,
+                        adj_csc_slice,
+                        adj_repeated_slices[i] if metapaths else adj_csc_slice,
+                        i * chunk_size,
+                    )
                     for i, adj_csc_slice in adj_csc_slices.items()
                 ),
             )
     else:
         df_composition_list = [
-            _composition_count_worker(adj_csr, adj_csc_slice, i * chunk_size)
+            _composition_count_worker(
+                adj_csr,
+                adj_csc_slice,
+                adj_repeated_slices[i] if metapaths else adj_csc_slice,
+                i * chunk_size,
+            )
             for i, adj_csc_slice in adj_csc_slices.items()
         ]
 

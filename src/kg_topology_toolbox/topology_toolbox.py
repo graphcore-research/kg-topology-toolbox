@@ -271,6 +271,56 @@ class KGTopologyToolbox:
             ).astype(str)
         return df_res
 
+    def edge_metapath_count(
+        self,
+        filter_relations: list[int] = [],
+        composition_chunk_size: int = 2**8,
+        composition_workers: int = min(32, mp.cpu_count() - 1 or 1),
+    ) -> pd.DataFrame:
+        """
+        For each edge in the KG, compute the number of triangles of different
+        metapaths (i.e., the unique tuples (r1, r2) of relation types
+        of the two additional edges of the triangle).
+
+        :param filter_relations:
+            If not empty, compute the output only for the edges with relation
+            in this list of relation IDs.
+        :param composition_chunk_size:
+            Size of column chunks of sparse adjacency matrix
+            to compute the triangle count. Default: 2**8.
+        :param composition_workers:
+            Number of workers to compute the triangle count. By default, assigned based
+            on number of available threads (max: 32).
+
+        :return:
+            The output dataframe has one row for each (h, t, r1, r2) such that
+            there exists at least one triangle of metapath (r1, r2) over (any) edge
+            connecting h, t.
+            The number of metapath triangles is given in the column **n_triangles**.
+        """
+        # discard loops as edges of a triangle
+        df_wo_loops = self.df[self.df.h != self.df.t]
+        if len(filter_relations) > 0:
+            rel_df = self.df[self.df.r.isin(filter_relations)]
+            filter_heads = rel_df.h.unique()
+            filter_tails = rel_df.t.unique()
+            df_triangles = df_wo_loops[
+                np.logical_or(
+                    df_wo_loops.h.isin(filter_heads), df_wo_loops.t.isin(filter_tails)
+                )
+            ]
+        else:
+            rel_df = self.df
+            df_triangles = df_wo_loops
+
+        return composition_count(
+            df_triangles,
+            chunk_size=composition_chunk_size,
+            workers=composition_workers,
+            metapaths=True,
+            directed=True,
+        )
+
     def edge_degree_cardinality_summary(
         self, filter_relations: list[int] = [], aggregate_by_r: bool = False
     ) -> pd.DataFrame:
@@ -425,8 +475,6 @@ class KGTopologyToolbox:
                     self.df.h.isin(filter_tails), self.df.t.isin(filter_heads)
                 )
             ]
-            df_triangles_out = df_wo_loops[df_wo_loops.h.isin(filter_heads)]
-            df_triangles_in = df_wo_loops[df_wo_loops.t.isin(filter_tails)]
             df_triangles = df_wo_loops[
                 np.logical_or(
                     df_wo_loops.h.isin(filter_heads), df_wo_loops.t.isin(filter_tails)
@@ -440,9 +488,7 @@ class KGTopologyToolbox:
             ]
         else:
             rel_df = inference_df = inverse_df = self.df
-            df_triangles = df_triangles_und = df_triangles_out = df_triangles_in = (
-                df_wo_loops
-            )
+            df_triangles = df_triangles_und = df_wo_loops
         df_res = df_res = pd.DataFrame(
             {"h": rel_df.h, "r": rel_df.r, "t": rel_df.t, "is_symmetric": False}
         )
@@ -501,30 +547,24 @@ class KGTopologyToolbox:
 
         # composition & metapaths
         if return_metapath_list:
-            # 2-hop paths
-            df_bridges = df_triangles_out.merge(
-                df_triangles_in, left_on="t", right_on="h", how="inner"
+            counts = self.edge_metapath_count(
+                filter_relations,
+                composition_chunk_size,
+                composition_workers,
             )
-            df_res_triangles = df_res[df_res.h != df_res.t].merge(
-                df_bridges, left_on=["h", "t"], right_on=["h_x", "t_y"], how="inner"
+            counts["metapath"] = (
+                counts["r1"].astype(str) + "-" + counts["r2"].astype(str)
             )
-            df_res_triangles["metapath"] = (
-                df_res_triangles["r_x"].astype(str)
-                + "-"
-                + df_res_triangles["r_y"].astype(str)
-            )
-            grouped_triangles = df_res_triangles.groupby(
-                ["h", "r", "t"], as_index=False
-            ).agg(
-                n_triangles=("metapath", "count"), metapath_list=("metapath", "unique")
+            grouped_triangles = counts.groupby(["h", "t"], as_index=False).agg(
+                n_triangles=("n_triangles", "sum"), metapath_list=("metapath", list)
             )
             df_res = df_res.merge(
                 grouped_triangles,
-                on=["h", "r", "t"],
+                on=["h", "t"],
                 how="left",
             )
             df_res["metapath_list"] = df_res["metapath_list"].apply(
-                lambda agg: agg.tolist() if isinstance(agg, np.ndarray) else []
+                lambda agg: agg if isinstance(agg, list) else []
             )
             df_res["n_triangles"] = df_res["n_triangles"].fillna(0).astype(int)
         else:
