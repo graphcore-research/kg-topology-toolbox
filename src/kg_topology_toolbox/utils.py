@@ -233,8 +233,11 @@ def composition_count(
         processed together.
     :param workers:
         Number of workers processing chunks concurrently
+    :param metapaths:
+        If True, the number of composition is computed separately for each
+        unique metapath.
     :param directed:
-        Boolean flag. If false, bidirectional edges are considered for
+        If False, bidirectional edges are considered for
         triangles by adding the adjacency matrix and its transposed. Default: True.
 
     :return:
