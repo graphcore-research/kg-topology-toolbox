@@ -19,10 +19,7 @@ kgtt = KGTopologyToolbox(df, head_column="H", relation_column="R", tail_column="
 
 
 @pytest.mark.parametrize("return_relation_list", [True, False])
-def test_small_graph_metrics(return_relation_list: bool) -> None:
-    # Define a small graph with all the features tested by
-    # the node_topology_toolbox
-
+def test_node_degree_summary(return_relation_list: bool) -> None:
     # entity degrees statistics
     res = kgtt.node_degree_summary(return_relation_list=return_relation_list)
     assert np.allclose(res["h_degree"], [3, 1, 3])

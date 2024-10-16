@@ -5,6 +5,7 @@
 Topology toolbox main functionalities
 """
 
+import multiprocessing as mp
 from functools import cache
 
 import numpy as np
@@ -270,8 +271,61 @@ class KGTopologyToolbox:
             ).astype(str)
         return df_res
 
+    def edge_metapath_count(
+        self,
+        filter_relations: list[int] = [],
+        composition_chunk_size: int = 2**8,
+        composition_workers: int = min(32, mp.cpu_count() - 1 or 1),
+    ) -> pd.DataFrame:
+        """
+        For each edge in the KG, compute the number of triangles supported on it
+        distinguishing between different metapaths (i.e., the unique tuples (r1, r2)
+        of relation types of the two additional edges of the triangle).
+
+        :param filter_relations:
+            If not empty, compute the output only for the edges with relation
+            in this list of relation IDs.
+        :param composition_chunk_size:
+            Size of column chunks of sparse adjacency matrix
+            to compute the triangle count. Default: 2**8.
+        :param composition_workers:
+            Number of workers to compute the triangle count. By default, assigned based
+            on number of available threads (max: 32).
+
+        :return:
+            The output dataframe has one row for each (h, r, t, r1, r2) such that
+            there exists at least one triangle of metapath (r1, r2) over (h, r, t).
+            The number of metapath triangles is given in the column **n_triangles**.
+            The column **index** provides the index of the edge (h, r, t) in the
+            original Knowledge Graph dataframe.
+        """
+        # discard loops as edges of a triangle
+        df_wo_loops = self.df[self.df.h != self.df.t]
+        if len(filter_relations) > 0:
+            rel_df = self.df[self.df.r.isin(filter_relations)]
+            filter_heads = rel_df.h.unique()
+            filter_tails = rel_df.t.unique()
+            df_triangles = df_wo_loops[
+                np.logical_or(
+                    df_wo_loops.h.isin(filter_heads), df_wo_loops.t.isin(filter_tails)
+                )
+            ]
+        else:
+            rel_df = self.df
+            df_triangles = df_wo_loops
+
+        counts = composition_count(
+            df_triangles,
+            chunk_size=composition_chunk_size,
+            workers=composition_workers,
+            metapaths=True,
+            directed=True,
+        )
+
+        return rel_df.reset_index().merge(counts, on=["h", "t"], how="inner")
+
     def edge_degree_cardinality_summary(
-        self, aggregate_by_r: bool = False
+        self, filter_relations: list[int] = [], aggregate_by_r: bool = False
     ) -> pd.DataFrame:
         """
         For each edge in the KG, compute the number of edges with the same head
@@ -285,6 +339,9 @@ class KGTopologyToolbox:
         The output dataframe maintains the same indexing and ordering of triples
         as the original Knowledge Graph dataframe.
 
+        :param filter_relations:
+            If not empty, compute the output only for the edges with relation
+            in this list of relation IDs.
         :param aggregate_by_r:
             If True, return metrics aggregated by relation type
             (the output DataFrame will be indexed over relation IDs).
@@ -318,6 +375,8 @@ class KGTopologyToolbox:
             ],
             axis=1,
         )
+        if len(filter_relations) > 0:
+            df_res = df_res[df_res.r.isin(filter_relations)]
         # compute number of parallel edges to avoid double-counting them
         # in total degree
         num_parallel = df_res.merge(
@@ -326,7 +385,7 @@ class KGTopologyToolbox:
             how="left",
         )
         df_res["tot_degree"] = (
-            df_res.h_degree + df_res.t_degree - num_parallel.n_parallel
+            df_res.h_degree + df_res.t_degree - num_parallel.n_parallel.values
         )
         # when restricting to the relation type, there is only one edge
         # (the edge itself) that is double-counted
@@ -344,9 +403,10 @@ class KGTopologyToolbox:
     def edge_pattern_summary(
         self,
         return_metapath_list: bool = False,
-        composition_chunk_size: int = 2**8,
-        composition_workers: int = 32,
+        filter_relations: list[int] = [],
         aggregate_by_r: bool = False,
+        composition_chunk_size: int = 2**8,
+        composition_workers: int = min(32, mp.cpu_count() - 1 or 1),
     ) -> pd.DataFrame:
         """
         Analyse structural properties of each edge in the KG:
@@ -358,15 +418,19 @@ class KGTopologyToolbox:
 
         :param return_metapath_list:
             If True, return the list of unique metapaths for all
-            triangles supported over one edge. WARNING: very expensive for large graphs.
-        :param composition_chunk_size:
-            Size of column chunks of sparse adjacency matrix
-            to compute the triangle count.
-        :param composition_workers:
-            Number of workers to compute the triangle count.
+            triangles supported over each edge. WARNING: very expensive for large graphs.
+        :param filter_relations:
+            If not empty, compute the output only for the edges with relation
+            in this list of relation IDs.
         :param aggregate_by_r:
             If True, return metrics aggregated by relation type
             (the output DataFrame will be indexed over relation IDs).
+        :param composition_chunk_size:
+            Size of column chunks of sparse adjacency matrix
+            to compute the triangle count. Default: 2**8.
+        :param composition_workers:
+            Number of workers to compute the triangle count. By default, assigned based
+            on number of available threads (max: 32).
 
         :return:
             The results dataframe. Contains the following columns
@@ -395,29 +459,62 @@ class KGTopologyToolbox:
             - **metapath_list** (list): The list of unique metapaths "r1-r2"
               for the directed triangles.
         """
+
+        # discard loops as edges of a triangle
+        df_wo_loops = self.df[self.df.h != self.df.t]
+        if len(filter_relations) > 0:
+            rel_df = self.df[self.df.r.isin(filter_relations)]
+            filter_heads = rel_df.h.unique()
+            filter_tails = rel_df.t.unique()
+            filter_entities = np.union1d(filter_heads, filter_tails)
+
+            inference_df = self.df[
+                np.logical_and(
+                    self.df.h.isin(filter_heads), self.df.t.isin(filter_tails)
+                )
+            ]
+            inverse_df = self.df[
+                np.logical_and(
+                    self.df.h.isin(filter_tails), self.df.t.isin(filter_heads)
+                )
+            ]
+            df_triangles = df_wo_loops[
+                np.logical_or(
+                    df_wo_loops.h.isin(filter_heads), df_wo_loops.t.isin(filter_tails)
+                )
+            ]
+            df_triangles_und = df_wo_loops[
+                np.logical_or(
+                    df_wo_loops.h.isin(filter_entities),
+                    df_wo_loops.t.isin(filter_entities),
+                )
+            ]
+        else:
+            rel_df = inference_df = inverse_df = self.df
+            df_triangles = df_triangles_und = df_wo_loops
+        df_res = df_res = pd.DataFrame(
+            {"h": rel_df.h, "r": rel_df.r, "t": rel_df.t, "is_symmetric": False}
+        )
         # symmetry-asymmetry
         # edges with h/t switched
-        df_inv = self.df.reindex(columns=["t", "r", "h"]).rename(
+        df_inv = inverse_df.reindex(columns=["t", "r", "h"]).rename(
             columns={"t": "h", "r": "r", "h": "t"}
         )
-        df_res = pd.DataFrame(
-            {"h": self.df.h, "r": self.df.r, "t": self.df.t, "is_symmetric": False}
-        )
         df_res.loc[
-            self.df.reset_index().merge(df_inv)["index"],
+            df_res.reset_index().merge(df_inv)["index"],
             "is_symmetric",
         ] = True
         # loops are treated separately
         df_res["is_loop"] = df_res.h == df_res.t
         df_res.loc[df_res.h == df_res.t, "is_symmetric"] = False
 
+        df_res = df_res.reset_index()
+
         # inverse
         unique_inv_r_by_ht = df_inv.groupby(["h", "t"], as_index=False).agg(
             inverse_edge_types=("r", list),
         )
-        df_res = df_res.merge(
-            unique_inv_r_by_ht, left_on=["h", "t"], right_on=["h", "t"], how="left"
-        )
+        df_res = df_res.merge(unique_inv_r_by_ht, on=["h", "t"], how="left")
         df_res["inverse_edge_types"] = df_res["inverse_edge_types"].apply(
             lambda agg: agg if isinstance(agg, list) else []
         )
@@ -432,50 +529,52 @@ class KGTopologyToolbox:
         df_res["has_inverse"] = df_res["n_inverse_relations"] > 0
 
         # inference
-        edges_between_ht = unique_inv_r_by_ht.reindex(
-            columns=["t", "h", "inverse_edge_types"]
-        ).rename(
-            columns={"t": "h", "h": "t", "inverse_edge_types": "inference_edge_types"}
-        )
-        df_res = df_res.merge(
-            edges_between_ht, left_on=["h", "t"], right_on=["h", "t"], how="left"
-        )
+        if len(filter_relations) > 0:
+            edges_between_ht = inference_df.groupby(["h", "t"], as_index=False).agg(
+                inference_edge_types=("r", list),
+            )
+        else:
+            edges_between_ht = unique_inv_r_by_ht.reindex(
+                columns=["t", "h", "inverse_edge_types"]
+            ).rename(
+                columns={
+                    "t": "h",
+                    "h": "t",
+                    "inverse_edge_types": "inference_edge_types",
+                }
+            )
+        df_res = df_res.merge(edges_between_ht, on=["h", "t"], how="left")
         # inference_edge_types always contains the edge itself, which we need to drop
         df_res["n_inference_relations"] = df_res.inference_edge_types.str.len() - 1
         df_res["has_inference"] = df_res["n_inference_relations"] > 0
 
         # composition & metapaths
-        # discard loops as edges of a triangle
-        df_wo_loops = self.df[self.df.h != self.df.t]
         if return_metapath_list:
-            # 2-hop paths
-            df_bridges = df_wo_loops.merge(
-                df_wo_loops, left_on="t", right_on="h", how="inner"
+            counts = composition_count(
+                df_triangles,
+                chunk_size=composition_chunk_size,
+                workers=composition_workers,
+                metapaths=True,
+                directed=True,
             )
-            df_triangles = df_wo_loops.merge(
-                df_bridges, left_on=["h", "t"], right_on=["h_x", "t_y"], how="inner"
+            counts["metapath"] = (
+                counts["r1"].astype(str) + "-" + counts["r2"].astype(str)
             )
-            df_triangles["metapath"] = (
-                df_triangles["r_x"].astype(str) + "-" + df_triangles["r_y"].astype(str)
-            )
-            grouped_triangles = df_triangles.groupby(
-                ["h", "r", "t"], as_index=False
-            ).agg(
-                n_triangles=("metapath", "count"), metapath_list=("metapath", "unique")
+            grouped_triangles = counts.groupby(["h", "t"], as_index=False).agg(
+                n_triangles=("n_triangles", "sum"), metapath_list=("metapath", list)
             )
             df_res = df_res.merge(
                 grouped_triangles,
-                left_on=["h", "r", "t"],
-                right_on=["h", "r", "t"],
+                on=["h", "t"],
                 how="left",
             )
             df_res["metapath_list"] = df_res["metapath_list"].apply(
-                lambda agg: agg.tolist() if isinstance(agg, np.ndarray) else []
+                lambda agg: agg if isinstance(agg, list) else []
             )
             df_res["n_triangles"] = df_res["n_triangles"].fillna(0).astype(int)
         else:
             counts = composition_count(
-                df_wo_loops,
+                df_triangles,
                 chunk_size=composition_chunk_size,
                 workers=composition_workers,
                 directed=True,
@@ -490,7 +589,7 @@ class KGTopologyToolbox:
         df_res["has_composition"] = df_res["n_triangles"] > 0
 
         counts = composition_count(
-            df_wo_loops,
+            df_triangles_und,
             chunk_size=composition_chunk_size,
             workers=composition_workers,
             directed=False,
@@ -505,7 +604,7 @@ class KGTopologyToolbox:
         )
         df_res["has_undirected_composition"] = df_res["n_undirected_triangles"] > 0
 
-        df_res = df_res[
+        df_res = df_res.set_index("index")[
             [
                 "h",
                 "r",
@@ -525,6 +624,7 @@ class KGTopologyToolbox:
             ]
             + (["metapath_list"] if return_metapath_list else [])
         ]
+        df_res.index.name = None
 
         return aggregate_by_relation(df_res) if aggregate_by_r else df_res
 
@@ -631,7 +731,7 @@ class KGTopologyToolbox:
         returned dataframe.
 
         :param min_max_norm:
-            min-max normalization of edge weights. Defaults to False.
+            min-max normalization of edge weights. Default: False.
 
         :return:
             The results dataframe. Contains the following columns:
