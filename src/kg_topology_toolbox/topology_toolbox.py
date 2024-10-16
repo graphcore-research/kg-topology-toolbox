@@ -547,10 +547,12 @@ class KGTopologyToolbox:
 
         # composition & metapaths
         if return_metapath_list:
-            counts = self.edge_metapath_count(
-                filter_relations,
-                composition_chunk_size,
-                composition_workers,
+            counts = composition_count(
+                df_triangles,
+                chunk_size=composition_chunk_size,
+                workers=composition_workers,
+                metapaths=True,
+                directed=True,
             )
             counts["metapath"] = (
                 counts["r1"].astype(str) + "-" + counts["r2"].astype(str)
