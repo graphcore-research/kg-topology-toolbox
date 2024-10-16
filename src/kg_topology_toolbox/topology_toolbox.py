@@ -278,9 +278,9 @@ class KGTopologyToolbox:
         composition_workers: int = min(32, mp.cpu_count() - 1 or 1),
     ) -> pd.DataFrame:
         """
-        For each edge in the KG, compute the number of triangles of different
-        metapaths (i.e., the unique tuples (r1, r2) of relation types
-        of the two additional edges of the triangle).
+        For each edge in the KG, compute the number of triangles supported on it
+        distinguishing between different metapaths (i.e., the unique tuples (r1, r2)
+        of relation types of the two additional edges of the triangle).
 
         :param filter_relations:
             If not empty, compute the output only for the edges with relation
@@ -293,10 +293,11 @@ class KGTopologyToolbox:
             on number of available threads (max: 32).
 
         :return:
-            The output dataframe has one row for each (h, t, r1, r2) such that
-            there exists at least one triangle of metapath (r1, r2) over (any) edge
-            connecting h, t.
+            The output dataframe has one row for each (h, r, t, r1, r2) such that
+            there exists at least one triangle of metapath (r1, r2) over (h, r, t).
             The number of metapath triangles is given in the column **n_triangles**.
+            The column **index** provides the index of the edge (h, r, t) in the
+            original Knowledge Graph dataframe.
         """
         # discard loops as edges of a triangle
         df_wo_loops = self.df[self.df.h != self.df.t]
@@ -313,13 +314,15 @@ class KGTopologyToolbox:
             rel_df = self.df
             df_triangles = df_wo_loops
 
-        return composition_count(
+        counts = composition_count(
             df_triangles,
             chunk_size=composition_chunk_size,
             workers=composition_workers,
             metapaths=True,
             directed=True,
         )
+
+        return rel_df.reset_index().merge(counts, on=["h", "t"], how="inner")
 
     def edge_degree_cardinality_summary(
         self, filter_relations: list[int] = [], aggregate_by_r: bool = False

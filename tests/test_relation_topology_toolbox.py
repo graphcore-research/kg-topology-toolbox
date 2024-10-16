@@ -20,10 +20,7 @@ df = pd.DataFrame(
 kgtt = KGTopologyToolbox(df, head_column="H", relation_column="R", tail_column="T")
 
 
-def test_small_graph_metrics() -> None:
-    # Define a small graph on five nodes with all the features tested by
-    # the relation_topology_toolbox
-
+def test_aggregate_by_r() -> None:
     dcs = kgtt.edge_degree_cardinality_summary(aggregate_by_r=True)
     eps = kgtt.edge_pattern_summary(return_metapath_list=True, aggregate_by_r=True)
 

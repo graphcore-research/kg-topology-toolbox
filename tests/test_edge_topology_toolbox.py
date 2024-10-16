@@ -22,12 +22,19 @@ kgtt = KGTopologyToolbox(
 )
 
 
-@pytest.mark.parametrize("return_metapath_list", [True, False])
-def test_small_graph_metrics(return_metapath_list: bool) -> None:
-    # Define a small graph with all the features tested by
-    # the edge_topology_toolbox
+def test_edge_metapath_count() -> None:
+    res = kgtt.edge_metapath_count()
+    assert np.allclose(res["index"], [2, 2])
+    assert np.allclose(res["h"], [0, 0])
+    assert np.allclose(res["r"], [0, 0])
+    assert np.allclose(res["t"], [2, 2])
+    assert np.allclose(res["r1"], [0, 1])
+    assert np.allclose(res["r2"], [1, 1])
+    assert np.allclose(res["n_triangles"], [1, 1])
 
-    # entity degrees statistics
+
+def test_edge_degree_cardinality_summary() -> None:
+    # edge degrees statistics
     res = kgtt.edge_degree_cardinality_summary()
     assert np.allclose(res["h_unique_rel"], [2, 2, 2, 1, 2, 2, 1, 2])
     assert np.allclose(res["h_degree"], [3, 3, 3, 2, 3, 3, 2, 3])
@@ -60,6 +67,9 @@ def test_small_graph_metrics(return_metapath_list: bool) -> None:
         "M:M",
     ]
 
+
+@pytest.mark.parametrize("return_metapath_list", [True, False])
+def test_edge_pattern_summary(return_metapath_list: bool) -> None:
     # relation pattern symmetry
     res = kgtt.edge_pattern_summary(return_metapath_list=return_metapath_list)
     assert np.allclose(
@@ -92,6 +102,7 @@ def test_small_graph_metrics(return_metapath_list: bool) -> None:
 def test_filter_relations() -> None:
     for rels in [[0], [1], [0, 1]]:
         for method in [
+            kgtt.edge_metapath_count,
             kgtt.edge_degree_cardinality_summary,
             partial(kgtt.edge_pattern_summary, return_metapath_list=True),
         ]:
