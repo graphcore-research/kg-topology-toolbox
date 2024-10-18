@@ -1,5 +1,7 @@
 # Copyright (c) 2023 Graphcore Ltd. All rights reserved.
 
+from functools import partial
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -20,12 +22,20 @@ kgtt = KGTopologyToolbox(
 )
 
 
-@pytest.mark.parametrize("return_metapath_list", [True, False])
-def test_small_graph_metrics(return_metapath_list: bool) -> None:
-    # Define a small graph with all the features tested by
-    # the edge_topology_toolbox
+def test_edge_metapath_count() -> None:
+    res = kgtt.edge_metapath_count(composition_chunk_size=3)
+    assert np.allclose(res["index"], [2, 2])
+    assert np.allclose(res["h"], [0, 0])
+    assert np.allclose(res["r"], [0, 0])
+    assert np.allclose(res["t"], [2, 2])
+    assert set(zip(res["r1"].values.tolist(), res["r2"].values.tolist())) == set(
+        [(0, 1), (1, 1)]
+    )
+    assert np.allclose(res["n_triangles"], [1, 1])
 
-    # entity degrees statistics
+
+def test_edge_degree_cardinality_summary() -> None:
+    # edge degrees statistics
     res = kgtt.edge_degree_cardinality_summary()
     assert np.allclose(res["h_unique_rel"], [2, 2, 2, 1, 2, 2, 1, 2])
     assert np.allclose(res["h_degree"], [3, 3, 3, 2, 3, 3, 2, 3])
@@ -58,8 +68,13 @@ def test_small_graph_metrics(return_metapath_list: bool) -> None:
         "M:M",
     ]
 
+
+@pytest.mark.parametrize("return_metapath_list", [True, False])
+def test_edge_pattern_summary(return_metapath_list: bool) -> None:
     # relation pattern symmetry
-    res = kgtt.edge_pattern_summary(return_metapath_list=return_metapath_list)
+    res = kgtt.edge_pattern_summary(
+        return_metapath_list=return_metapath_list, composition_chunk_size=3
+    )
     assert np.allclose(
         res["is_loop"], [False, False, False, False, False, False, True, True]
     )
@@ -84,4 +99,24 @@ def test_small_graph_metrics(return_metapath_list: bool) -> None:
     assert np.allclose(res["n_triangles"], [0, 0, 2, 0, 0, 0, 0, 0])
     assert np.allclose(res["n_undirected_triangles"], [3, 3, 2, 6, 2, 2, 0, 0])
     if return_metapath_list:
-        assert res["metapath_list"][2] == ["0-1", "1-1"]
+        assert set(res["metapath_list"][2]) == set(["0-1", "1-1"])
+
+
+def test_filter_relations() -> None:
+    for rels in [[0], [1], [0, 1]]:
+        for method in [
+            kgtt.edge_metapath_count,
+            kgtt.edge_degree_cardinality_summary,
+            partial(kgtt.edge_pattern_summary, return_metapath_list=True),
+        ]:
+            # compare outputs of standard method call and filtered call
+            res_all = method()  # type: ignore
+            res_all = res_all[res_all.r.isin(rels)]
+            res_filtered = method(filter_relations=rels)  # type: ignore
+            assert np.all(res_all.index.values == res_filtered.index.values)
+            for c in res_all.columns:
+                if c == "metapath_list":
+                    for a, b in zip(res_all[c].values, res_filtered[c].values):
+                        assert a == b
+                else:
+                    assert np.all(res_all[c].values == res_filtered[c].values)
