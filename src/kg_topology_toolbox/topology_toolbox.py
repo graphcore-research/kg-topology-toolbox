@@ -258,8 +258,6 @@ class KGTopologyToolbox:
         # check if the values in the pair (h_degree, t_degree) are =1 or >1
         # to determine the edge cardinality
         for suffix in ["", "_same_rel"]:
-            # check if the values in the pair (h_degree, t_degree) are =1 or >1
-            # to determine the edge cardinality
             edge_type = 2 * (head_degree["h_degree" + suffix] == 1) + (
                 tail_degree["t_degree" + suffix] == 1
             )
@@ -279,15 +277,16 @@ class KGTopologyToolbox:
     ) -> pd.DataFrame:
         """
         For each edge in the KG, compute the number of triangles supported on it
-        distinguishing between different metapaths (i.e., the unique tuples (r1, r2)
-        of relation types of the two additional edges of the triangle).
+        distinguishing between different metapaths (i.e., the unique ordered tuples
+        (r1, r2) of relation types of the two additional edges of the triangle).
 
         :param filter_relations:
             If not empty, compute the output only for the edges with relation
             in this list of relation IDs.
         :param composition_chunk_size:
             Size of column chunks of sparse adjacency matrix
-            to compute the triangle count. Default: 2**8.
+            to compute the triangle count. Reduce the parameter if running OOM.
+            Default: 2**8.
         :param composition_workers:
             Number of workers to compute the triangle count. By default, assigned based
             on number of available threads (max: 32).
@@ -303,8 +302,11 @@ class KGTopologyToolbox:
         df_wo_loops = self.df[self.df.h != self.df.t]
         if len(filter_relations) > 0:
             rel_df = self.df[self.df.r.isin(filter_relations)]
+            # unique heads and tails used by filtered edges
             filter_heads = rel_df.h.unique()
             filter_tails = rel_df.t.unique()
+            # the only relevant edges for triangles are the ones with head in the
+            # set of filtered heads, or tail in the set of filtered tails
             df_triangles = df_wo_loops[
                 np.logical_or(
                     df_wo_loops.h.isin(filter_heads), df_wo_loops.t.isin(filter_tails)
@@ -387,7 +389,7 @@ class KGTopologyToolbox:
         df_res["tot_degree"] = (
             df_res.h_degree + df_res.t_degree - num_parallel.n_parallel.values
         )
-        # when restricting to the relation type, there is only one edge
+        # when restricting to the same relation type, there is only one edge
         # (the edge itself) that is double-counted
         df_res["tot_degree_same_rel"] = (
             df_res.h_degree_same_rel + df_res.t_degree_same_rel - 1
@@ -427,7 +429,8 @@ class KGTopologyToolbox:
             (the output DataFrame will be indexed over relation IDs).
         :param composition_chunk_size:
             Size of column chunks of sparse adjacency matrix
-            to compute the triangle count. Default: 2**8.
+            to compute the triangle count. Reduce the parameter if running OOM.
+            Default: 2**8.
         :param composition_workers:
             Number of workers to compute the triangle count. By default, assigned based
             on number of available threads (max: 32).
@@ -464,10 +467,11 @@ class KGTopologyToolbox:
         df_wo_loops = self.df[self.df.h != self.df.t]
         if len(filter_relations) > 0:
             rel_df = self.df[self.df.r.isin(filter_relations)]
+            # unique heads and tails used by filtered edges
             filter_heads = rel_df.h.unique()
             filter_tails = rel_df.t.unique()
             filter_entities = np.union1d(filter_heads, filter_tails)
-
+            # restrict relevant edges to count inference/inverse patterns
             inference_df = self.df[
                 np.logical_and(
                     self.df.h.isin(filter_heads), self.df.t.isin(filter_tails)
@@ -478,11 +482,15 @@ class KGTopologyToolbox:
                     self.df.h.isin(filter_tails), self.df.t.isin(filter_heads)
                 )
             ]
+            # the only relevant edges for triangles are the ones with head in the
+            # set of filtered heads, or tail in the set of filtered tails
             df_triangles = df_wo_loops[
                 np.logical_or(
                     df_wo_loops.h.isin(filter_heads), df_wo_loops.t.isin(filter_tails)
                 )
             ]
+            # for undirected triangles, heads and tails can be any of the
+            # filtered entities
             df_triangles_und = df_wo_loops[
                 np.logical_or(
                     df_wo_loops.h.isin(filter_entities),
@@ -557,9 +565,12 @@ class KGTopologyToolbox:
                 metapaths=True,
                 directed=True,
             )
+            # turn (r1, r2) into "r1-r2" string for metapaths
             counts["metapath"] = (
                 counts["r1"].astype(str) + "-" + counts["r2"].astype(str)
             )
+            # count triangles (summing over all metapaths between two nodes)
+            # and list unique metapaths for each head and tail node pair
             grouped_triangles = counts.groupby(["h", "t"], as_index=False).agg(
                 n_triangles=("n_triangles", "sum"), metapath_list=("metapath", list)
             )
@@ -568,6 +579,7 @@ class KGTopologyToolbox:
                 on=["h", "t"],
                 how="left",
             )
+            # if no triangles are present over an edge, set metapath list to []
             df_res["metapath_list"] = df_res["metapath_list"].apply(
                 lambda agg: agg if isinstance(agg, list) else []
             )
@@ -588,6 +600,7 @@ class KGTopologyToolbox:
 
         df_res["has_composition"] = df_res["n_triangles"] > 0
 
+        # undirected composition
         counts = composition_count(
             df_triangles_und,
             chunk_size=composition_chunk_size,
@@ -658,6 +671,7 @@ class KGTopologyToolbox:
             - **jaccard_both** (float): Jaccard similarity between the full entity set
               of r1 and r2.
         """
+        # set of unique heads/tails/any for each relation
         ent_unique = self.df.groupby("r", as_index=False).agg(
             num_triples=("r", "count"), head=("h", "unique"), tail=("t", "unique")
         )
@@ -674,6 +688,7 @@ class KGTopologyToolbox:
             suffixes=["_r1", "_r2"],
             how="cross",
         )
+        # order doesn't matter
         df_res = df_res[df_res.r1 < df_res.r2]
 
         df_res["num_triples_both"] = df_res["num_triples_r1"] + df_res["num_triples_r2"]
@@ -748,15 +763,18 @@ class KGTopologyToolbox:
         # normalize by global t frequency
         rt_freqs["h"] = rt_freqs["h"] / rt_freqs.groupby("t")["h"].transform("sum")
 
+        # sparse matrix of of (h,r) pair frequency
         E_h = coo_array(
             (hr_freqs.t, (hr_freqs.h, hr_freqs.r)),
             shape=[self.n_entity, self.n_rel],
         )
+        # sparse matrix of of (t,r) pair frequency
         E_t = coo_array(
             (rt_freqs.h, (rt_freqs.t, rt_freqs.r)),
             shape=[self.n_entity, self.n_rel],
         )
 
+        # adjacency matrix of relation graph
         A = (E_h.T @ E_h).toarray() + (E_t.T @ E_t).toarray()
         A[np.diag_indices_from(A)] = 0
 

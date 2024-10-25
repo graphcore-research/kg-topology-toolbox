@@ -133,6 +133,7 @@ def aggregate_by_relation(edge_topology_df: pd.DataFrame) -> pd.DataFrame:
         elif col_dtype == object:
             if isinstance(edge_topology_df[col].iloc[0], str):
                 for label in np.unique(edge_topology_df[col]):
+                    # fraction of rows for each label
                     df_res[f"{col}_{label}_frac"] = (
                         edge_topology_df[edge_topology_df[col] == label]
                         .groupby("r")[col]
@@ -188,15 +189,34 @@ def jaccard_similarity(
 
 
 def _composition_count_worker(
-    adj_csr: csr_array, adj_csc: csc_array, adj_mask: csc_array, tail_shift: int = 0
+    adj_csr: csr_array,
+    adj_csc_slice: csc_array,
+    adj_mask_slice: csc_array,
+    slice_tail_shift: int,
 ) -> pd.DataFrame:
+    """
+    Masked sparse matmul to count triangles over graph edges.
+
+    :param adj_csr: shape (n_nodes * n_rels, n_nodes) if distinguishing between
+        metapaths, (n_nodes, n_nodes) otherwise
+    :param adj_csc_slice: shape (n_nodes, chunk_size)
+    :param adj_mask_slice: shape (n_nodes, chunk_size)
+    :param slice_tail_shift: column shift of the vertical slice
+
+    :return:
+        Pandas dataframe of triangle counts.
+    """
     n_nodes = adj_csr.shape[1]
     n_rels = adj_csr.shape[0] // n_nodes
-    adj_2hop = adj_csr @ adj_csc
-    adj_composition = (adj_2hop.tocsc() * adj_mask).tocoo()
+    # 2-hop count
+    adj_2hop = adj_csr @ adj_csc_slice
+    # mask out (h,t) pairs not connected by edges
+    adj_composition = (adj_2hop.tocsc() * adj_mask_slice).tocoo()
     if n_rels > 1:
+        # distinguish between metapaths
+        # unflatten results
         h, r1 = np.divmod(adj_composition.row, n_rels)
-        r2, t = np.divmod(adj_composition.col + tail_shift, n_nodes)
+        r2, t = np.divmod(adj_composition.col + slice_tail_shift, n_nodes)
         df_composition = pd.DataFrame(
             dict(
                 h=h,
@@ -207,10 +227,11 @@ def _composition_count_worker(
             )
         )
     else:
+        # don't distinguish between metapaths
         df_composition = pd.DataFrame(
             dict(
                 h=adj_composition.row,
-                t=adj_composition.col + tail_shift,
+                t=adj_composition.col + slice_tail_shift,
                 n_triangles=adj_composition.data,
             )
         )
@@ -224,7 +245,7 @@ def composition_count(
     metapaths: bool = False,
     directed: bool = True,
 ) -> pd.DataFrame:
-    """A helper function to compute the composition count of a graph.
+    """Compute composition count of a graph.
 
     :param df:
         A graph represented as a pd.DataFrame. Must contain the columns
@@ -235,30 +256,35 @@ def composition_count(
     :param workers:
         Number of workers processing chunks concurrently
     :param metapaths:
-        If True, the number of composition is computed separately for each
+        If True, the number of compositions is computed separately for each
         unique metapath.
     :param directed:
         If False, bidirectional edges are considered for
-        triangles by adding the adjacency matrix and its transposed. Default: True.
+        triangles, by adding the adjacency matrix and its transposed. Default: True.
 
     :return:
         The results dataframe. Contains the following columns:
         - **h** (int): Index of the head entity.
         - **t** (int): Index of the tail entity.
-        - **n_triangles** (int): Number of compositions for the (h, t) edge.
+        - **n_triangles** (int): Number of compositions for any edge between (h, t).
     """
 
     n_nodes = df[["h", "t"]].max().max() + 1
     n_rels = df["r"].max() + 1
+    # sparse graph adjacency matrix, counting number of edges between each pair of nodes
     adj = coo_array(
         (np.ones(len(df)), (df.h, df.t)),
         shape=[n_nodes, n_nodes],
     ).astype(np.uint16)
+
     if metapaths:
         if not directed:
             raise NotImplementedError(
                 "Metapath counting only implemented for directed triangles"
             )
+        # relation-aware adjacency matrix, flattened to 2D for sparse implementation
+        # (adj_csr @ adj_csc).reshape(n_nodes, n_rels, n_rels, n_nodes)[h,r1,r2,t] counts
+        # the number of 2-hop paths of metapath (r1, r2) between h and t
         adj_csr = csr_array(
             (np.ones(len(df)), (df.h * n_rels + df.r, df.t)),
             shape=[n_nodes * n_rels, n_nodes],
@@ -267,7 +293,8 @@ def composition_count(
             (np.ones(len(df)), (df.h, df.r * n_nodes + df.t)),
             shape=[n_nodes, n_nodes * n_rels],
         ).astype(np.uint16)
-        # boolean mask to filter results with only the edges in the KG
+        # boolean mask to filter results, keep only triangles over (h,t) pairs connected
+        # by at least one edge (equivalent to flattened adj[:,None,None,:] > 0)
         msk = csc_array(
             (
                 [True] * (len(adj.data) * n_rels),
@@ -280,18 +307,22 @@ def composition_count(
         )
     else:
         if not directed:
+            # add inverse edges for undirected compositions
             adj = adj + adj.T
+        # (adj_csr @ adj_csc)[h,t] counts the number of 2-hop paths between h and t;
+        # the boolean mask here is simply adj_csc > 0
         adj_csr = adj.tocsr()
         adj_csc = adj.tocsc()
 
+    # to compute (adj_csr @ adj_csc) * msk, serialize over vertical slices of adj_csc
     n_cols = adj_csc.shape[1]
     adj_csc_slices = {
         i: adj_csc[:, i * chunk_size : min((i + 1) * chunk_size, n_cols)]
         for i in range(int(np.ceil(n_cols / chunk_size)))
     }
-
     if len(adj_csc_slices) > 1 and workers > 1:
         with Pool(workers) as pool:
+            # workers are assigned different adj_csc slices
             df_composition_list = pool.starmap(
                 _composition_count_worker,
                 (
@@ -299,7 +330,7 @@ def composition_count(
                         adj_csr,
                         adj_csc_slice,
                         (
-                            # relevant slice of mask (with wraparound)
+                            # relevant slice of boolean mask (with wraparound)
                             msk[
                                 :,
                                 (i * chunk_size + np.arange(adj_csc_slice.shape[1]))
@@ -319,7 +350,7 @@ def composition_count(
                 adj_csr,
                 adj_csc_slice,
                 (
-                    # relevant slice of mask (with wraparound)
+                    # relevant slice of boolean mask (with wraparound)
                     msk[
                         :,
                         (i * chunk_size + np.arange(adj_csc_slice.shape[1]))
