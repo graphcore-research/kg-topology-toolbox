@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="../">
 <head>
@@ -6,20 +8,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>kg_topology_toolbox.topology_toolbox.KGTopologyToolbox &mdash; KG Topology Toolbox  documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
-      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
-      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
 
   
-  <!--[if lt IE 9]>
-    <script src="../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="../_static/jquery.js?v=5d32c60e"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../_static/documentation_options.js?v=5929fcd5"></script>
-        <script src="../_static/doctools.js?v=9a2dae69"></script>
-        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
-        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -103,9 +101,9 @@ by the list of its edges (h,r,t).</p>
 <li><p><strong>kg_df</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></span>) – A Knowledge Graph represented as a pd.DataFrame.
 Must contain at least three columns, which specify the IDs of
 head entity, relation type and tail entity for each edge.</p></li>
-<li><p><strong>head_column</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – The name of the column with the IDs of head entities. Default: “h”.</p></li>
-<li><p><strong>relation_column</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – The name of the column with the IDs of relation types. Default: “r”.</p></li>
-<li><p><strong>tail_column</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – The name of the column with the IDs of tail entities. Default: “t”.</p></li>
+<li><p><strong>head_column</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – The name of the column with the IDs of head entities. Default: “h”.</p></li>
+<li><p><strong>relation_column</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – The name of the column with the IDs of relation types. Default: “r”.</p></li>
+<li><p><strong>tail_column</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – The name of the column with the IDs of tail entities. Default: “t”.</p></li>
 </ul>
 </dd>
 </dl>
@@ -136,7 +134,7 @@ the subgraph of edges with relation type <cite>r</cite>.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.edge_degree_cardinality_summary">
-<span class="sig-name descname"><span class="pre">edge_degree_cardinality_summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">aggregate_by_r</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#KGTopologyToolbox.edge_degree_cardinality_summary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.edge_degree_cardinality_summary" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">edge_degree_cardinality_summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filter_relations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aggregate_by_r</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#KGTopologyToolbox.edge_degree_cardinality_summary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.edge_degree_cardinality_summary" title="Link to this definition"></a></dt>
 <dd><p>For each edge in the KG, compute the number of edges with the same head
 (head-degree, or out-degree), the same tail (tail-degree, or in-degree)
 or one of the two (total-degree).
@@ -148,8 +146,12 @@ many-to-one(out-degree=1, in-degree&gt;1) or many-to-many
 as the original Knowledge Graph dataframe.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>aggregate_by_r</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – If True, return metrics aggregated by relation type
-(the output DataFrame will be indexed over relation IDs).</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filter_relations</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]</span>) – If not empty, compute the output only for the edges with relation
+in this list of relation IDs.</p></li>
+<li><p><strong>aggregate_by_r</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – If True, return metrics aggregated by relation type
+(the output DataFrame will be indexed over relation IDs).</p></li>
+</ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></span></p>
@@ -207,8 +209,39 @@ and relation type <cite>r</cite>.</p></li>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.edge_metapath_count">
+<span class="sig-name descname"><span class="pre">edge_metapath_count</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filter_relations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">composition_chunk_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">composition_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#KGTopologyToolbox.edge_metapath_count"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.edge_metapath_count" title="Link to this definition"></a></dt>
+<dd><p>For each edge in the KG, compute the number of triangles supported on it
+distinguishing between different metapaths (i.e., the unique ordered tuples
+(r1, r2) of relation types of the two additional edges of the triangle).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filter_relations</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]</span>) – If not empty, compute the output only for the edges with relation
+in this list of relation IDs.</p></li>
+<li><p><strong>composition_chunk_size</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – Size of column chunks of sparse adjacency matrix
+to compute the triangle count. Reduce the parameter if running OOM.
+Default: 2**8.</p></li>
+<li><p><strong>composition_workers</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – Number of workers to compute the triangle count. By default, assigned based
+on number of available threads (max: 32).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The output dataframe has one row for each (h, r, t, r1, r2) such that
+there exists at least one triangle of metapath (r1, r2) over (h, r, t).
+The number of metapath triangles is given in the column <strong>n_triangles</strong>.
+The column <strong>index</strong> provides the index of the edge (h, r, t) in the
+original Knowledge Graph dataframe.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.edge_pattern_summary">
-<span class="sig-name descname"><span class="pre">edge_pattern_summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">return_metapath_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">composition_chunk_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">composition_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aggregate_by_r</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#KGTopologyToolbox.edge_pattern_summary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.edge_pattern_summary" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">edge_pattern_summary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">return_metapath_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter_relations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aggregate_by_r</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">composition_chunk_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">composition_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/kg_topology_toolbox/topology_toolbox.html#KGTopologyToolbox.edge_pattern_summary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.edge_pattern_summary" title="Link to this definition"></a></dt>
 <dd><p>Analyse structural properties of each edge in the KG:
 symmetry, presence of inverse/inference(=parallel) edges and
 triangles supported on the edge.</p>
@@ -217,13 +250,17 @@ as the original Knowledge Graph dataframe.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>return_metapath_list</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – If True, return the list of unique metapaths for all
-triangles supported over one edge. WARNING: very expensive for large graphs.</p></li>
-<li><p><strong>composition_chunk_size</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – Size of column chunks of sparse adjacency matrix
-to compute the triangle count.</p></li>
-<li><p><strong>composition_workers</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – Number of workers to compute the triangle count.</p></li>
-<li><p><strong>aggregate_by_r</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – If True, return metrics aggregated by relation type
+<li><p><strong>return_metapath_list</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – If True, return the list of unique metapaths for all
+triangles supported over each edge. WARNING: very expensive for large graphs.</p></li>
+<li><p><strong>filter_relations</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]</span>) – If not empty, compute the output only for the edges with relation
+in this list of relation IDs.</p></li>
+<li><p><strong>aggregate_by_r</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – If True, return metrics aggregated by relation type
 (the output DataFrame will be indexed over relation IDs).</p></li>
+<li><p><strong>composition_chunk_size</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – Size of column chunks of sparse adjacency matrix
+to compute the triangle count. Reduce the parameter if running OOM.
+Default: 2**8.</p></li>
+<li><p><strong>composition_workers</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – Number of workers to compute the triangle count. By default, assigned based
+on number of available threads (max: 32).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
@@ -350,7 +387,7 @@ The in-going and out-going relation types are also identified.</p>
 <p>The output dataframe is indexed on the IDs of the graph entities.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>return_relation_list</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – If True, return the list of unique relations going
+<dd class="field-odd"><p><strong>return_relation_list</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – If True, return the list of unique relations going
 in/out of an entity. WARNING: expensive for large graphs.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
@@ -388,7 +425,7 @@ Only returned if <cite>return_relation_list = True</cite>.</p></li>
 The relation types going out of the head node are also identified.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>return_relation_list</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – If True, return the list of unique relations going
+<dd class="field-odd"><p><strong>return_relation_list</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – If True, return the list of unique relations going
 out of the head node. WARNING: expensive for large graphs.
 Default: False.</p>
 </dd>
@@ -419,7 +456,7 @@ Only returned if <cite>return_relation_list = True</cite>.</p></li>
 The relation types going into the tail node are also identified.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>return_relation_list</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – If True, return the list of unique relation types going
+<dd class="field-odd"><p><strong>return_relation_list</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – If True, return the list of unique relation types going
 into the tail node. WARNING: expensive for large graphs.
 Default: False.</p>
 </dd>
@@ -452,7 +489,7 @@ InGram: Inductive Knowledge Graph Embedding via Relation Graphs,
 returned dataframe.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>min_max_norm</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – min-max normalization of edge weights. Defaults to False.</p>
+<dd class="field-odd"><p><strong>min_max_norm</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – min-max normalization of edge weights. Default: False.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></span></p>

@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="../">
 <head>
@@ -6,23 +8,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>KGTopologyToolbox walk-through &mdash; KG Topology Toolbox  documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
-      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
-      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
 
   
-  <!--[if lt IE 9]>
-    <script src="../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="../_static/jquery.js?v=5d32c60e"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../_static/documentation_options.js?v=5929fcd5"></script>
-        <script src="../_static/doctools.js?v=9a2dae69"></script>
-        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
-        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
-        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -59,6 +57,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#Edge-level-analysis">Edge-level analysis</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#Edge-degrees-and-cardinality">Edge degrees and cardinality</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#Edge-topological-patterns">Edge topological patterns</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Filtering-relation-types">Filtering relation types</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#Relation-level-analysis">Relation-level analysis</a></li>
@@ -113,13 +112,13 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Found existing installation: kg-topology-toolbox 0.1.0
-Uninstalling kg-topology-toolbox-0.1.0:
-  Successfully uninstalled kg-topology-toolbox-0.1.0
+Found existing installation: kg-topology-toolbox 1.0.0
+Uninstalling kg-topology-toolbox-1.0.0:
+  Successfully uninstalled kg-topology-toolbox-1.0.0
 </pre></div></div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>import numpy as np
@@ -139,7 +138,7 @@ dataset_directory = &quot;../../../data/ogb-biokg/&quot;
 <h2>Data preparation<a class="headerlink" href="#Data-preparation" title="Link to this heading"></a></h2>
 <p>We load the OGBL-BioKG dataset using the <code class="docutils literal notranslate"><span class="pre">ogb.linkproppred.LinkPropPredDataset</span></code> class and store all (h, r, t) triples in a <code class="docutils literal notranslate"><span class="pre">pandas</span></code> DataFrame.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>dataset = ogb.linkproppred.LinkPropPredDataset(
@@ -157,7 +156,7 @@ biokg_df
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -258,7 +257,7 @@ biokg_df
 </div>
 <p>Based on this representation of the knowledge graph, we can proceed to instantiate the <code class="docutils literal notranslate"><span class="pre">KGTopologyToolbox</span></code> class to compute topological properties.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>kgtt = KGTopologyToolbox(biokg_df)
@@ -270,15 +269,69 @@ biokg_df
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-/nethome/albertoc/research/knowledge_graphs/kg-topology-toolbox/.venv/lib/python3.10/site-packages/kg_topology_toolbox/topology_toolbox.py:64: UserWarning: The Knowledge Graph contains duplicated edges -- some functionalities may produce incorrect results
+/nethome/albertoc/research/knowledge_graphs/kg-topology-toolbox/.venv/lib/python3.10/site-packages/kg_topology_toolbox/utils.py:42: UserWarning: The Knowledge Graph contains duplicated edges -- some functionalities may produce incorrect results
   warnings.warn(
 </pre></div></div>
 </div>
 <p>Notice the warning raised by the constructor, which detects duplicated edges in the <code class="docutils literal notranslate"><span class="pre">biokg_df</span></code> DataFrame: to ensure optimal functionalities, duplicated edges should be removed before instantiating the <code class="docutils literal notranslate"><span class="pre">KGTopologyToolbox</span></code> class.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># find duplicated edges
+biokg_df.loc[biokg_df.duplicated(keep=False)]
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>h</th>
+      <th>r</th>
+      <th>t</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>3854407</th>
+      <td>1972</td>
+      <td>45</td>
+      <td>1972</td>
+    </tr>
+    <tr>
+      <th>4000534</th>
+      <td>1972</td>
+      <td>45</td>
+      <td>1972</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
 </section>
 <section id="Node-level-analysis">
 <h2>Node-level analysis<a class="headerlink" href="#Node-level-analysis" title="Link to this heading"></a></h2>
-<p>The method <code class="docutils literal notranslate"><span class="pre">node_degree_summary</span></code> provides a summary of the degrees of each individual node in the knowledge graph. The returned dataframe is indexed on the node ID.</p>
+<p>The method <code class="docutils literal notranslate"><span class="pre">node_degree_summary</span></code> provides a summary of the degrees of each individual node in the knowledge graph. The returned DataFrame is indexed on the node ID.</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">h_degree</span></code> is the number of edges coming out from the node;</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">t_degree</span></code> is the number of edges going into the node;</p></li>
@@ -464,7 +517,7 @@ plt.tight_layout()
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_ogb_biokg_demo_10_1.png" src="../_images/notebooks_ogb_biokg_demo_10_1.png" />
+<img alt="../_images/notebooks_ogb_biokg_demo_11_1.png" src="../_images/notebooks_ogb_biokg_demo_11_1.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
@@ -491,7 +544,7 @@ plt.tight_layout()
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_ogb_biokg_demo_11_0.png" src="../_images/notebooks_ogb_biokg_demo_11_0.png" />
+<img alt="../_images/notebooks_ogb_biokg_demo_12_0.png" src="../_images/notebooks_ogb_biokg_demo_12_0.png" />
 </div>
 </div>
 </section>
@@ -800,7 +853,7 @@ plt.tight_layout()
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_ogb_biokg_demo_15_0.png" src="../_images/notebooks_ogb_biokg_demo_15_0.png" />
+<img alt="../_images/notebooks_ogb_biokg_demo_16_0.png" src="../_images/notebooks_ogb_biokg_demo_16_0.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
@@ -826,7 +879,7 @@ plt.tight_layout()
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_ogb_biokg_demo_16_0.png" src="../_images/notebooks_ogb_biokg_demo_16_0.png" />
+<img alt="../_images/notebooks_ogb_biokg_demo_17_0.png" src="../_images/notebooks_ogb_biokg_demo_17_0.png" />
 </div>
 </div>
 </section>
@@ -834,7 +887,7 @@ plt.tight_layout()
 <h3>Edge topological patterns<a class="headerlink" href="#Edge-topological-patterns" title="Link to this heading"></a></h3>
 <p><code class="docutils literal notranslate"><span class="pre">KGTopologyToolbox</span></code> also allows us to perform a topological analysis at the edge level, using the method <code class="docutils literal notranslate"><span class="pre">edge_pattern_summary</span></code>, which extracts information on several significant edge topological patterns. In particular, it detects whether the edge (h,r,t) is a loop, is symmetric or has inverse, inference, composition (directed and undirected):</p>
 <p><img alt="image info" src="../_images/edge_patterns.png" /></p>
-<p>For inverse/inference, the method also provides the number and types of unique relations <code class="docutils literal notranslate"><span class="pre">r'</span></code> realizing the counterpart edges; for composition, the number of triangles supported by the edge is provided (the unique metapaths <code class="docutils literal notranslate"><span class="pre">[r_1,</span> <span class="pre">r_2]</span></code> can also be listed by setting <code class="docutils literal notranslate"><span class="pre">return_metapath_list=True</span></code> when calling the method).</p>
+<p>For inverse/inference, the method also provides the number and types of unique relations <code class="docutils literal notranslate"><span class="pre">r'</span></code> realizing the counterpart edges; for composition, the number of triangles supported by the edge is provided.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
@@ -1088,6 +1141,8 @@ edge_eps
 <p>5088434 rows × 15 columns</p>
 </div></div>
 </div>
+<p>If we need to identify the different metapaths <code class="docutils literal notranslate"><span class="pre">[r_1,</span> <span class="pre">r_2]</span></code> that give triangles <code class="docutils literal notranslate"><span class="pre">(h,r1,x)</span> <span class="pre">-</span> <span class="pre">(x,r2,t)</span></code> over an edge <code class="docutils literal notranslate"><span class="pre">(h,r,t)</span></code>, we can do so by setting <code class="docutils literal notranslate"><span class="pre">return_metapath_list=True</span></code> in the call of <code class="docutils literal notranslate"><span class="pre">edge_pattern_summary</span></code>. In order to disaggregate the total number of triangles over an edge into separate counts for each existing metapath, the <code class="docutils literal notranslate"><span class="pre">edge_metapath_count</span></code> method should be used instead.</p>
+<p>We can now easily produce a global view of the distribution of topological properties.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
@@ -1145,8 +1200,191 @@ plt.tight_layout()
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../_images/notebooks_ogb_biokg_demo_20_0.png" src="../_images/notebooks_ogb_biokg_demo_20_0.png" />
+<img alt="../_images/notebooks_ogb_biokg_demo_22_0.png" src="../_images/notebooks_ogb_biokg_demo_22_0.png" />
 </div>
+</div>
+</section>
+<section id="Filtering-relation-types">
+<h3>Filtering relation types<a class="headerlink" href="#Filtering-relation-types" title="Link to this heading"></a></h3>
+<p>The edge-level methods presented in the previous section simultaneously compute statistics for all edges in the KG, and this can be expensive on larger graphs. Moreover, in many practical cases the user might be interested in looking only at the properties of edges of one or few specific relation types.</p>
+<p>The methods <code class="docutils literal notranslate"><span class="pre">edge_degree_cardinality_summary</span></code>, <code class="docutils literal notranslate"><span class="pre">edge_pattern_summary</span></code> and <code class="docutils literal notranslate"><span class="pre">edge_metapath_count</span></code> can be passed a list of relation type IDs to restrict computations of their outputs to edges of those specific relation types.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>filtered_metapath_counts = kgtt.edge_metapath_count(filter_relations=[7, 24])
+filtered_metapath_counts
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>index</th>
+      <th>h</th>
+      <th>r</th>
+      <th>t</th>
+      <th>r1</th>
+      <th>r2</th>
+      <th>n_triangles</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>334382</td>
+      <td>732</td>
+      <td>7</td>
+      <td>1225</td>
+      <td>41</td>
+      <td>2</td>
+      <td>10</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>334382</td>
+      <td>732</td>
+      <td>7</td>
+      <td>1225</td>
+      <td>39</td>
+      <td>2</td>
+      <td>123</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>334382</td>
+      <td>732</td>
+      <td>7</td>
+      <td>1225</td>
+      <td>38</td>
+      <td>2</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>334382</td>
+      <td>732</td>
+      <td>7</td>
+      <td>1225</td>
+      <td>37</td>
+      <td>2</td>
+      <td>27</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>334382</td>
+      <td>732</td>
+      <td>7</td>
+      <td>1225</td>
+      <td>36</td>
+      <td>2</td>
+      <td>6</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>732149</th>
+      <td>4953327</td>
+      <td>1529</td>
+      <td>24</td>
+      <td>2492</td>
+      <td>13</td>
+      <td>41</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>732150</th>
+      <td>4953327</td>
+      <td>1529</td>
+      <td>24</td>
+      <td>2492</td>
+      <td>11</td>
+      <td>41</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>732151</th>
+      <td>4953327</td>
+      <td>1529</td>
+      <td>24</td>
+      <td>2492</td>
+      <td>6</td>
+      <td>41</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>732152</th>
+      <td>4953327</td>
+      <td>1529</td>
+      <td>24</td>
+      <td>2492</td>
+      <td>4</td>
+      <td>41</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>732153</th>
+      <td>4953327</td>
+      <td>1529</td>
+      <td>24</td>
+      <td>2492</td>
+      <td>2</td>
+      <td>41</td>
+      <td>2</td>
+    </tr>
+  </tbody>
+</table>
+<p>732154 rows × 7 columns</p>
+</div></div>
+</div>
+<p>The previous cell computes the number of triangles of each existing <code class="docutils literal notranslate"><span class="pre">(r1,</span> <span class="pre">r2)</span></code> metapath, but only over <code class="docutils literal notranslate"><span class="pre">(h,r,t)</span></code> edges of the two relation types with ID 7 and 24 (the column <code class="docutils literal notranslate"><span class="pre">index</span></code> gives the index of the edge in the <code class="docutils literal notranslate"><span class="pre">biokkg_df</span></code> DataFrame). This is the same as calling <code class="docutils literal notranslate"><span class="pre">kgtt.edge_metapath_count().query('r==7</span> <span class="pre">or</span> <span class="pre">r==24')</span></code>, but the computation is much cheaper and faster.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>filtered_metapath_counts.r.value_counts()
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+r
+24    413366
+7     318788
+Name: count, dtype: int64
+</pre></div></div>
 </div>
 </section>
 </section>
