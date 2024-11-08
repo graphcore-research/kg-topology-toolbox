@@ -557,14 +557,14 @@ class KGTopologyToolbox:
         df_res["has_inference"] = df_res["n_inference_relations"] > 0
 
         # composition & metapaths
+        counts = composition_count(
+            df_triangles,
+            chunk_size=composition_chunk_size,
+            workers=composition_workers,
+            metapaths=return_metapath_list,
+            directed=True,
+        )
         if return_metapath_list:
-            counts = composition_count(
-                df_triangles,
-                chunk_size=composition_chunk_size,
-                workers=composition_workers,
-                metapaths=True,
-                directed=True,
-            )
             # turn (r1, r2) into "r1-r2" string for metapaths
             counts["metapath"] = (
                 counts["r1"].astype(str) + "-" + counts["r2"].astype(str)
@@ -583,21 +583,13 @@ class KGTopologyToolbox:
             df_res["metapath_list"] = df_res["metapath_list"].apply(
                 lambda agg: agg if isinstance(agg, list) else []
             )
-            df_res["n_triangles"] = df_res["n_triangles"].fillna(0).astype(int)
         else:
-            counts = composition_count(
-                df_triangles,
-                chunk_size=composition_chunk_size,
-                workers=composition_workers,
-                directed=True,
-            )
             df_res = df_res.merge(
                 counts,
                 on=["h", "t"],
                 how="left",
             )
-            df_res["n_triangles"] = df_res["n_triangles"].fillna(0).astype(int)
-
+        df_res["n_triangles"] = df_res["n_triangles"].fillna(0).astype(int)
         df_res["has_composition"] = df_res["n_triangles"] > 0
 
         # undirected composition
