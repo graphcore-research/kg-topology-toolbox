@@ -500,7 +500,7 @@ class KGTopologyToolbox:
         else:
             rel_df = inference_df = inverse_df = self.df
             df_triangles = df_triangles_und = df_wo_loops
-        df_res = df_res = pd.DataFrame(
+        df_res = pd.DataFrame(
             {"h": rel_df.h, "r": rel_df.r, "t": rel_df.t, "is_symmetric": False}
         )
         # symmetry-asymmetry
