@@ -66,53 +66,31 @@ kgtt = KGTopologyToolbox(df)
 
 ### Computing Edge Topological Patterns
 
-The `KGTopologyToolbox` object can be used to compute the topological properties of the KG. For example, to compute the edge patterns of the KG, we can use the `edge_pattern_summary` method:
+The `KGTopologyToolbox` object can be used to compute the topological properties of the KG. For example, to compute the edge patterns of the KG, we can use the [`edge_pattern_summary`](https://graphcore-research.github.io/kg-topology-toolbox/generated/kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.html#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.edge_pattern_summary) method:
 
 ```python
 edge_eps = kgtt.edge_pattern_summary()
 ```
 
-This will return a DataFrame with the edge patterns of the KG, where values have been computed for each edge contained with the graph. The values contained in the DataFrame include: 
+This will return a DataFrame with the edge patterns of the KG, where values have been computed for each edge contained with the graph.
 
-  - **is_loop**: True if the triple is a loop (``h == t``).
-  - **is_symmetric**: True if the triple (t, r, h) is also contained in the graph (assuming t and h are different).
-  - **has_inverse**: True if the graph contains one or more triples (t, r', h) with ``r' != r``.
-  - **n_inverse_relations**: The number of inverse relations r'.
-  - **inverse_edge_types**: All relations r' (including r if the edge is symmetric) such that (t, r', h) is in the graph.
-  - **has_inference**: True if the graph contains one or more triples (h, r', t) with ``r' != r``.
-  - **n_inference_relations**: The number of inference relations r'.
-  - **inference_edge_types**: All relations r' (including r) such that (h, r', t) is in the graph.
-  - **has_composition**: True if the graph contains one or more triangles supported on the edge: (h, r1, x) + (x, r2, t).
-  - **n_triangles**: The number of triangles.
-  - **has_undirected_composition**: True if the graph contains one or more undirected triangles supported on the edge.
-  - **n_undirected_triangles**: The number of undirected triangles (considering all edges as bidirectional).
-  - **metapath_list**: The list of unique metapaths "r1-r2" for the directed triangles.
+The values computed by the [`edge_pattern_summary`](https://graphcore-research.github.io/kg-topology-toolbox/generated/kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.html#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.edge_pattern_summary) method include: loop, symmetric, inverse, inference, composition, number of triangles and other pattern metrics.
 
 ### Computing Edge Cardinality Patterns
 
-Similarly, to compute the cardinality patterns of the KG, we can use the `edge_degree_cardinality_summary` method:
+Similarly, to compute the cardinality patterns of the KG, we can use the [`edge_degree_cardinality_summary`](https://graphcore-research.github.io/kg-topology-toolbox/generated/kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.html#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.edge_degree_cardinality_summary) method:
 
 ```python
 edge_dcs = kgtt.edge_degree_cardinality_summary()
 ```
 
-This will return a DataFrame with the cardinality patterns of the KG, where again values have been computed for each edge contained with the graph. The DataFrame contains the following columns:
+This will return a DataFrame with the cardinality patterns of the KG, where again values have been computed for each edge contained with the graph. 
 
-
-  - **h_unique_rel**: Number of distinct relation types among edges with head entity h.
-  - **h_degree**: Number of triples with head entity h.
-  - **h_degree_same_rel**: Number of triples with head entity h and relation type r.
-  - **t_unique_rel**: Number of distinct relation types among edges with tail entity t.
-  - **t_degree**: Number of triples with tail entity t.
-  - **t_degree_same_rel**: Number of triples with tail entity t and relation type r.
-  - **tot_degree**: Number of triples with head entity h or tail entity t.
-  - **tot_degree_same_rel**: Number of triples with head entity h or tail entity t, and relation type r.
-  - **triple_cardinality**: cardinality type of the edge.
-  - **triple_cardinality_same_rel**: cardinality type of the edge in the subgraph of edges with relation type r.
+The values computed by the [`edge_degree_cardinality_summary`](https://graphcore-research.github.io/kg-topology-toolbox/generated/kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.html#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.edge_degree_cardinality_summary) method include: one-to-one, one-to-many, many-to-one, many-to-many and other cardinality metrics.
 
 ### Aggregating by Relation
 
-It is also possible to aggregate the properties at the level of relations, you can use the `aggregate_by_relation` method:
+It is also possible to aggregate the properties at the level of relations, you can use the [`aggregate_by_relation`](https://graphcore-research.github.io/kg-topology-toolbox/generated/kg_topology_toolbox.utils.aggregate_by_relation.html#kg_topology_toolbox.utils.aggregate_by_relation) method:
 
 ```python
 from kg_topology_toolbox.utils import aggregate_by_relation
