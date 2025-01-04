@@ -49,7 +49,7 @@ Once installed, the library can be imported as follows:
 from kg_topology_toolbox import KGTopologyToolbox
 ```
 
-`kg-topology-toolbox` requires that the input KG is in the form of a pandas DataFrame with columns `h`, `r` and `t`. The `h` and `t` columns should contain the head and tail entities involved in the triple, and the `r` column should contain the relation type. These columns should be the integer identifiers of the entities and relations in the KG.
+`kg-topology-toolbox` requires that the input KG is in the form of a pandas DataFrame with suggested column names of `h`, `r` and `t`. The `h` and `t` columns should contain the head and tail entities involved in the triple, and the `r` column should contain the relation type. These columns should be the integer identifiers of the entities and relations in the KG. Note that if your columns are named differently, you can specify the column names when creating the `KGTopologyToolbox` object.
 
 For example, we can load a KG from a CSV file:
 
