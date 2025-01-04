@@ -121,7 +121,7 @@ relation_eps = aggregate_by_relation(edge_eps)
 relation_dcs = aggregate_by_relation(edge_dcs)
 ```
 
-This will return a DataFrame with the edge patterns of the KG, where values have been aggregated for each unique relation contained within the graph.
+This will return a DataFrame with statistics for the edge properties, aggregated across edges of the same relation type, for all relations contained within the graph.
 
 
 **For a more detailed overview of the functionalities of `kg-topology-toolbox`, please refer to the [documentation](https://graphcore-research.github.io/kg-topology-toolbox/) and the introductory [Jupyter notebook](docs/source/notebooks/ogb_biokg_demo.ipynb).**
