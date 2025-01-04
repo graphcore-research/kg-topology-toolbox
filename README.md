@@ -14,7 +14,7 @@
 
 Unlike other libraries, `kg-topology-toolbox` provides the ability to compute these properties at the level of individual triples, as well as at the level of relations.
 
-![edge patterns](relational_patterns.png "Edge Patterns")
+![edge patterns](docs/source/images/edge_patterns.png "Edge Patterns")
 
 ---
 
