@@ -10,7 +10,7 @@
 
 `kg-topology-toolbox` is a Python-based toolbox for computing topological properties of Knowledge Graphs (KGs). This library provides researchers and practitioners with tools to better understand the structural characteristics of KGs and how they might impact the predictive performance of any models trained upon them.
 
-`kg-topology-toolbox` enables computation of a variety of properties of KGs, focusing on **edge topological (Symmetric, Inverse, Inference, Loops & Composition) and cardinality patterns (one-to-one, one-to-many, many-to-one & many-to-many).** 
+`kg-topology-toolbox` enables computation of a variety of properties of KGs, focusing on **edge topological (symmetry, inverse, inference, loop and composition) and cardinality patterns (one-to-one, one-to-many, many-to-one & many-to-many).** 
 
 Unlike other libraries, `kg-topology-toolbox` provides the ability to compute these properties at the level of individual triples, as well as at the level of relations.
 
