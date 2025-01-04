@@ -108,7 +108,7 @@ This will return a DataFrame with the cardinality patterns of the KG, where agai
   - **tot_degree**: Number of triples with head entity h or tail entity t.
   - **tot_degree_same_rel**: Number of triples with head entity h or tail entity t, and relation type r.
   - **triple_cardinality**: cardinality type of the edge.
-  - **triple_cardinality_same_rel** (int): cardinality type of the edge in the subgraph of edges with relation type r.
+  - **triple_cardinality_same_rel**: cardinality type of the edge in the subgraph of edges with relation type r.
 
 ### Aggregating by Relation
 
