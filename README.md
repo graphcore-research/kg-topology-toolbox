@@ -72,7 +72,7 @@ The `KGTopologyToolbox` object can be used to compute the topological properties
 edge_eps = kgtt.edge_pattern_summary()
 ```
 
-This will return a DataFrame with the edge patterns of the KG, where values have been computed for each edge contained with the graph. The values contained in the dataframe include: 
+This will return a DataFrame with the edge patterns of the KG, where values have been computed for each edge contained with the graph. The values contained in the DataFrame include: 
 
   - **is_loop**: True if the triple is a loop (``h == t``).
   - **is_symmetric**: True if the triple (t, r, h) is also contained in the graph (assuming t and h are different).
