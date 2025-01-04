@@ -96,7 +96,7 @@ Similarly, to compute the cardinality patterns of the KG, we can use the `edge_d
 edge_dcs = kgtt.edge_degree_cardinality_summary()
 ```
 
-This will return a DataFrame with the cardinality patterns of the KG, where again values have been computed for each edge contained with the graph. The dataframe contains the following columns:
+This will return a DataFrame with the cardinality patterns of the KG, where again values have been computed for each edge contained with the graph. The DataFrame contains the following columns:
 
 
   - **h_unique_rel**: Number of distinct relation types among edges with head entity h.
