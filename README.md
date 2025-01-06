@@ -78,7 +78,7 @@ The `KGTopologyToolbox` object can be used to compute the topological properties
 edge_eps = kgtt.edge_pattern_summary()
 ```
 
-This will return a DataFrame with the edge patterns of the KG, where values have been computed for each edge contained with the graph.
+This will return a DataFrame with the edge patterns of the KG, where values have been computed for each edge contained within the graph.
 
 The values computed by the [`edge_pattern_summary`](https://graphcore-research.github.io/kg-topology-toolbox/generated/kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.html#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.edge_pattern_summary) method include: loop, symmetric, inverse, inference, composition, number of triangles and other pattern metrics.
 
