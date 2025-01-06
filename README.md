@@ -92,7 +92,7 @@ edge_dcs = kgtt.edge_degree_cardinality_summary()
 
 This will return a DataFrame with the cardinality patterns of the KG, where again values have been computed for each edge contained with the graph. 
 
-The values computed by the [`edge_degree_cardinality_summary`](https://graphcore-research.github.io/kg-topology-toolbox/generated/kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.html#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.edge_degree_cardinality_summary) method include: one-to-one, one-to-many, many-to-one, many-to-many and other cardinality metrics.
+The values computed by the [`edge_degree_cardinality_summary`](https://graphcore-research.github.io/kg-topology-toolbox/generated/kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.html#kg_topology_toolbox.topology_toolbox.KGTopologyToolbox.edge_degree_cardinality_summary) method include triple cardinality (one-to-one, one-to-many, many-to-one, many-to-many), head and tail degrees and other cardinality metrics.
 
 ### Aggregating by Relation
 
