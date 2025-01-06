@@ -1,6 +1,12 @@
-# KG Topology Toolbox
+<h1 align="center">
+  KG Topology Toolbox
+</h1>
+
 ![Continuous integration](https://github.com/graphcore-research/kg-topology-toolbox/actions/workflows/ci.yaml/badge.svg)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
+<b>KG Topology Toolbox:</b> is a Python package designed to efficiently extract common topological patterns from knowledge graphs, 
+including edge patterns (e.g. symmetric, inverse, inference & composition) and edge cardinalities (e.g. one-to-one, one-to-many, many-to-one, many-to-many).
 
 ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
 ![NumPy](https://img.shields.io/badge/numpy-%23013243.svg?style=for-the-badge&logo=numpy&logoColor=white)
