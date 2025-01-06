@@ -7,7 +7,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>KGTopologyToolbox walk-through &mdash; KG Topology Toolbox  documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -886,7 +886,7 @@ plt.tight_layout()
 <section id="Edge-topological-patterns">
 <h3>Edge topological patterns<a class="headerlink" href="#Edge-topological-patterns" title="Link to this heading"></a></h3>
 <p><code class="docutils literal notranslate"><span class="pre">KGTopologyToolbox</span></code> also allows us to perform a topological analysis at the edge level, using the method <code class="docutils literal notranslate"><span class="pre">edge_pattern_summary</span></code>, which extracts information on several significant edge topological patterns. In particular, it detects whether the edge (h,r,t) is a loop, is symmetric or has inverse, inference, composition (directed and undirected):</p>
-<p><img alt="image info" src="../_images/edge_patterns.png" /></p>
+<img alt="image info" src="../_images/edge_patterns.png" />
 <p>For inverse/inference, the method also provides the number and types of unique relations <code class="docutils literal notranslate"><span class="pre">r'</span></code> realizing the counterpart edges; for composition, the number of triangles supported by the edge is provided.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:

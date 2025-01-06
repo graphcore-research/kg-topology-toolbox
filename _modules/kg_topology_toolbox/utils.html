@@ -6,7 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>kg_topology_toolbox.utils &mdash; KG Topology Toolbox  documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
 
@@ -79,20 +79,20 @@
 <span class="sd">Utility functions</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">warnings</span>
-<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Iterable</span>
-<span class="kn">from</span> <span class="nn">multiprocessing</span> <span class="kn">import</span> <span class="n">Pool</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">multiprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Pool</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">from</span> <span class="nn">numpy.typing</span> <span class="kn">import</span> <span class="n">NDArray</span>
-<span class="kn">from</span> <span class="nn">pandas.api.types</span> <span class="kn">import</span> <span class="n">is_integer_dtype</span>
-<span class="kn">from</span> <span class="nn">scipy.sparse</span> <span class="kn">import</span> <span class="n">coo_array</span><span class="p">,</span> <span class="n">csc_array</span><span class="p">,</span> <span class="n">csr_array</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pandas.api.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">is_integer_dtype</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.sparse</span><span class="w"> </span><span class="kn">import</span> <span class="n">coo_array</span><span class="p">,</span> <span class="n">csc_array</span><span class="p">,</span> <span class="n">csr_array</span>
 
 
 <div class="viewcode-block" id="check_kg_df_structure">
 <a class="viewcode-back" href="../../generated/kg_topology_toolbox.utils.check_kg_df_structure.html#kg_topology_toolbox.utils.check_kg_df_structure">[docs]</a>
-<span class="k">def</span> <span class="nf">check_kg_df_structure</span><span class="p">(</span><span class="n">kg_df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">h</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">check_kg_df_structure</span><span class="p">(</span><span class="n">kg_df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">h</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Utility to perform sanity checks on the structure of the provided DataFrame,</span>
 <span class="sd">    to ensure that it encodes a Knowledge Graph in a compatible way.</span>
@@ -125,7 +125,7 @@
 
 <div class="viewcode-block" id="node_degrees_and_rels">
 <a class="viewcode-back" href="../../generated/kg_topology_toolbox.utils.node_degrees_and_rels.html#kg_topology_toolbox.utils.node_degrees_and_rels">[docs]</a>
-<span class="k">def</span> <span class="nf">node_degrees_and_rels</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">node_degrees_and_rels</span><span class="p">(</span>
     <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">column</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">n_entity</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">return_relation_list</span><span class="p">:</span> <span class="nb">bool</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -168,7 +168,7 @@
 
 <div class="viewcode-block" id="aggregate_by_relation">
 <a class="viewcode-back" href="../../generated/kg_topology_toolbox.utils.aggregate_by_relation.html#kg_topology_toolbox.utils.aggregate_by_relation">[docs]</a>
-<span class="k">def</span> <span class="nf">aggregate_by_relation</span><span class="p">(</span><span class="n">edge_topology_df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">aggregate_by_relation</span><span class="p">(</span><span class="n">edge_topology_df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Aggregate topology metrics of all triples of the same relation type.</span>
 <span class="sd">    To be applied to a DataFrame of metrics having at least columns</span>
@@ -255,7 +255,7 @@
 
 <div class="viewcode-block" id="jaccard_similarity">
 <a class="viewcode-back" href="../../generated/kg_topology_toolbox.utils.jaccard_similarity.html#kg_topology_toolbox.utils.jaccard_similarity">[docs]</a>
-<span class="k">def</span> <span class="nf">jaccard_similarity</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">jaccard_similarity</span><span class="p">(</span>
     <span class="n">entities_1</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">],</span> <span class="n">entities_2</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -275,7 +275,7 @@
 
 
 
-<span class="k">def</span> <span class="nf">_composition_count_worker</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_composition_count_worker</span><span class="p">(</span>
     <span class="n">adj_csr</span><span class="p">:</span> <span class="n">csr_array</span><span class="p">,</span>
     <span class="n">adj_csc_slice</span><span class="p">:</span> <span class="n">csc_array</span><span class="p">,</span>
     <span class="n">adj_mask_slice</span><span class="p">:</span> <span class="n">csc_array</span><span class="p">,</span>
@@ -327,7 +327,7 @@
 
 <div class="viewcode-block" id="composition_count">
 <a class="viewcode-back" href="../../generated/kg_topology_toolbox.utils.composition_count.html#kg_topology_toolbox.utils.composition_count">[docs]</a>
-<span class="k">def</span> <span class="nf">composition_count</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">composition_count</span><span class="p">(</span>
     <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
     <span class="n">chunk_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">workers</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
