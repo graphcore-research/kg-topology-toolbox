@@ -1,0 +1,5 @@
+numpy
+torch
+pandas
+seaborn
+kg-topology-toolbox @ git+https://github.com/graphcore-research/kg-topology-toolbox.git
