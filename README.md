@@ -121,6 +121,8 @@ If you have found this package useful in your research, please consider citing
 }
 ```
 
+The folder [the_role_of_graph_toplogy_paper](the_role_of_graph_topology_paper) contains all the code to reproduce experiments and analysis from the paper, using `kg-topology-toolbox`.
+
 ## License
 
 Copyright (c) 2023 Graphcore Ltd. Licensed under the MIT License.
