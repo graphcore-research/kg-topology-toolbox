@@ -31,9 +31,13 @@ MANIFEST
 
 # Data
 data/
-datasets/
+# datasets/
 *.pkl 
 *.pt
+*.zip
+*.npz
+entity_dict.csv
+relation_dict.csv
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
