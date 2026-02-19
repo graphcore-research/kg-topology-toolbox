@@ -1,8 +1,8 @@
 -r requirements.txt
 black
-flake8
+flake8==7.0.0
 isort
-mypy
+mypy==1.10.0
 pandas-stubs>=2.0.3.230814
 pandoc
 pytest>=8.1.1
