@@ -2,7 +2,7 @@
 black
 flake8
 isort
-mypy
+mypy[faster-cache]
 pandas-stubs>=2.0.3.230814
 pandoc
 pytest>=8.1.1

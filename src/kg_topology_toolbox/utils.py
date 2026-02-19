@@ -75,7 +75,7 @@ def node_degrees_and_rels(
     rel_list = {"rel_list": ("r", "unique")} if return_relation_list else {}
     deg_df = pd.DataFrame(
         df.groupby(column).agg(
-            degree=("r", "count"), unique_rel=("r", "nunique"), **rel_list  # type: ignore
+            degree=("r", "count"), unique_rel=("r", "nunique"), **rel_list
         ),
         index=np.arange(n_entity),
     )

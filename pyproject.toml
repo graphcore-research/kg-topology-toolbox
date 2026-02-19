@@ -66,9 +66,6 @@ ignore_missing_imports = true
 module = "setuptools.*"
 ignore_missing_imports = true
 
-[tool.pytest]
-addopts = ["--no-cov-on-fail"]
-
 [tool.pytest.ini_options]
 pythonpath = [
   "src"
